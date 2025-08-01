@@ -1,0 +1,49 @@
+# Node modules
+node_modules/
+
+# Production build output
+.next/
+out/
+
+# Local environment variables
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+coverage/
+.jest/
+
+# Editor folders and settings
+.vscode/
+.idea/
+*.swp
+
+# Optional npm cache
+.npm/
+
+# Optional lint cache
+.eslintcache
+
+# Prettier
+.prettiercache
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Mac OS / Linux
+*.log
+
+# Optional: build or temp folders
+dist/
+tmp/
