@@ -67,7 +67,6 @@
     "zod": "^3.25.67"
   },
   "devDependencies": {
-    "@prisma/client": "^6.13.0",
     "@tailwindcss/postcss": "^4.1.10",
     "autoprefixer": "^10.4.21",
     "eslint": "^9.29.0",
@@ -79,7 +78,6 @@
     "prettier": "^3.6.1",
     "prettier-plugin-organize-imports": "^4.1.0",
     "prettier-plugin-tailwindcss": "^0.6.13",
-    "prisma": "^6.13.0",
     "tailwindcss": "^4.1.10"
   }
 }
