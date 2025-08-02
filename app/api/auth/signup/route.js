@@ -1,6 +1,7 @@
 // pages/api/auth/signup.ts
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 import prisma from '@/lib/prisma';
 import { verifyRecaptchaToken } from '@/lib/recaptcha';
 import { sendEmail } from '@/services/send-email';
@@ -12,6 +13,7 @@ async function sendVerificationEmail(user) {
   // Create a new verification token.
   const token = await prisma.verificationToken.create({
     data: {
+      id: crypto.randomUUID(), // Explicitly provide the id
       identifier: user.id,
       token: bcrypt.hashSync(user.id, 10),
       expires: new Date(Date.now() + 1 * 60 * 60 * 1000), // 1 hour from now
@@ -82,9 +84,15 @@ export async function POST(req) {
     if (existingUser) {
       if (existingUser.status === UserStatus.INACTIVE) {
         // Resend verification email for inactive user.
-        await prisma.verificationToken.deleteMany({
-          where: { identifier: existingUser.id },
-        });
+        try {
+          // Try to delete existing tokens, but don't fail if it doesn't work
+          await prisma.verificationToken.deleteMany({
+            where: { identifier: existingUser.id },
+          });
+        } catch (error) {
+          console.log('Could not delete existing verification tokens:', error.message);
+          // Continue with creating new token
+        }
         await sendVerificationEmail(existingUser);
         return NextResponse.json(
           { message: 'Verification email resent. Please check your email.' },
@@ -102,7 +110,8 @@ export async function POST(req) {
     const defaultRole = await prisma.userRole.findFirst({
       where: { isDefault: true },
     });
-
+    console.log("defaultRole",defaultRole)
+    console.log("UserStatus",UserStatus)
     if (!defaultRole) {
       throw new Error('Default role not found. Unable to create a new user.');
     }

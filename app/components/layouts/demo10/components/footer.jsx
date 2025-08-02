@@ -1,10 +1,16 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+
 import { generalSettings } from '@/config/general.config';
 import { Container } from '@/components/common/container';
 
 export function Footer() {
-  const currentYear = new Date().getFullYear();
+  const [currentYear, setCurrentYear] = useState('');
+
+  useEffect(() => {
+    setCurrentYear(new Date().getFullYear().toString());
+  }, []);
 
   return (
     <footer className="footer">

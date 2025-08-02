@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 function GridBackground({
@@ -13,39 +13,28 @@ function GridBackground({
   ...props
 }) {
   const {
-    background = 'bg-slate-900',
-    borderColor = 'border-slate-700/50',
-    borderSize = '1px',
-    borderStyle = 'solid',
-  } = colors;
-
-  const {
-    count = 12,
-    colors: beamColors = [
-      'bg-cyan-400',
-      'bg-purple-400',
-      'bg-fuchsia-400',
-      'bg-violet-400',
-      'bg-blue-400',
-      'bg-indigo-400',
-      'bg-green-400',
-      'bg-yellow-400',
-      'bg-orange-400',
-      'bg-red-400',
-      'bg-pink-400',
-      'bg-rose-400',
-    ],
-
-    shadow = 'shadow-lg shadow-cyan-400/50 rounded-full',
+    count = 3,
+    colors: beamColors = ['bg-blue-500/50', 'bg-purple-500/50', 'bg-pink-500/50'],
     speed = 4,
   } = beams;
+
+  const {
+    background = 'bg-background',
+    borderColor = 'border-border',
+    borderSize = '1px',
+    borderStyle = 'solid',
+    shadow = 'shadow-lg',
+  } = colors;
 
   // Parse grid dimensions
   const [cols, rows] = gridSize.split(':').map(Number);
 
-  // Generate beam configurations
-  const animatedBeams = React.useMemo(
-    () =>
+  // Use state to store beam configurations to avoid hydration mismatch
+  const [animatedBeams, setAnimatedBeams] = React.useState([]);
+
+  // Generate beam configurations after mount to avoid hydration issues
+  React.useEffect(() => {
+    const generateBeams = () =>
       Array.from({ length: Math.min(count, 12) }, (_, i) => {
         const direction = Math.random() > 0.5 ? 'horizontal' : 'vertical';
         const startPosition = Math.random() > 0.5 ? 'start' : 'end';
@@ -64,9 +53,10 @@ function GridBackground({
           delay: Math.random() * 2,
           duration: speed + Math.random() * 2,
         };
-      }),
-    [count, beamColors, speed, cols, rows],
-  );
+      });
+
+    setAnimatedBeams(generateBeams());
+  }, [count, beamColors, speed, cols, rows]);
 
   const gridStyle = {
     '--border-style': borderStyle,
@@ -147,41 +137,28 @@ function GridBackground({
                     transform: 'translateX(-50%)', // Center on the line
                   }),
             }}
-            initial={{
-              opacity: 0,
-            }}
             animate={{
-              opacity: [0, 1, 1, 0],
               ...(beam.direction === 'horizontal'
                 ? {
-                    // Move across the full width of the container
-                    x:
-                      beam.startPosition === 'start'
-                        ? [0, 'calc(100vw + 24px)']
-                        : [0, 'calc(-100vw - 24px)'],
+                    x: beam.startPosition === 'start' ? 'calc(100vw + 24px)' : 'calc(-100vw - 24px)',
                   }
                 : {
-                    // Move across the full height of the container
-                    y:
-                      beam.startPosition === 'start'
-                        ? [0, 'calc(100vh + 24px)']
-                        : [0, 'calc(-100vh - 24px)'],
+                    y: beam.startPosition === 'start' ? 'calc(100vh + 24px)' : 'calc(-100vh - 24px)',
                   }),
             }}
             transition={{
               duration: beam.duration,
               delay: beam.delay,
+              ease: 'linear',
               repeat: Infinity,
               repeatDelay: Math.random() * 3 + 2, // 2-5s pause between repeats
-              ease: 'linear',
-              times: [0, 0.1, 0.9, 1], // Quick fade in, maintain, quick fade out
             }}
           />
         );
       })}
 
-      {/* Content Layer */}
-      <div className="relative z-10 size-full">{children}</div>
+      {/* Content */}
+      <div className="relative z-10">{children}</div>
     </motion.div>
   );
 }
