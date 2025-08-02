@@ -16,6 +16,7 @@ export function RecaptchaPopover({
 }) {
   const { containerRef, getToken, resetCaptcha, initializeRecaptcha } =
     useRecaptchaV2(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || '');
+    console.log("dd",process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY)
 
   const handleOpenChange = (newOpen) => {
     onOpenChange(newOpen);
