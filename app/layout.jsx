@@ -29,6 +29,7 @@ export default async function RootLayout({ children }) {
           'antialiased flex h-full text-base text-foreground bg-background',
           inter.className,
         )}
+        suppressHydrationWarning
       >
         <QueryProvider>
           <AuthProvider>

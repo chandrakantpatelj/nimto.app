@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useState, useEffect } from 'react';
 import {
   Toolbar,
   ToolbarActions,
@@ -33,7 +33,12 @@ export function Demo1LightSidebarPage() {
     setTempDateRange(undefined); // Reset the temporary date range
   };
 
-  const defaultStartDate = new Date(); // Default start date fallback
+  const [defaultStartDate, setDefaultStartDate] = useState(null); // Default start date fallback
+  
+  // Set default start date after mount to avoid hydration mismatch
+  useEffect(() => {
+    setDefaultStartDate(new Date());
+  }, []);
 
   return (
     <Fragment>
