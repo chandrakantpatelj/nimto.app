@@ -132,7 +132,8 @@ export async function POST(req) {
       },
       { status: 200 },
     );
-  } catch {
+  } catch(e) {
+    console.log("e",e)
     return NextResponse.json(
       { message: 'Registration failed. Please try again later.' },
       { status: 500 },
