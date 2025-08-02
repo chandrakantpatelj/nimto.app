@@ -1,3 +1,5 @@
+// app/api/auth/verify-email.ts (or pages/api/auth/verify-email.ts in older structure)
+
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
@@ -8,11 +10,12 @@ export async function POST(req) {
     return NextResponse.json({ error: 'Token is missing' }, { status: 400 });
   }
 
-  // First, retrieve the verification token.
+  // First, retrieve the verification token
   const verificationToken = await prisma.verificationToken.findUnique({
     where: { token },
   });
 
+  // Check if the token is invalid or expired
   if (!verificationToken || verificationToken.expires < new Date()) {
     return NextResponse.json(
       { message: 'Invalid or expired token' },
@@ -21,14 +24,18 @@ export async function POST(req) {
   }
 
   try {
-    // Use a transaction so that the user update and token deletion occur together.
+    // Use a transaction to update user and delete token together
     await prisma.$transaction(async (tx) => {
       await tx.user.update({
         where: { id: verificationToken.identifier },
-        data: { status: 'ACTIVE', emailVerifiedAt: new Date() },
+        data: {
+          status: 'ACTIVE',
+          emailVerifiedAt: new Date(),
+        },
       });
 
-      await tx.verificationToken.delete({
+      // Use deleteMany instead of delete to avoid throwing if token not found
+      await tx.verificationToken.deleteMany({
         where: { token },
       });
     });
@@ -37,7 +44,8 @@ export async function POST(req) {
       { message: 'Email verified successfully!' },
       { status: 200 },
     );
-  } catch {
+  } catch (error) {
+    console.error('Verification failed:', error);
     return NextResponse.json(
       { message: 'Internal server error' },
       { status: 500 },

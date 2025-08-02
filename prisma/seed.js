@@ -65,19 +65,8 @@ async function main() {
         },
       });
 
-      // Seed UserRoles
-      await tx.userRole.upsert({
-        where: { slug: 'member' },
-        update: {}, // No updates needed, ensures idempotency
-        create: {
-          slug: 'member',
-          name: 'Member',
-          description: 'Default member role',
-          isDefault: true,
-          isProtected: true,
-          createdAt: new Date(),
-        },
-      });
+      // Seed UserRoles - Remove the conflicting member role creation
+      // The roles will be seeded from rolesData below
 
       // Seed Roles
       for (const role of rolesData) {
@@ -245,8 +234,8 @@ async function main() {
       console.log('Database seeding completed!');
     },
     {
-      timeout: 520000,
-      maxWait: 520000,
+      timeout: 15000,
+      maxWait: 15000,
     },
   );
 }
