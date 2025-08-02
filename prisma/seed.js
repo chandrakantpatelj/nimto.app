@@ -6,7 +6,14 @@ const rolesData = require('./data/roles');
 const usersData = require('./data/users');
 const permissionsData = require('./data/permissions');
 
-const prisma = new PrismaClient();
+// Initialize Prisma client with proper error handling
+let prisma;
+try {
+  prisma = new PrismaClient();
+} catch (error) {
+  console.error('Failed to initialize Prisma client:', error);
+  process.exit(1);
+}
 
 async function main() {
   console.log('Running database seeding...');
