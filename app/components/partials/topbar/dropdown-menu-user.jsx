@@ -34,7 +34,7 @@ import {
 import { Switch } from '@/components/ui/switch';
 
 export function DropdownMenuUser({ trigger }) {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const { changeLanguage, language } = useLanguage();
   const { theme, setTheme } = useTheme();
 
@@ -46,6 +46,20 @@ export function DropdownMenuUser({ trigger }) {
     setTheme(checked ? 'dark' : 'light');
   };
 
+  // Don't render session-dependent content until session is loaded
+  if (status === 'loading') {
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
+        <DropdownMenuContent className="w-64" side="bottom" align="end">
+          <div className="flex items-center justify-center p-4">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+          </div>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
@@ -56,7 +70,7 @@ export function DropdownMenuUser({ trigger }) {
             <img
               className="w-9 h-9 rounded-full border border-border"
               src={toAbsoluteUrl(
-                session?.user.avatar || '/media/avatars/300-2.png',
+                session?.user?.avatar || '/media/avatars/300-2.png',
               )}
               alt="User avatar"
             />
@@ -66,13 +80,13 @@ export function DropdownMenuUser({ trigger }) {
                 href="/account/home/get-started"
                 className="text-sm text-mono hover:text-primary font-semibold"
               >
-                {session?.user.name || ''}
+                {session?.user?.name || 'User'}
               </Link>
               <Link
                 href="mailto:c.fisher@gmail.com"
                 className="text-xs text-muted-foreground hover:text-primary"
               >
-                {session?.user.email || ''}
+                {session?.user?.email || 'user@example.com'}
               </Link>
             </div>
           </div>

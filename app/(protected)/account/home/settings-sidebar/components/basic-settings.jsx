@@ -27,14 +27,23 @@ import {
 import { Switch } from '@/components/ui/switch';
 
 const BasicSettings = () => {
-  const [date, setDate] = useState(new Date(1984, 0, 20));
+  const [date, setDate] = useState(null);
+  
+  // Set initial date after mount to avoid hydration mismatch
+  useEffect(() => {
+    setDate(new Date(1984, 0, 20));
+  }, []);
   const [nameInput, setNameInput] = useState('Jason Tatum');
   const [companyInput, setCompanyInput] = useState('KeenThemes');
   const [phoneInput, setPhoneInput] = useState('');
 
   // Docs: https://www.reui.io/docs/date-picker#date--time
-  const today = new Date();
-  const [availabilityDate, setAvailabilityDate] = useState(today);
+  const [availabilityDate, setAvailabilityDate] = useState(null);
+  
+  // Set today's date after mount to avoid hydration mismatch
+  useEffect(() => {
+    setAvailabilityDate(new Date());
+  }, []);
   const [availabilityTime, setAvailabilityTime] = useState('10:00');
   const availabilityTimeSlots = [
     { time: '09:00', available: false },

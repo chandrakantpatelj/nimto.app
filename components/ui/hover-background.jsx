@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { motion, useMotionValue, useSpring } from 'motion/react';
+import { motion, useSpring } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 function HoverBackground({
@@ -14,28 +14,22 @@ function HoverBackground({
   const {
     background = 'bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900',
     objects = [
-      'bg-cyan-400/20',
-      'bg-purple-400/20',
-      'bg-fuchsia-400/20',
-      'bg-violet-400/20',
-      'bg-blue-400/20',
-      'bg-indigo-400/20',
+      'bg-blue-500/20',
+      'bg-purple-500/20',
+      'bg-pink-500/20',
+      'bg-cyan-500/20',
+      'bg-emerald-500/20',
+      'bg-yellow-500/20',
     ],
-
-    glow = 'shadow-cyan-400/50',
   } = colors;
 
   const [isHovered, setIsHovered] = React.useState(false);
+  const [mouseX, setMouseX] = React.useState(0);
+  const [mouseY, setMouseY] = React.useState(0);
 
-  // Mouse position tracking for parallax
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-
-  // Spring animations for smooth parallax with slower exit
   const springX = useSpring(mouseX, {
     stiffness: 300,
     damping: 30,
-    // Slower return to center when hover ends
     restSpeed: 0.1,
     restDelta: 0.1,
   });
@@ -46,8 +40,12 @@ function HoverBackground({
     restDelta: 0.1,
   });
 
-  const animatedObjects = React.useMemo(
-    () =>
+  // Use state to store animated objects to avoid hydration mismatch
+  const [animatedObjects, setAnimatedObjects] = React.useState([]);
+
+  // Generate animated objects after mount to avoid hydration issues
+  React.useEffect(() => {
+    const generateObjects = () =>
       Array.from({ length: objectCount }, (_, i) => {
         const shape = Math.random() > 0.5 ? 'circle' : 'square';
         return {
@@ -63,9 +61,10 @@ function HoverBackground({
           parallaxStrength: Math.random() * 0.5 + 0.3, // 0.3-0.8 for more varied parallax depth
           baseRotation: Math.random() * 360, // Random starting rotation offset
         };
-      }),
-    [objectCount, objects],
-  );
+      });
+
+    setAnimatedObjects(generateObjects());
+  }, [objectCount, objects]);
 
   const handleMouseMove = (event) => {
     if (!isHovered) return;
@@ -78,8 +77,8 @@ function HoverBackground({
     const x = (event.clientX - rect.left - centerX) / centerX;
     const y = (event.clientY - rect.top - centerY) / centerY;
 
-    mouseX.set(x * 15); // Slightly reduced parallax range
-    mouseY.set(y * 15);
+    setMouseX(x * 15); // Slightly reduced parallax range
+    setMouseY(y * 15);
   };
 
   const handleHoverStart = () => {
@@ -89,8 +88,8 @@ function HoverBackground({
   const handleHoverEnd = () => {
     setIsHovered(false);
     // Smooth return to center
-    mouseX.set(0);
-    mouseY.set(0);
+    setMouseX(0);
+    setMouseY(0);
   };
 
   return (
@@ -138,74 +137,54 @@ function HoverBackground({
             obj.shape === 'circle' ? 'rounded-full' : 'rounded-lg rotate-45',
           )}
           style={{
-            left: `${obj.x}%`,
-            top: `${obj.y}%`,
             width: obj.size,
             height: obj.size,
-            // Apply parallax with individual object strength
-            x: springX.get() * obj.parallaxStrength,
-            y: springY.get() * obj.parallaxStrength,
-          }}
-          initial={{
-            scale: 0.6,
-            opacity: 0.4,
-            rotate: obj.baseRotation,
+            left: `${obj.x}%`,
+            top: `${obj.y}%`,
+            transform: `translate(-50%, -50%) rotate(${obj.baseRotation}deg)`,
           }}
           animate={{
-            // Default state animations - breathing with base rotation offset
-            scale: [0.6, 0.8, 0.6],
-            opacity: [0.4, 0.6, 0.4],
-            rotate:
-              obj.shape === 'circle'
-                ? [obj.baseRotation, obj.baseRotation + 10, obj.baseRotation]
-                : [obj.baseRotation, obj.baseRotation + 5, obj.baseRotation],
-            y: [0, obj.floatDirection * 15, 0],
-            x: [0, obj.floatDirection * 8, 0],
+            y: [0, obj.floatDirection * 20, 0],
+            rotate: [obj.baseRotation, obj.baseRotation + 360],
+            scale: [1, 1.1, 1],
           }}
           transition={{
             duration: obj.breathDuration,
-            delay: obj.delay,
-            ease: 'easeInOut',
             repeat: Infinity,
-            repeatType: 'reverse',
+            ease: 'easeInOut',
+            delay: obj.delay,
           }}
           whileHover={{
-            scale: 1.5,
-            boxShadow: `0 0 30px ${glow.replace('shadow-', '').replace('/50', '')}`,
+            scale: 1.2,
+            transition: { duration: 0.2 },
           }}
         />
       ))}
 
-      {/* Floating Particles on Hover */}
-      {isHovered && (
-        <div className="absolute inset-0 pointer-events-none">
-          {Array.from({ length: 20 }).map((_, i) => (
-            <motion.div
-              key={`particle-${i}`}
-              className="absolute w-1 h-1 bg-white/60 rounded-full"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-              }}
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{
-                opacity: [0, 1, 0],
-                scale: [0, 1, 0],
-                y: [0, -50, -100],
-              }}
-              transition={{
-                duration: 3,
-                delay: Math.random() * 2,
-                repeat: Infinity,
-                ease: 'easeOut',
-              }}
-            />
-          ))}
-        </div>
-      )}
+      {/* Floating particles */}
+      {Array.from({ length: 8 }).map((_, i) => (
+        <motion.div
+          key={`particle-${i}`}
+          className="absolute w-1 h-1 bg-white/30 rounded-full"
+          style={{
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+          }}
+          animate={{
+            y: [0, -100, 0],
+            opacity: [0, 1, 0],
+          }}
+          transition={{
+            duration: 3 + Math.random() * 2,
+            repeat: Infinity,
+            delay: Math.random() * 2,
+            ease: 'easeInOut',
+          }}
+        />
+      ))}
 
-      {/* Content Layer */}
-      <div className="relative z-10 size-full">{children}</div>
+      {/* Content */}
+      <div className="relative z-10">{children}</div>
     </motion.div>
   );
 }

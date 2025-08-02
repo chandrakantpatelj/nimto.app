@@ -48,6 +48,7 @@ export async function POST(req) {
     // Store the token in the database with an expiry of 1 hour
     await prisma.verificationToken.create({
       data: {
+        id: crypto.randomUUID(), // Explicitly provide the id
         identifier: user.id,
         token,
         expires: new Date(Date.now() + 1 * 60 * 60 * 1000), // 1 hour expiry
