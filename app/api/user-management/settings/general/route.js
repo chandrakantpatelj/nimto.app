@@ -89,18 +89,10 @@ export async function POST(request) {
     if (
       logoAction === 'save' &&
       logoFile &&
-      logoFile instanceof File &&
       logoFile.size > 0
     ) {
       try {
-        // Create a new File from the existing one
-        const fileCompatible = new File(
-          [await logoFile.arrayBuffer()],
-          logoFile.name,
-          { type: logoFile.type },
-        );
-
-        logoUrl = await uploadToS3(fileCompatible, 'misc');
+        logoUrl = await uploadToS3(logoFile, 'misc');
       } catch {
         return NextResponse.json(
           { message: 'Failed to upload logo.' },

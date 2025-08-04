@@ -6,7 +6,7 @@ export const AccountProfileSchema = z.object({
     .min(1, 'Name is required')
     .max(50, 'Name cannot exceed 50 characters'),
   avatarFile: z
-    .instanceof(File)
+    .any()
     .nullable()
     .optional()
     .refine(
