@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const GeneralSettingsSchema = z.object({
   name: z.string().min(1, 'Company name is required'),
   logoFile: z
-    .instanceof(File)
+    .any()
     .nullable()
     .optional()
     .refine(
