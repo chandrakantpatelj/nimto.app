@@ -17,6 +17,7 @@ async function sendVerificationEmail(user) {
       expires: new Date(Date.now() + 1 * 60 * 60 * 1000), // 1 hour from now
     },
   });
+  console.log("token",token)  
 
   // Construct the verification URL.
   const verificationUrl = `${process.env.NEXTAUTH_URL}/verify-email?token=${token.token}`;
@@ -108,8 +109,7 @@ export async function POST(req) {
     const defaultRole = await prisma.userRole.findFirst({
       where: { isDefault: true },
     });
-    console.log("defaultRole",defaultRole)
-    console.log("UserStatus",UserStatus)
+  
     if (!defaultRole) {
       throw new Error('Default role not found. Unable to create a new user.');
     }
@@ -128,7 +128,7 @@ export async function POST(req) {
       },
       include: { role: true },
     });
-
+    console.log("user",user)
     // Send the verification email.
     await sendVerificationEmail(user);
 

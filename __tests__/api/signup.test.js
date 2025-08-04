@@ -5,11 +5,11 @@ import { POST } from '../../app/api/auth/signup/route.js';
 // Mock Next.js server components
 jest.mock('next/server', () => ({
   NextResponse: {
-    json: jest.fn((data, options) => ({
-      json: jest.fn().mockResolvedValue(data),
-      status: options?.status || 200,
-      ...options,
-    })),
+    json: (data, { status = 200 } = {}) =>
+      new Response(JSON.stringify(data), {
+        status,
+        headers: { 'Content-Type': 'application/json' },
+      }),
   },
 }));
 

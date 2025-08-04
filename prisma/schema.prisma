@@ -8,22 +8,15 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// User Modoule
-enum UserStatus {
-  INACTIVE
-  ACTIVE
-  BLOCKED
-}
-
 model User {
-  id              String      @id @default(uuid())
+  id              String      @id @default(cuid())
   email           String      @unique
   password        String?
   country         String?
   timezone        String?
   name            String?
   roleId          String
-  status          UserStatus  @default(INACTIVE) // Status of the invitation
+  status          UserStatus  @default(INACTIVE)
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   lastSignInAt    DateTime?
@@ -31,20 +24,19 @@ model User {
   isTrashed       Boolean     @default(false)
   avatar          String?
   invitedByUserId String?
-  isProtected     Boolean     @default(false) // Prevents deletion/modification
-  role            UserRole    @relation(fields: [roleId], references: [id])
-  systemLog       SystemLog[]
+  isProtected     Boolean     @default(false)
   accounts        Account[]
   Session         Session[]
+  systemLog       SystemLog[]
+  role            UserRole    @relation(fields: [roleId], references: [id])
 
-  // Indexes for efficient querying
   @@index([invitedByUserId])
   @@index([roleId])
   @@index([status])
 }
 
 model UserRole {
-  id              String               @id @default(uuid())
+  id              String               @id @default(cuid())
   slug            String               @unique
   name            String               @unique
   description     String?
@@ -58,7 +50,7 @@ model UserRole {
 }
 
 model UserPermission {
-  id              String               @id @default(uuid())
+  id              String               @id @default(cuid())
   slug            String               @unique
   name            String
   description     String?
@@ -68,38 +60,36 @@ model UserPermission {
 }
 
 model UserRolePermission {
-  id           String   @id @default(uuid())
+  id           String         @id @default(cuid())
   roleId       String
   permissionId String
-  assignedAt   DateTime @default(now())
-
-  role       UserRole       @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  permission UserPermission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  assignedAt   DateTime       @default(now())
+  permission   UserPermission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  role         UserRole       @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   @@unique([roleId, permissionId])
 }
 
 model Account {
-  id                String  @id @default(uuid())
+  id                String  @id @default(cuid())
   userId            String
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId], name: "provider_providerAccountId")
 }
 
 model Session {
-  id           String   @id @default(uuid())
+  id           String   @id @default(cuid())
   sessionToken String   @unique
   userId       String
   expires      DateTime
@@ -107,16 +97,16 @@ model Session {
 }
 
 model VerificationToken {
-  id         String   @id @default(uuid())
   identifier String
   token      String   @unique
   expires    DateTime
+  id         String   @id @default(cuid())
 
   @@unique([identifier, token])
 }
 
 model SystemLog {
-  id          String   @id @default(uuid())
+  id          String   @id @default(cuid())
   userId      String
   createdAt   DateTime @default(now())
   entityId    String?
@@ -125,33 +115,30 @@ model SystemLog {
   description String?
   ipAddress   String?
   meta        String?
-
-  user User @relation(fields: [userId], references: [id])
+  user        User     @relation(fields: [userId], references: [id])
 
   @@index([userId])
 }
 
 model SystemSetting {
-  id             String  @id @default(uuid())
-  name           String  @default("My Company")
-  logo           String?
-  active         Boolean @default(true)
-  address        String?
-  websiteURL     String?
-  supportEmail   String?
-  supportPhone   String?
-  language       String  @default("en")
-  timezone       String  @default("UTC")
-  currency       String  @default("USD")
-  currencyFormat String  @default("$ {value}")
-
-  socialFacebook  String?
-  socialTwitter   String?
-  socialInstagram String?
-  socialLinkedIn  String?
-  socialPinterest String?
-  socialYoutube   String?
-
+  id                             String   @id @default(cuid())
+  name                           String   @default("My Company")
+  logo                           String?
+  active                         Boolean  @default(true)
+  address                        String?
+  websiteURL                     String?
+  supportEmail                   String?
+  supportPhone                   String?
+  language                       String   @default("en")
+  timezone                       String   @default("UTC")
+  currency                       String   @default("USD")
+  currencyFormat                 String   @default("$ {value}")
+  socialFacebook                 String?
+  socialTwitter                  String?
+  socialInstagram                String?
+  socialLinkedIn                 String?
+  socialPinterest                String?
+  socialYoutube                  String?
   notifyStockEmail               Boolean  @default(true)
   notifyStockWeb                 Boolean  @default(true)
   notifyStockThreshold           Int      @default(10)
@@ -168,4 +155,10 @@ model SystemSetting {
   notifySystemErrorFailureEmail  Boolean  @default(true)
   notifySystemErrorWeb           Boolean  @default(true)
   notifySystemErrorRoleIds       String[]
+}
+
+enum UserStatus {
+  INACTIVE
+  ACTIVE
+  BLOCKED
 }
