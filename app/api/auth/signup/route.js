@@ -9,33 +9,46 @@ import { UserStatus } from '@/app/models/user';
 
 // Helper function to generate a verification token and send the email.
 async function sendVerificationEmail(user) {
-  // Create a new verification token.
-  const token = await prisma.verificationToken.create({
-    data: {
-      identifier: user.id,
-      token: bcrypt.hashSync(user.id, 10),
-      expires: new Date(Date.now() + 1 * 60 * 60 * 1000), // 1 hour from now
-    },
-  });
-  console.log("token",token)  
+  try {
+    // Create a new verification token.
+    const token = await prisma.verificationToken.create({
+      data: {
+        identifier: user.id,
+        token: bcrypt.hashSync(user.id, 10),
+        expires: new Date(Date.now() + 1 * 60 * 60 * 1000), // 1 hour from now
+      },
+    });
+    console.log("token", token);
 
-  // Construct the verification URL.
-  const verificationUrl = `${process.env.NEXTAUTH_URL}/verify-email?token=${token.token}`;
+    // Construct the verification URL.
+    const verificationUrl = `${process.env.NEXTAUTH_URL}/verify-email?token=${token.token}`;
 
-  // Send the verification email.
-  await sendEmail({
-    to: user.email,
-    subject: 'Account Activation',
-    content: {
-      title: `Hello, ${user.name}`,
-      subtitle:
-        'Click the below link to verify your email address and activate your account.',
-      buttonLabel: 'Activate account',
-      buttonUrl: verificationUrl,
-      description:
-        'This link is valid for 1 hour. If you did not request this email you can safely ignore it.',
-    },
-  });
+    // Send the verification email.
+    await sendEmail({
+      to: user.email,
+      subject: 'Account Activation',
+      content: {
+        title: `Hello, ${user.name}`,
+        subtitle:
+          'Click the below link to verify your email address and activate your account.',
+        buttonLabel: 'Activate account',
+        buttonUrl: verificationUrl,
+        description:
+          'This link is valid for 1 hour. If you did not request this email you can safely ignore it.',
+      },
+    });
+  } catch (error) {
+    console.error('Error creating verification token:', error);
+    
+    // If it's a constraint violation, try to fix the database first
+    if (error.code === 'P2011') {
+      console.log('Attempting to fix verification token table...');
+      // You could call the fix script here or handle it differently
+      throw new Error('Database schema issue detected. Please run the fix script.');
+    }
+    
+    throw error;
+  }
 }
 
 export async function POST(req) {

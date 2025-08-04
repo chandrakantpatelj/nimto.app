@@ -38,9 +38,25 @@ npx prisma db push
 
 Once your schema is deployed, you need to generate the Prisma Client:
 
+For development:
 ```bash
 npx prisma generate
 ```
+
+For production (recommended for deployment):
+```bash
+npx prisma generate --no-engine
+```
+
+### Database Issues
+
+If you encounter a "Null constraint violation on the fields: (`id`)" error with VerificationToken, run the fix script:
+
+```bash
+npm run fix-verification-tokens
+```
+
+This will add missing `id` values to existing verification tokens in the database.
 
 ### Development
 
