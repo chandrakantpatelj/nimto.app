@@ -51,7 +51,7 @@ export async function POST(request) {
     let avatarUrl = session.user?.avatar || null;
     if (
       avatarAction === 'save' &&
-      avatarFile instanceof File &&
+      avatarFile &&
       avatarFile.size > 0
     ) {
       try {
