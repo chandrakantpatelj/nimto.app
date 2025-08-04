@@ -1,7 +1,6 @@
 // pages/api/auth/signup.ts
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcrypt';
-import crypto from 'crypto';
 import prisma from '@/lib/prisma';
 import { verifyRecaptchaToken } from '@/lib/recaptcha';
 import { sendEmail } from '@/services/send-email';
@@ -13,7 +12,6 @@ async function sendVerificationEmail(user) {
   // Create a new verification token.
   const token = await prisma.verificationToken.create({
     data: {
-      id: crypto.randomUUID(), // Explicitly provide the id
       identifier: user.id,
       token: bcrypt.hashSync(user.id, 10),
       expires: new Date(Date.now() + 1 * 60 * 60 * 1000), // 1 hour from now
