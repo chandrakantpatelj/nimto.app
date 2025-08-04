@@ -4,15 +4,17 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "prisma generate --no-engine && next build",
+    "build:dev": "prisma generate && next build",
     "start": "next start",
-    "build:staging": "cp .env.staging .env.local && next build",
+    "build:staging": "cp .env.staging .env.local && prisma generate --no-engine && next build",
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:api": "jest __tests__/api/"
+    "test:api": "jest __tests__/api/",
+    "fix-verification-tokens": "node prisma/fix-verification-tokens.js"
   },
   "prisma": {
     "seed": "node prisma/seed.js",
