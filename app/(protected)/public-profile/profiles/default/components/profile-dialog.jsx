@@ -39,8 +39,8 @@ export function ProfileDialog({ open, onOpenChange }) {
           variant="fullscreen"
         >
           <DialogHeader className="modal-rounded-t space-y-0 p-0 border-0 relative min-h-80 flex flex-col items-stretch justify-end bg-center bg-cover bg-no-repeat mb-7 modal-bg">
-            <DialogTitle></DialogTitle>
-            <DialogDescription></DialogDescription>
+            <DialogTitle className="sr-only">User Profile</DialogTitle>
+            <DialogDescription className="sr-only">User profile information and actions</DialogDescription>
 
             <div className="flex flex-col justify-end border-b-0 grow px-9 bg-linear-to-t from-light from-3% to-transparent">
               <div className="flex justify-center mb-5">
