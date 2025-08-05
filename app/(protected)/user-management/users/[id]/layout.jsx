@@ -6,14 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { Activity, MoveLeft, UserPen } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
+
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Container } from '@/components/common/container';
@@ -99,22 +92,7 @@ export default function UserLayout({ params, children }) {
       <Container>
         <Toolbar>
           <ToolbarHeading>
-            <ToolbarTitle>User</ToolbarTitle>
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbLink href="/">Home</BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>User Management</BreadcrumbPage>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbLink href="/user/users">Users</BreadcrumbLink>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
+            <ToolbarTitle>User Management</ToolbarTitle>
           </ToolbarHeading>
           <ToolbarActions>
             <Button asChild variant="outline">

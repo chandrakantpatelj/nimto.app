@@ -9,7 +9,7 @@
   --card-foreground: oklch(27.4% 0.006 286.033); /* --color-zinc-800 */
   --popover: oklch(1 0 0); /* --color-white */
   --popover-foreground: oklch(27.4% 0.006 286.033); /* --color-zinc-800 */
-  --primary: #1379f0; /* custom color  */
+  --primary: #1379F0; /* custom color  */
   --primary-foreground: oklch(1 0 0); /* --color-white */
   --secondary: oklch(96.7% 0.003 264.542); /* --color-zinc-100 */
   --secondary-foreground: oklch(44.6% 0.03 256.802); /* --color-zinc-600 */
