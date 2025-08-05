@@ -1,43 +1,25 @@
 const roles = [
 	{
-		slug: 'admin',
+		slug: 'super-admin',
 		isProtected: true,
-		name: 'Administrator',
-		description: 'Administrator with full access to manage the system.',
+		name: 'Super Admin',
+		description: 'Full control over the application, including user management, role management, and all settings.',
 	},
 	{
-		slug: 'manager',
-		name: 'Manager',
-		description:
-			'Manager with permissions to oversee team operations and manage resources.',
+		slug: 'application-admin',
+		name: 'Application Admin',
+		description: 'Manages application-wide events, templates, and communications. Can manage most users except Super Admins.',
 	},
 	{
-		slug: 'staff',
-		name: 'Staff',
-		description: 'Staff member with limited access to specific operational tasks.',
+		slug: 'host',
+		name: 'Host',
+		description: 'Creates and manages their own events, guest lists, and event-specific communications.',
 	},
 	{
-		slug: 'support',
-		name: 'Support',
-		description:
-			'Support team member responsible for handling customer queries and issues.',
-	},
-	{
-		slug: 'vendor',
-		name: 'Vendor',
-		description: 'Vendor with access to manage their own products and orders.',
-	},
-	{
-		slug: 'customer',
-		name: 'Customer',
+		slug: 'attendee',
+		name: 'Attendee',
 		isDefault: true,
-		description:
-			'Registered customer with access to purchase products and view their orders.',
-	},
-	{
-		slug: 'guest',
-		name: 'Guest',
-		description: 'Unauthenticated user with limited access to view public content.',
+		description: 'Registered user who can attend events, RSVP, and use attendee-specific features.',
 	},
 ];
 
