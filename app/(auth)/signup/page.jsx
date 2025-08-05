@@ -48,6 +48,7 @@ export default function Page() {
       password: '',
       passwordConfirmation: '',
       accept: false,
+      isHost: false,
     },
   });
 
@@ -260,40 +261,71 @@ export default function Page() {
             )}
           />
 
-          <div className="flex items-center space-x-2">
-            <FormField
-              control={form.control}
-              name="accept"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <div className="flex items-center gap-2.5">
-                      <Checkbox
-                        id="accept"
-                        checked={field.value}
-                        onCheckedChange={(checked) => field.onChange(!!checked)}
-                      />
-
+          <FormField
+            control={form.control}
+            name="isHost"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <div className="flex items-start gap-2.5">
+                    <Checkbox
+                      id="isHost"
+                      checked={field.value}
+                      onCheckedChange={(checked) => field.onChange(!!checked)}
+                    />
+                    <div className="flex flex-col gap-1">
                       <label
-                        htmlFor="accept"
-                        className="text-sm leading-none text-muted-foreground"
+                        htmlFor="isHost"
+                        className="text-sm text-black"
                       >
-                        I agree to the
+                        I'm interested in hosting events.
                       </label>
-                      <Link
-                        href="/privacy-policy"
-                        target="_blank"
-                        className="-ms-0.5 text-sm font-semibold text-foreground hover:text-primary"
+                      <label
+                        htmlFor="isHost"
+                        className="text-xs text-muted-foreground"
                       >
-                        Privacy Policy
-                      </Link>
+                        Sign up as a host to create and manage your own events.
+                      </label>
                     </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="accept"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <div className="flex items-center gap-2.5">
+                    <Checkbox
+                      id="accept"
+                      checked={field.value}
+                      onCheckedChange={(checked) => field.onChange(!!checked)}
+                    />
+
+                    <label
+                      htmlFor="accept"
+                      className="text-sm text-black"
+                    >
+                      I agree to the
+                    </label>
+                    <Link
+                      href="/privacy-policy"
+                      target="_blank"
+                      className="-ms-0.5 text-sm font-semibold text-orange-500 hover:text-primary"
+                    >
+                      Privacy Policy
+                    </Link>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <div className="flex flex-col gap-2.5">
             <RecaptchaPopover
