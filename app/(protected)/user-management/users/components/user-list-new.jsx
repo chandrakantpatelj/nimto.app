@@ -44,7 +44,7 @@ const UserList = () => {
   const [selectedStatus, setSelectedStatus] = useState('all');
 
   // Role select query
-  const { data: roleList, isLoading: rolesLoading } = useRoles();
+  const { data: roleList } = useRoles();
 
   // Users query with filters
   const filters = {
@@ -173,8 +173,8 @@ const UserList = () => {
         },
       },
       {
-        accessorKey: 'lastSignInAt',
-        id: 'lastSignInAt',
+        accessorKey: 'lastSignIn',
+        id: 'lastSignIn',
         header: ({ column }) => (
           <DataGridColumnHeader
             title="Last Sign In"
@@ -186,7 +186,7 @@ const UserList = () => {
           const user = row.original;
           return (
             <div className="text-sm">
-              {user.lastSignInAt ? formatDateTime(user.lastSignInAt) : 'Never'}
+              {user.lastSignIn ? formatDateTime(user.lastSignIn) : 'Never'}
             </div>
           );
         },
@@ -227,7 +227,7 @@ const UserList = () => {
     },
     manualPagination: true,
     manualSorting: true,
-    pageCount: data?.pagination?.total ? Math.ceil(data.pagination.total / pagination.pageSize) : 0,
+    pageCount: data?.pagination?.totalPages || 0,
   });
 
   const DataGridToolbar = () => {
@@ -268,14 +268,14 @@ const UserList = () => {
             onValueChange={handleRoleSelection}
             value={selectedRole || 'all'}
             defaultValue="all"
-            disabled={isLoading || rolesLoading}
+            disabled={isLoading}
           >
             <SelectTrigger className="w-full sm:w-36">
               <SelectValue placeholder="Filter by role" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All roles</SelectItem>
-              {(roleList || []).map((role) => (
+              {roleList?.map((role) => (
                 <SelectItem key={role.id} value={role.id}>
                   {role.name}
                 </SelectItem>

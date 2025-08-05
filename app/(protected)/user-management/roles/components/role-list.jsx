@@ -15,6 +15,8 @@ import {
   ShieldAlert,
   UserRound,
   X,
+  Edit,
+  Trash2,
 } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { Badge } from '@/components/ui/badge';
@@ -102,7 +104,7 @@ const RoleList = () => {
 
     if (!response.ok) {
       throw new Error(
-        'Oops! Something didn’t go as planned. Please try again in a moment.',
+        'Oops! Something didn\'t go as planned. Please try again in a moment.',
       );
     }
 
@@ -116,9 +118,8 @@ const RoleList = () => {
         accessorKey: 'name',
         id: 'name',
         header: ({ column }) => (
-          <DataGridColumnHeader title="Role" column={column} visibility />
+          <DataGridColumnHeader title="NAME" column={column} visibility />
         ),
-
         cell: ({ row, getValue }) => {
           const value = getValue();
           const isProtected = row.original.isProtected;
@@ -126,17 +127,11 @@ const RoleList = () => {
 
           return (
             <div className="flex items-center flex-wrap gap-2">
-              {value}
+              <span className="font-medium">{value}</span>
               {isProtected && (
-                <Badge variant="outline">
-                  <ShieldAlert className="text-destructive" />
-                  system
-                </Badge>
-              )}
-              {isDefault && (
-                <Badge variant="outline">
-                  <UserRound className="text-success" />
-                  default
+                <Badge variant="outline" className="text-xs">
+                  <ShieldAlert className="text-destructive mr-1 h-3 w-3" />
+                  System Core
                 </Badge>
               )}
             </div>
@@ -146,110 +141,102 @@ const RoleList = () => {
         enableSorting: true,
         enableHiding: false,
         meta: {
-          headerTitle: 'Role',
+          headerTitle: 'NAME',
           skeleton: <Skeleton className="w-28 h-7" />,
         },
       },
       {
-        accessorKey: 'slug',
-        id: 'slug',
+        accessorKey: 'description',
+        id: 'description',
         header: ({ column }) => (
-          <DataGridColumnHeader title="Slug" column={column} visibility />
+          <DataGridColumnHeader title="DESCRIPTION" column={column} visibility />
         ),
-
-        size: 125,
         cell: (info) => {
           const value = info.getValue();
-
-          return <Badge variant="outline">{value}</Badge>;
+          return (
+            <div className="text-sm text-muted-foreground">
+              {value || '-'}
+            </div>
+          );
         },
+        size: 300,
         enableSorting: true,
         enableHiding: true,
         meta: {
-          headerTitle: 'slug',
-          skeleton: <Skeleton className="w-14 h-7" />,
+          headerTitle: 'DESCRIPTION',
+          skeleton: <Skeleton className="w-44 h-7" />,
         },
       },
       {
         accessorKey: 'permissions',
         id: 'permissions',
-        header: 'Permissions',
+        header: 'PERMISSIONS',
         cell: (info) => {
           const permissions = info.getValue();
 
           if (!permissions || permissions.length === 0) {
-            return <span>-</span>;
+            return <span className="text-muted-foreground">-</span>;
           }
 
-          const displayedPermissions = permissions.slice(0, 3);
+          const displayedPermissions = permissions.slice(0, 5);
           const extraPermissionsCount =
             permissions.length - displayedPermissions.length;
 
           return (
             <div className="flex items-center gap-1 flex-wrap">
               {displayedPermissions.map((permission, index) => (
-                <Badge key={index} variant="outline">
+                <Badge key={index} variant="outline" className="text-xs">
                   {permission.slug}
                 </Badge>
               ))}
               {extraPermissionsCount > 0 && (
-                <span className="text-muted-foreground text-xs ms-1">{`${extraPermissionsCount} more`}</span>
+                <span className="text-muted-foreground text-xs ms-1">{`+${extraPermissionsCount} more`}</span>
               )}
             </div>
           );
         },
-        minSize: 350,
+        minSize: 400,
         enableSorting: false,
         enableHiding: true,
         meta: {
-          headerTitle: 'Permissions',
+          headerTitle: 'PERMISSIONS',
           skeleton: <Skeleton className="w-44 h-7" />,
         },
       },
       {
         id: 'actions',
-        header: 'Actions',
-        cell: ({ row }) => (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button className="h-7 w-7" mode="icon" variant="ghost">
-                <Ellipsis />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent side="bottom" align="start">
-              <DropdownMenuItem
+        header: 'ACTIONS',
+        cell: ({ row }) => {
+          const isProtected = row.original.isProtected;
+          
+          return (
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="ghost"
                 onClick={() => {
                   setEditRole(row.original);
                   setEditDialogOpen(true);
                 }}
               >
-                Edit role
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                disabled={row.original.isProtected || row.original.isDefault}
-                onClick={() => {
-                  setDefaultRole(row.original);
-                  setDefaultDialogOpen(true);
-                }}
-              >
-                Set as default
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                variant="destructive"
-                disabled={row.original.isProtected}
-                onClick={() => {
-                  setDeleteRole(row.original);
-                  setDeleteDialogOpen(true);
-                }}
-              >
-                Delete role
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ),
-
-        size: 75,
+                <Edit className="h-4 w-4" />
+              </Button>
+              {!isProtected && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setDeleteRole(row.original);
+                    setDeleteDialogOpen(true);
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          );
+        },
+        size: 100,
         enableSorting: false,
         enableResizing: false,
         meta: {
@@ -257,7 +244,6 @@ const RoleList = () => {
         },
       },
     ],
-
     [],
   );
 
@@ -294,7 +280,7 @@ const RoleList = () => {
           <div className="relative">
             <Search className="size-4 text-muted-foreground absolute start-3 top-1/2 -translate-y-1/2" />
             <Input
-              placeholder="Search users"
+              placeholder="Search roles"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}

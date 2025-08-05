@@ -16,29 +16,14 @@ export function Breadcrumb() {
     return null;
   }
 
-  return (
-    <div className="flex items-center gap-1.25 text-xs lg:text-sm font-medium mb-2.5 lg:mb-0">
-      {items.map((item, index) => {
-        const last = index === items.length - 1;
-        const active = item.path ? isActive(item.path) : false;
+  // Get the main module title (first item in breadcrumb)
+  const mainModuleTitle = items[0]?.title || '';
 
-        return (
-          <Fragment key={`root-${index}`}>
-            <span
-              className={cn(active ? 'text-mono' : 'text-secondary-foreground')}
-              key={`item-${index}`}
-            >
-              {item.title}
-            </span>
-            {!last && (
-              <ChevronRight
-                className="size-3.5 text-muted-foreground"
-                key={`separator-${index}`}
-              />
-            )}
-          </Fragment>
-        );
-      })}
+  return (
+    <div className="flex items-center text-xs lg:text-sm font-medium mb-2.5 lg:mb-0">
+      <span className="text-mono">
+        {mainModuleTitle}
+      </span>
     </div>
   );
 }
