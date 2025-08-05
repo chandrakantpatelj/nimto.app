@@ -23,7 +23,87 @@
 
   .demo1 .sidebar {
     width: var(--sidebar-width);
+    background: #1a1a1a;
+    border-right: 1px solid #d1d5db;
+    color: #94a3b8;
   }
+
+  .demo1 .sidebar.dark {
+    background: #1a1a1a;
+  }
+
+  /* Nimto branding */
+  .demo1 .sidebar .sidebar-header {
+    background: transparent;
+    border-bottom: 1px solid #374151;
+  }
+
+  .demo1 .sidebar .sidebar-header a {
+    color: #1379F0;
+    font-weight: 700;
+    font-size: 1.5rem;
+    text-decoration: none;
+  }
+
+  /* Navigation items styling */
+  .demo1 .sidebar [data-slot="accordion-menu-item"] {
+    margin: 0.25rem 0.75rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+    position: relative;
+  }
+
+  .demo1 .sidebar [data-slot="accordion-menu-item"]:hover {
+    background-color: rgba(19, 121, 240, 0.1);
+  }
+
+  .demo1 .sidebar [data-slot="accordion-menu-item"][data-selected="true"] {
+    background-color: #f3f4f6;
+    color: #1379F0;
+  }
+
+  .demo1 .sidebar [data-slot="accordion-menu-item"][data-selected="true"] [data-slot="accordion-menu-icon"] {
+    color: #1379F0;
+  }
+
+  .demo1 .sidebar [data-slot="accordion-menu-item"] [data-slot="accordion-menu-icon"] {
+    color: #6b7280;
+    margin-right: 0.75rem;
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .demo1 .sidebar [data-slot="accordion-menu-item"] [data-slot="accordion-menu-title"] {
+    color: #9ca3af;
+    font-weight: 500;
+    font-size: 0.875rem;
+  }
+
+  .demo1 .sidebar [data-slot="accordion-menu-item"]:hover [data-slot="accordion-menu-title"],
+  .demo1 .sidebar [data-slot="accordion-menu-item"]:hover [data-slot="accordion-menu-icon"] {
+    color: #1379F0;
+  }
+
+  .demo1 .sidebar [data-slot="accordion-menu-item"][data-selected="true"] [data-slot="accordion-menu-title"] {
+    color: #1379F0;
+  }
+
+  /* Add dotted line under selected item - DISABLED */
+  /* .demo1 .sidebar [data-slot="accordion-menu-item"][data-selected="true"]::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0.75rem;
+    right: 0.75rem;
+    height: 1px;
+    background: repeating-linear-gradient(
+      to right,
+      #1379F0 0,
+      #1379F0 2px,
+      transparent 2px,
+      transparent 4px
+    );
+  } */
 
   .demo1.header-fixed .wrapper {
     padding-top: var(--header-height);
