@@ -144,9 +144,16 @@ const UserList = () => {
 
           return (
             <div className="flex items-center gap-2">
-              <BadgeDot
-                variant={statusProps.variant}
-                className="size-2"
+              <div 
+                className={`size-2 rounded-full ${
+                  statusProps.variant === 'success' 
+                    ? 'bg-green-500'     // Green for Active
+                    : statusProps.variant === 'warning' 
+                    ? 'bg-yellow-500'    // Yellow for Inactive
+                    : statusProps.variant === 'destructive' 
+                    ? 'bg-red-500'       // Red for Blocked
+                    : 'bg-gray-500'      // Gray fallback
+                }`}
               />
               <span className="text-sm">{statusProps.label}</span>
             </div>
