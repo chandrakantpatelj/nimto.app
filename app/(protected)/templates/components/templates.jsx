@@ -43,7 +43,7 @@ const Templates = () => {
 
   const renderProject = (project, index) => {
     return (
-      <Card className="rounded-xl">
+      <Card className="rounded-xl" key={index}>
         <div className="mb-2 overflow-hidden">
           <img
             src={toAbsoluteUrl(`/media/${project?.logo}`)}
