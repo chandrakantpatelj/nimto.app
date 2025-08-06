@@ -17,6 +17,17 @@ const nextConfig = {
     concurrentFeatures: true,
   },
   
+  // Add timeout configurations
+  serverRuntimeConfig: {
+    // Increase timeout for server-side operations
+    timeout: 30000, // 30 seconds
+  },
+  
+  publicRuntimeConfig: {
+    // Increase timeout for client-side operations
+    timeout: 30000, // 30 seconds
+  },
+  
   // Webpack configuration to help with debugging
   webpack: (config, { dev, isServer }) => {
     if (dev && !isServer) {
@@ -24,6 +35,21 @@ const nextConfig = {
       config.devtool = 'eval-source-map';
     }
     return config;
+  },
+  
+  // Add API timeout handling
+  async headers() {
+    return [
+      {
+        source: '/api/:path*',
+        headers: [
+          {
+            key: 'X-Response-Time',
+            value: '30000',
+          },
+        ],
+      },
+    ];
   },
 };
 

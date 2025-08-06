@@ -48,8 +48,8 @@ export function AccountSettingsModal({ open, onOpenChange }) {
         variant="fullscreen"
       >
         <DialogHeader className="p-0 border-0">
-          <DialogTitle></DialogTitle>
-          <DialogDescription></DialogDescription>
+          <DialogTitle className="sr-only">Settings</DialogTitle>
+          <DialogDescription className="sr-only">Account settings and preferences</DialogDescription>
           <div className="flex items-center justify-between flex-wrap grow gap-5 pb-7.5">
             <div className="flex flex-col justify-center gap-2">
               <h1 className="text-xl font-semibold leading-none text-mono">
