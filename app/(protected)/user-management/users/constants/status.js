@@ -4,15 +4,15 @@ import { UserStatus } from '@/app/models/user';
 export const UserStatusProps = {
   [UserStatus.ACTIVE]: {
     label: 'Active',
-    variant: 'success',
+    variant: 'success', // Green for active
   },
   [UserStatus.INACTIVE]: {
     label: 'Inactive',
-    variant: 'warning',
+    variant: 'warning', // Yellow for Inactive
   },
   [UserStatus.BLOCKED]: {
     label: 'Blocked',
-    variant: 'destructive',
+    variant: 'destructive', // Red for Blocked
   },
 };
 
