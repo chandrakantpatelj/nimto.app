@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { getClientIP } from '@/lib/api';
 import { isUnique } from '@/lib/db';
 import { prisma } from '@/lib/prisma';
+import { withDatabaseTimeout } from '@/lib/db-middleware';
 import { systemLog } from '@/services/system-log';
 import { RoleSchema } from '@/app/(protected)/user-management/roles/forms/role-schema';
 import authOptions from '@/app/api/auth/[...nextauth]/auth-options';
@@ -28,28 +29,30 @@ export async function GET(request) {
       );
     }
 
-    // Count total records matching the filter
-    const total = await prisma.userRole.count({
-      where: {
-        name: {
-          contains: query,
-          mode: 'insensitive',
+    // Count total records matching the filter with timeout
+    const total = await withDatabaseTimeout(() => 
+      prisma.userRole.count({
+        where: {
+          name: {
+            contains: query,
+            mode: 'insensitive',
+          },
         },
-      },
-    });
+      })
+    );
 
     let isTableEmpty = false;
 
     if (total === 0) {
       // Check if the entire table is empty
-      const overallTotal = await prisma.userRole.count();
+      const overallTotal = await withDatabaseTimeout(() => prisma.userRole.count());
       isTableEmpty = overallTotal === 0;
     }
 
     // Get paginated roles with their permissions
-    const roles =
-      total > 0
-        ? await prisma.userRole.findMany({
+    const roles = total > 0
+      ? await withDatabaseTimeout(() => 
+          prisma.userRole.findMany({
             skip,
             take: limit,
             where: {
@@ -75,7 +78,8 @@ export async function GET(request) {
               },
             },
           })
-        : [];
+        )
+      : [];
 
     // Map permissions into a more straightforward structure
     const formattedRoles = roles.map((role) => ({

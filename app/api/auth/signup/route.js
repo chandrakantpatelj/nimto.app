@@ -85,7 +85,7 @@ export async function POST(req) {
       );
     }
 
-    const { email, password, name } = result.data;
+    const { email, password, name, isHost } = result.data;
 
     // Check if a user with the given email already exists.
     const existingUser = await prisma.user.findUnique({
@@ -119,12 +119,29 @@ export async function POST(req) {
       }
     }
 
-    const defaultRole = await prisma.userRole.findFirst({
-      where: { isDefault: true },
-    });
+    // Determine the role based on isHost value
+    let roleToAssign;
+    if (isHost) {
+      // Find the host role
+      roleToAssign = await prisma.userRole.findFirst({
+        where: { slug: 'host' },
+      });
+    } else {
+      // Find the default role (isDefault: true)
+      roleToAssign = await prisma.userRole.findFirst({
+        where: { isDefault: true },
+      });
+    }
+
+    // Fallback to default role if host role not found
+    if (!roleToAssign) {
+      roleToAssign = await prisma.userRole.findFirst({
+        where: { isDefault: true },
+      });
+    }
   
-    if (!defaultRole) {
-      throw new Error('Default role not found. Unable to create a new user.');
+    if (!roleToAssign) {
+      throw new Error('No suitable role found. Unable to create a new user.');
     }
 
     // Hash the password.
@@ -137,11 +154,11 @@ export async function POST(req) {
         password: hashedPassword,
         name,
         status: UserStatus.INACTIVE,
-        roleId: defaultRole.id,
+        roleId: roleToAssign.id,
       },
       include: { role: true },
     });
-    console.log("user",user)
+    console.log("user", user)
     // Send the verification email.
     await sendVerificationEmail(user);
 
