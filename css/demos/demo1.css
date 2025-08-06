@@ -1,4 +1,5 @@
 @layer components {
+
   /* Variables */
   .demo1 {
     --sidebar-transition-duration: 0.3s;
@@ -35,7 +36,7 @@
   /* Nimto branding */
   .demo1 .sidebar .sidebar-header {
     background: transparent;
-    border-bottom: 1px solid #374151;
+
   }
 
   .demo1 .sidebar .sidebar-header a {
@@ -113,8 +114,7 @@
   @media (min-width: theme(--breakpoint-lg)) {
     .demo1 .sidebar {
       width: var(--sidebar-width);
-      transition: width var(--sidebar-transition-duration)
-        var(--sidebar-transition-timing);
+      transition: width var(--sidebar-transition-duration) var(--sidebar-transition-timing);
     }
 
     .demo1 .sidebar .sidebar-header {
@@ -150,8 +150,7 @@
     }
 
     .demo1.sidebar-collapse .sidebar {
-      transition: width var(--sidebar-transition-duration)
-        var(--sidebar-transition-timing);
+      transition: width var(--sidebar-transition-duration) var(--sidebar-transition-timing);
     }
 
     .demo1.sidebar-collapse .sidebar:hover {
@@ -166,37 +165,27 @@
       display: flex;
     }
 
-    .demo1.sidebar-collapse
-      .sidebar:not(:hover)
-      [data-slot='accordion-menu-title'],
+    .demo1.sidebar-collapse .sidebar:not(:hover) [data-slot='accordion-menu-title'],
     .demo1.sidebar-collapse .sidebar:not(:hover) [data-slot='badge'],
-    .demo1.sidebar-collapse
-      .sidebar:not(:hover)
-      [data-slot='accordion-menu-sub-indicator'] {
+    .demo1.sidebar-collapse .sidebar:not(:hover) [data-slot='accordion-menu-sub-indicator'] {
       display: none !important;
       transition: none !important;
       animation: none !important;
     }
 
-    .demo1.sidebar-collapse
-      .sidebar:not(:hover)
-      [data-slot='accordion-menu-sub-content'] {
+    .demo1.sidebar-collapse .sidebar:not(:hover) [data-slot='accordion-menu-sub-content'] {
       visibility: hidden;
       position: absolute;
       height: 0;
       width: 0;
     }
 
-    .demo1.sidebar-collapse
-      .sidebar:not(:hover)
-      [data-slot='accordion-menu-label'] {
+    .demo1.sidebar-collapse .sidebar:not(:hover) [data-slot='accordion-menu-label'] {
       visibility: hidden;
       position: relative;
     }
 
-    .demo1.sidebar-collapse
-      .sidebar:not(:hover)
-      [data-slot='accordion-menu-label']::before {
+    .demo1.sidebar-collapse .sidebar:not(:hover) [data-slot='accordion-menu-label']::before {
       content: '...';
       color: currentColor;
       font-size: inherit;
@@ -212,12 +201,10 @@
   }
 
   .demo1.layout-initialized .wrapper {
-    transition: padding-inline-start var(--sidebar-transition-duration)
-      var(--sidebar-transition-timing);
+    transition: padding-inline-start var(--sidebar-transition-duration) var(--sidebar-transition-timing);
   }
 
   .demo1.layout-initialized .header {
-    transition: inset-inline-start var(--sidebar-transition-duration)
-      var(--sidebar-transition-timing);
+    transition: inset-inline-start var(--sidebar-transition-duration) var(--sidebar-transition-timing);
   }
 }
