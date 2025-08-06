@@ -60,24 +60,24 @@ export const MENU_SIDEBAR = [
     path: '/',
   },
   {
-    title: 'User Management',
+    title: 'User',
     icon: Users,
     path: '/user-management/users',
   },
   {
-    title: 'Role Management',
+    title: 'Role',
     icon: Settings,
     path: '/user-management/roles',
   },
   {
-    title: 'Event Management',
+    title: 'Event',
     icon: CalendarCheck,
     path: '/events',
   },
   {
-    title: 'Template Mgmt',
+    title: 'Template',
     icon: FileText,
-    path: '/templates',
+    path: '/template-management',
   },
   {
     title: 'App Settings',
