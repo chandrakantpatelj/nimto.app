@@ -1,14 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useScrollPosition } from '@/hooks/use-scroll-position';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Container } from '@/components/common/container';
 
-export function TemplateHeader() {
+export function TemplateHeader({ onSave, loading = false, templateName = '', onTemplateNameChange }) {
   const scrollPosition = useScrollPosition();
   const headerSticky = scrollPosition > 0;
 
@@ -25,21 +25,35 @@ export function TemplateHeader() {
       >
         {/* Left Section */}
         <div className="flex items-center gap-4">
-          <Button variant="secondary" appearance="ghost" asChild>
+          <Button variant="secondary" appearance="ghost" asChild disabled={loading}>
             <Link href="/templates">
               <ArrowLeft /> Back
             </Link>
           </Button>
           <Input
             type="text"
-
-            //   defaultValue={nameInput}
-            //   onChange={(e) => setNameInput(e.target.value)}
+            value={templateName}
+            onChange={onTemplateNameChange}
+            disabled={loading}
+            placeholder="Template name"
           />
         </div>
 
         <div className="flex items-center  ml-auto">
-          <Button variant="primary">Save Template</Button>
+          <Button 
+            variant="primary" 
+            onClick={onSave}
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              'Save Template'
+            )}
+          </Button>
         </div>
       </Container>
     </header>
