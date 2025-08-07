@@ -157,6 +157,32 @@ model SystemSetting {
   notifySystemErrorRoleIds       String[]
 }
 
+model Template {
+  id                String   @id @default(cuid())
+  name              String
+  category          String
+  jsonContent       String?  // JSON string for template content
+  backgroundStyle   String?  // JSON string for background styles
+  htmlContent       String?
+  background        String?
+  pageBackground    String?
+  previewImageUrl   String?
+  isPremium         Boolean  @default(false)
+  price             Float    @default(0)
+  isSystemTemplate  Boolean  @default(false)
+  createdByUserId   String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  isTrashed         Boolean  @default(false)
+  
+  // Store image path in public/template folder
+  imagePath         String?
+  
+  @@index([category])
+  @@index([isPremium])
+  @@index([createdByUserId])
+}
+
 enum UserStatus {
   INACTIVE
   ACTIVE
