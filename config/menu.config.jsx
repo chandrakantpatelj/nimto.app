@@ -87,7 +87,7 @@ export const MENU_SIDEBAR = [
   {
     title: 'Reporting',
     icon: FileText,
-    path: '/reporting',
+    path: '/reportings',
   },
   {
     title: 'Messaging',
@@ -97,7 +97,7 @@ export const MENU_SIDEBAR = [
   {
     title: 'My Profile',
     icon: UserCircle,
-    path: '/profile',
+    path: '/my-profile',
   },
 ];
 
