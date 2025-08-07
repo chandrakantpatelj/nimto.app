@@ -1,5 +1,4 @@
-import React, { Fragment } from 'react';
-import Link from 'next/link';
+import { Fragment } from 'react';
 import { CirclePlus, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Container } from '@/components/common/container';
@@ -13,9 +12,9 @@ import {
   ToolbarPageTitle,
 } from '@/app/components/partials/common/toolbar';
 import { PageNavbar } from '../account/page-navbar';
-import { TemplateManagement } from './content';
+import { Reporting } from './content';
 
-function TemplateManagementPage() {
+function ReportingsPage() {
   return (
     <Fragment>
       <PageNavbar />
@@ -25,23 +24,13 @@ function TemplateManagementPage() {
             <ToolbarPageTitle />
             <ToolbarDescription>Super Admin (Super Admin)</ToolbarDescription>
           </ToolbarHeading>
-          <ToolbarActions>
-            <Button variant="secondary">
-              <Sparkles /> Create With AI
-            </Button>
-            <Button variant="primary" asChild>
-              <Link href="/templates/design">
-                <CirclePlus /> Create New Manually
-              </Link>
-            </Button>
-          </ToolbarActions>
         </Toolbar>
       </Container>
       <Container>
-        <TemplateManagement />
+        <Reporting />
       </Container>
     </Fragment>
   );
 }
 
-export default TemplateManagementPage;
+export default ReportingsPage;
