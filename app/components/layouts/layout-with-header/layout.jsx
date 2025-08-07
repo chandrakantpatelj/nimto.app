@@ -27,7 +27,7 @@ function LayoutWithHeader({ children }) {
   return (
     <>
       <div className="custom-wrapper ps-0 flex grow flex-col">
-        <TemplateHeader />
+       
 
         <main className="grow" role="content">
           {children}
