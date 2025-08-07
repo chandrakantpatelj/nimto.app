@@ -3,7 +3,6 @@
 import { useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSettings } from '@/providers/settings-provider';
-import { Footer } from './components/footer';
 import { Header } from './components/header';
 import { Sidebar } from './components/sidebar';
 
@@ -59,8 +58,6 @@ export function Demo1Layout({ children }) {
         <main className="grow pt-5" role="content">
           {children}
         </main>
-
-        <Footer />
       </div>
     </>
   );
