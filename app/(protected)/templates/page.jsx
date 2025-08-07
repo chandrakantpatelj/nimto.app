@@ -29,8 +29,10 @@ function TemplateManagementPage() {
             <Button variant="secondary">
               <Sparkles /> Create With AI
             </Button>
-            <Button variant="primary">
-              <CirclePlus /> Create New Manually
+            <Button variant="primary" asChild>
+              <Link href="/templates/design">
+                <CirclePlus /> Create New Manually
+              </Link>
             </Button>
           </ToolbarActions>
         </Toolbar>

@@ -105,6 +105,9 @@
       transparent 4px
     );
   } */
+  .custom-wrapper {
+    padding-top: var(--header-height);
+  }
 
   .demo1.header-fixed .wrapper {
     padding-top: var(--header-height);
@@ -137,8 +140,13 @@
       padding-inline-start: var(--sidebar-width) !important;
     }
 
+
     .demo1.sidebar-fixed.header-fixed .header {
-      inset-inline-start: var(--sidebar-width) !important;
+      inset-inline-start: var(--sidebar-width);
+    }
+
+    .demo1 .custom-wrapper .header {
+      inset-inline-start: 0px !important;
     }
 
     .demo1.sidebar-fixed.header-fixed .wrapper {
