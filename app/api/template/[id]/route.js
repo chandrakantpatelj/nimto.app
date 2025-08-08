@@ -20,8 +20,11 @@ export async function GET(request, { params }) {
     if (!prisma) {
       throw new Error('Prisma client not initialized');
     }
-
-    const { id } = params;
+    
+    // Await params in Next.js 15
+    const resolvedParams = await params;
+    console.log("params", resolvedParams);
+    const { id } = resolvedParams;
     const session = await getServerSession(authOptions);
     const userRole = session?.user?.role?.slug;
 
@@ -115,7 +118,9 @@ export async function PUT(request, { params }) {
       );
     }
 
-    const { id } = params;
+    // Await params in Next.js 15
+    const resolvedParams = await params;
+    const { id } = resolvedParams;
     const userRole = session.user.role?.slug;
     const body = await request.json();
     const {
@@ -261,7 +266,9 @@ export async function DELETE(request, { params }) {
       );
     }
 
-    const { id } = params;
+    // Await params in Next.js 15
+    const resolvedParams = await params;
+    const { id } = resolvedParams;
     const userRole = session.user.role?.slug;
 
     // Check if template exists and user has access to delete

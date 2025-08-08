@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import { apiFetch } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,7 +12,9 @@ import { TemplateHeader } from '../components';
 
 function EditTemplate() {
   const router = useRouter();
+  const params = useParams();
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
   const [error, setError] = useState(null);
 
   // Form state
@@ -27,6 +29,62 @@ function EditTemplate() {
     backgroundStyle: {}, // This will be populated from the canvas
     htmlContent: '', // This will be populated from the canvas
   });
+
+  // Fetch template data on component mount
+  useEffect(() => {
+    const fetchTemplate = async () => {
+      try {
+        setFetching(true);
+        setError(null);
+        
+        const templateId = params.id;
+        if (!templateId) {
+          throw new Error('Template ID is required');
+        }
+
+        const response = await apiFetch(`/api/template/${templateId}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to fetch template');
+        }
+
+        const result = await response.json();
+
+        if (result.success && result.data) {
+          const template = result.data;
+          
+          // Prefill the form with fetched data
+          setFormData({
+            name: template.name || '',
+            category: template.category || '',
+            isPremium: template.isPremium || false,
+            price: template.price || 0,
+            background: template.background || '',
+            pageBackground: template.pageBackground || '',
+            content: template.content || [], // Parsed JSON content
+            backgroundStyle: template.backgroundStyle || {}, // Parsed JSON background style
+            htmlContent: template.htmlContent || '',
+          });
+        } else {
+          throw new Error(result.error || 'Failed to fetch template');
+        }
+      } catch (err) {
+        console.error('Error fetching template:', err);
+        setError(err.message);
+        showCustomToast('Failed to load template', 'error');
+      } finally {
+        setFetching(false);
+      }
+    };
+
+    fetchTemplate();
+  }, [params.id]);
 
   // Handle form field changes
   const handleInputChange = (field, value) => {
@@ -67,6 +125,11 @@ function EditTemplate() {
         throw new Error('Category is required');
       }
 
+      const templateId = params.id;
+      if (!templateId) {
+        throw new Error('Template ID is required');
+      }
+
       // Prepare the data for API
       const templateData = {
         name: formData.name.trim(),
@@ -83,8 +146,8 @@ function EditTemplate() {
         imagePath: null,
       };
 
-      const response = await apiFetch('/api/template/create-template', {
-        method: 'POST',
+      const response = await apiFetch(`/api/template/${templateId}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -93,17 +156,16 @@ function EditTemplate() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create template');
+        throw new Error(errorData.error || 'Failed to update template');
       }
 
       const result = await response.json();
 
       if (result.success) {
-        showCustomToast('Template created successfully', 'success');
-
+        showCustomToast('Template updated successfully', 'success');
         router.push('/templates');
       } else {
-        throw new Error(result.error || 'Failed to create template');
+        throw new Error(result.error || 'Failed to update template');
       }
     } catch (err) {
       console.error('Error saving template:', err);
@@ -113,8 +175,57 @@ function EditTemplate() {
     }
   };
 
+  // Show loading state while fetching template
+  if (fetching) {
+    return (
+      <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent mx-auto mb-4"></div>
+          <p className="text-gray-400 text-sm">Loading template preview...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state if template failed to load
+  if (error && !fetching) {
+    return (
+      <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 text-4xl mb-4">⚠️</div>
+          <h2 className="text-gray-800 text-lg font-semibold mb-3">Failed to Load Template</h2>
+          <p className="text-gray-500 mb-6 text-sm">{error}</p>
+          <div className="space-y-3">
+            <button
+              onClick={() => window.location.reload()}
+              className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+            >
+              Try Again
+            </button>
+            <button
+              onClick={() => router.push('/templates')}
+              className="px-6 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors ml-3"
+            >
+              Back to Templates
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
+      {/* Full page loader for save operation only */}
+      {loading && (
+        <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent mx-auto mb-4"></div>
+            <p className="text-gray-400 text-sm">Saving template...</p>
+          </div>
+        </div>
+      )}
+      
       <TemplateHeader
         onSave={handleSaveTemplate}
         loading={loading}
