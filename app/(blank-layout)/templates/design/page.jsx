@@ -2,20 +2,19 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
+import { apiFetch } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { apiFetch } from '@/lib/api';
+import { showCustomToast } from '@/components/common/custom-toast';
 import { TemplateHeader } from './components';
 
 function Design() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  
+
   // Form state
   const [formData, setFormData] = useState({
     name: '',
@@ -31,26 +30,26 @@ function Design() {
 
   // Handle form field changes
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   // Handle template name change (for header input)
   const handleTemplateNameChange = (e) => {
     const value = e.target.value;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      name: value
+      name: value,
     }));
   };
 
   // Handle radio button change
   const handleTypeChange = (value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      isPremium: value === 'premium'
+      isPremium: value === 'premium',
     }));
   };
 
@@ -100,7 +99,8 @@ function Design() {
       const result = await response.json();
 
       if (result.success) {
-        // Redirect to templates page on success
+        showCustomToast('Template created successfully', 'success');
+
         router.push('/templates');
       } else {
         throw new Error(result.error || 'Failed to create template');
@@ -115,15 +115,18 @@ function Design() {
 
   return (
     <>
-      <TemplateHeader 
-        onSave={handleSaveTemplate} 
+      <TemplateHeader
+        onSave={handleSaveTemplate}
         loading={loading}
         templateName={formData.name}
         onTemplateNameChange={handleTemplateNameChange}
       />
       <div className="flex flex-1 overflow-hidden">
         <aside className="w-64 flex-shrink-0 bg-white p-4 border-r border-slate-200 overflow-y-auto min-h-[calc(100vh-var(--header-height))] h-100">
-          <Tabs defaultValue="profile" className="text-sm text-muted-foreground">
+          <Tabs
+            defaultValue="profile"
+            className="text-sm text-muted-foreground"
+          >
             <TabsList variant="line">
               <TabsTrigger value="profile">Details</TabsTrigger>
               <TabsTrigger value="security">Design</TabsTrigger>
@@ -135,11 +138,11 @@ function Design() {
                     <p className="text-red-600 text-sm">{error}</p>
                   </div>
                 )}
-                
+
                 <div className="w-full mb-5">
                   <Label className="text-muted-foreground">Template Name</Label>
-                  <Input 
-                    type="text" 
+                  <Input
+                    type="text"
                     value={formData.name}
                     onChange={handleTemplateNameChange}
                     placeholder="Enter template name"
@@ -147,10 +150,12 @@ function Design() {
                 </div>
                 <div className="w-full mb-5">
                   <Label className="text-muted-foreground">Category</Label>
-                  <Input 
-                    type="text" 
+                  <Input
+                    type="text"
                     value={formData.category}
-                    onChange={(e) => handleInputChange('category', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange('category', e.target.value)
+                    }
                     placeholder="e.g., Birthday, Corporate, Wedding"
                   />
                 </div>
@@ -185,10 +190,12 @@ function Design() {
                     <Label className="text-muted-foreground">
                       Price (in dollars)
                     </Label>
-                    <Input 
-                      type="number" 
+                    <Input
+                      type="number"
                       value={formData.price}
-                      onChange={(e) => handleInputChange('price', e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange('price', e.target.value)
+                      }
                       placeholder="0.00"
                       min="0"
                       step="0.01"
@@ -212,10 +219,12 @@ function Design() {
                 <Label className="text-muted-foreground">
                   Color, Gradient, or URL
                 </Label>
-                <Input 
-                  type="text" 
+                <Input
+                  type="text"
                   value={formData.background}
-                  onChange={(e) => handleInputChange('background', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange('background', e.target.value)
+                  }
                   placeholder="e.g., #ffffff, linear-gradient(...), or image URL"
                 />
               </div>
@@ -226,10 +235,12 @@ function Design() {
                 <Label className="text-muted-foreground">
                   Color, Gradient, or URL
                 </Label>
-                <Input 
-                  type="text" 
+                <Input
+                  type="text"
                   value={formData.pageBackground}
-                  onChange={(e) => handleInputChange('pageBackground', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange('pageBackground', e.target.value)
+                  }
                   placeholder="e.g., #ffffff, linear-gradient(...), or image URL"
                 />
               </div>
