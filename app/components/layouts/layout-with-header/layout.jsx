@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { TemplateHeader } from '@/app/(with-header)/templates/design/components';
 
 function LayoutWithHeader({ children }) {
   useEffect(() => {
@@ -27,8 +26,6 @@ function LayoutWithHeader({ children }) {
   return (
     <>
       <div className="custom-wrapper ps-0 flex grow flex-col">
-       
-
         <main className="grow" role="content">
           {children}
         </main>
