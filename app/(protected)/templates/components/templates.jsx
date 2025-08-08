@@ -1,14 +1,11 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Search, Trash2, Loader2 } from 'lucide-react';
-import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { toAbsoluteUrl } from '@/lib/helpers';
+import { Loader2, Search, Trash2 } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { toAbsoluteUrl } from '@/lib/helpers';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,6 +16,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { showCustomToast } from '@/components/common/custom-toast';
 
 const Templates = () => {
   const router = useRouter();
@@ -36,20 +37,20 @@ const Templates = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const url = '/api/template';
-      // const url = search 
+      // const url = search
       //   ? `/api/template?search=${encodeURIComponent(search)}`
       //   : '/api/template';
-      
+
       const response = await apiFetch(url);
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch templates');
       }
-      
+
       const result = await response.json();
-      
+
       if (result.success) {
         setTemplates(result.data);
       } else {
@@ -68,23 +69,25 @@ const Templates = () => {
     try {
       setDeleteLoading(true);
       setDeletingTemplateId(templateId);
-      
+
       const response = await apiFetch(`/api/template/${templateId}`, {
         method: 'DELETE',
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to delete template');
       }
-      
+
       const result = await response.json();
-      
+
       if (result.success) {
         // Remove the deleted template from the list
-        setTemplates(prevTemplates => 
-          prevTemplates.filter(template => template.id !== templateId)
+        setTemplates((prevTemplates) =>
+          prevTemplates.filter((template) => template.id !== templateId),
         );
         setShowDeleteDialog(false);
+        showCustomToast('Template deleted successfully', 'success');
+
         setTemplateToDelete(null);
       } else {
         throw new Error(result.error || 'Failed to delete template');
@@ -127,9 +130,12 @@ const Templates = () => {
 
   const renderTemplate = (template, index) => {
     const isDeleting = deletingTemplateId === template.id;
-    
+
     return (
-      <Card className={`rounded-xl relative ${isDeleting ? 'opacity-50' : ''}`} key={template.id || index}>
+      <Card
+        className={`rounded-xl relative h-auto ${isDeleting ? 'opacity-50' : ''}`}
+        key={template.id || index}
+      >
         {isDeleting && (
           <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-10 rounded-xl">
             <div className="flex flex-col items-center gap-2">
@@ -138,62 +144,76 @@ const Templates = () => {
             </div>
           </div>
         )}
-        
-        <div className="mb-2 overflow-hidden rounded-tr-xl rounded-tl-xl">
-          <img
-            src={template.previewImageUrl || template.imagePath || toAbsoluteUrl('/media/template-img.png')}
-            className="w-full h-48 object-cover"
-            alt={template.name}
-            onError={(e) => {
-              e.target.src = toAbsoluteUrl('/media/template-img.png');
-            }}
-          />
-        </div>
-        <div className="p-3">
-          <div className="flex items-center justify-between">
-            <div className="flex flex-col mb-1">
-              <span className="text-lg text-dark font-media/brand text-mono hover:text-primary-active mb-px">
-                {template.name}
-              </span>
-              <span className="text-sm text-secondary-foreground">
-                {template.category}
-              </span>
+        <div className="flex flex-col gap-2 justify-between h-100">
+          <div className="mb-2 min-h-32 h-100 overflow-hidden rounded-tr-xl rounded-tl-xl">
+            <img
+              src={
+                template.previewImageUrl ||
+                template.imagePath ||
+                toAbsoluteUrl('/media/template-img.png')
+              }
+              className="w-full "
+              alt={template.name}
+              onError={(e) => {
+                e.target.src = toAbsoluteUrl('/media/template-img.png');
+              }}
+            />
+          </div>
+          <div className="p-3">
+            <div className="flex items-center justify-between">
+              <div className="flex flex-col mb-1">
+                <span className="text-lg text-dark font-media/brand text-mono hover:text-primary-active mb-px">
+                  {template.name}
+                </span>
+                <span className="text-sm text-secondary-foreground">
+                  {template.category}
+                </span>
+              </div>
+
+              <Button
+                variant="ghost"
+                mode="icon"
+                onClick={() => handleDeleteClick(template)}
+                disabled={deleteLoading || isDeleting}
+              >
+                {isDeleting ? (
+                  <Loader2 size={16} className="text-red-500 animate-spin" />
+                ) : (
+                  <Trash2 size={16} className="text-red-500" />
+                )}
+              </Button>
             </div>
 
-            <Button 
-              variant="ghost" 
-              mode="icon"
-              onClick={() => handleDeleteClick(template)}
-              disabled={deleteLoading || isDeleting}
-            >
-              {isDeleting ? (
-                <Loader2 size={16} className="text-red-500 animate-spin" />
-              ) : (
-                <Trash2 size={16} className="text-red-500" />
-              )}
-            </Button>
-          </div>
+            <div className="text-sm font-medium text-purple-600">
+              {template.isPremium
+                ? `Premium ($${template.price || 20})`
+                : 'Free'}
+            </div>
 
-          <div className="text-sm font-medium text-purple-600">
-            {template.isPremium ? `Premium ($${template.price || 20})` : 'Free'}
-          </div>
+            <div className="text-sm text-primary">
+              {template.isSystemTemplate
+                ? '(System Template)'
+                : '(Custom Template)'}
+            </div>
 
-          <div className="text-sm text-primary">
-            {template.isSystemTemplate ? '(System Template)' : '(Custom Template)'}
-          </div>
-
-          <div className="flex gap-2 items-center justify-between mt-3">
-            <Button 
-              variant="outline" 
-              className="mx-auto w-full max-w-50" 
-              disabled={isDeleting}
-              onClick={() => router.push(`/templates/preview/${template.id}`)}
-            >
-              Preview
-            </Button>
-            <Button variant="primary" className="mx-auto w-full max-w-50" disabled={isDeleting}>
-              Design
-            </Button>
+            <div className="flex gap-2 items-center justify-between mt-3">
+              <Button
+                variant="outline"
+                className="mx-auto w-full max-w-50"
+                disabled={isDeleting}
+                onClick={() => router.push(`/templates/preview/${template.id}`)}
+              >
+                Preview
+              </Button>
+              <Button
+                variant="primary"
+                className="mx-auto w-full max-w-50"
+                disabled={isDeleting}
+                onClick={() => router.push(`/templates/design/${template.id}`)}
+              >
+                Design
+              </Button>
+            </div>
           </div>
         </div>
       </Card>
@@ -236,10 +256,7 @@ const Templates = () => {
             <div className="flex flex-col items-center justify-center gap-4 py-12">
               <p className="text-muted-foreground">No templates found</p>
               {searchQuery && (
-                <Button 
-                  variant="outline" 
-                  onClick={() => setSearchQuery('')}
-                >
+                <Button variant="outline" onClick={() => setSearchQuery('')}>
                   Clear search
                 </Button>
               )}
@@ -267,12 +284,15 @@ const Templates = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Template</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{templateToDelete?.name}"? This action cannot be undone.
+              Are you sure you want to delete "{templateToDelete?.name}"? This
+              action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleteLoading}>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogCancel disabled={deleteLoading}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
               onClick={handleDeleteConfirm}
               disabled={deleteLoading}
               className="bg-red-600 hover:bg-red-700"
