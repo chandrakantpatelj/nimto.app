@@ -66,6 +66,22 @@ const authOptions = {
           data: { lastSignInAt: new Date() },
         });
 
+        // Get user role information
+        const userWithRole = await prisma.user.findUnique({
+          where: { id: user.id },
+          include: {
+            role: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                isProtected: true,
+                isDefault: true
+              }
+            }
+          }
+        });
+
         return {
           id: user.id,
           status: user.status,
@@ -73,6 +89,7 @@ const authOptions = {
           name: user.name || 'Anonymous',
           roleId: user.roleId,
           avatar: user.avatar,
+          role: userWithRole?.role
         };
       },
     }),
@@ -110,7 +127,7 @@ const authOptions = {
             name: existingUser.name || 'Anonymous',
             status: existingUser.status,
             roleId: existingUser.roleId,
-            roleName: existingUser.role.name,
+            role: existingUser.role,
             avatar: existingUser.avatar,
           };
         }
@@ -136,6 +153,17 @@ const authOptions = {
             roleId: defaultRole.id,
             status: 'ACTIVE',
           },
+          include: {
+            role: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                isProtected: true,
+                isDefault: true
+              }
+            }
+          }
         });
 
         return {
@@ -145,7 +173,7 @@ const authOptions = {
           status: newUser.status,
           avatar: newUser.avatar,
           roleId: newUser.roleId,
-          roleName: defaultRole.name,
+          role: newUser.role,
         };
       },
     }),
@@ -159,34 +187,53 @@ const authOptions = {
     async jwt({ token, user, session, trigger }) {
       if (trigger === 'update' && session?.user) {
         token = session.user;
-      } else {
-        if (user && user.roleId) {
-          const role = await prisma.userRole.findUnique({
-            where: { id: user.roleId },
-          });
-
-          token.id = user.id || token.sub;
-          token.email = user.email;
-          token.name = user.name;
-          token.avatar = user.avatar;
-          token.status = user.status;
-          token.roleId = user.roleId;
-          token.roleName = role?.name;
+      } else if (user) {
+        // Always fetch the role from database to ensure we have the latest data
+        let role = null;
+        if (user.roleId) {
+          try {
+            role = await prisma.userRole.findUnique({
+              where: { id: user.roleId },
+            });
+          } catch (error) {
+            console.error('Error fetching role:', error);
+          }
         }
+
+        token.id = user.id || token.sub;
+        token.email = user.email;
+        token.name = user.name;
+        token.avatar = user.avatar;
+        token.status = user.status;
+        token.roleId = user.roleId;
+        token.roleName = role?.name;
+        token.role = role ? {
+          id: role.id,
+          name: role.name,
+          slug: role.slug,
+          isProtected: role.isProtected,
+          isDefault: role.isDefault
+        } : null;
       }
 
       return token;
     },
     async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id;
-        session.user.email = token.email;
-        session.user.name = token.name;
-        session.user.avatar = token.avatar;
-        session.user.status = token.status;
-        session.user.roleId = token.roleId;
-        session.user.roleName = token.roleName;
+      try {
+        if (session.user) {
+          session.user.id = token.id;
+          session.user.email = token.email;
+          session.user.name = token.name;
+          session.user.avatar = token.avatar;
+          session.user.status = token.status;
+          session.user.roleId = token.roleId;
+          session.user.roleName = token.roleName;
+          session.user.role = token.role;
+        }
+      } catch (error) {
+        console.error('Error in session callback:', error);
       }
+      
       return session;
     },
   },
