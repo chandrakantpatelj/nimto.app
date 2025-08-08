@@ -19,7 +19,7 @@ function PreviewTemplate({ template }) {
   return (
     <>
       {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-6 py-8">
+      <div className="max-w-4xl mx-auto py-4">
         <Card className="p-8">
           {/* Template Details */}
           <div className="flex justify-between items-start mb-8">
