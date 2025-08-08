@@ -8,9 +8,9 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showCustomToast } from '@/components/common/custom-toast';
-import { TemplateHeader } from './components';
+import { TemplateHeader } from '../components';
 
-function Design() {
+function EditTemplate() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -252,4 +252,4 @@ function Design() {
   );
 }
 
-export default Design;
+export default EditTemplate;
