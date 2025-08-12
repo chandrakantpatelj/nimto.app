@@ -138,7 +138,7 @@ const Templates = () => {
       >
         {isDeleting && (
           <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-10 rounded-xl">
-            <div className="flex flex-col items-center gap-2">
+            <div className="flex flex-col items-start gap-2">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
               <p className="text-sm text-muted-foreground">Deleting...</p>
             </div>
@@ -171,7 +171,7 @@ const Templates = () => {
               </div>
 
               <Button
-                variant="ghost"
+                variant="softDanger"
                 mode="icon"
                 onClick={() => handleDeleteClick(template)}
                 disabled={deleteLoading || isDeleting}
