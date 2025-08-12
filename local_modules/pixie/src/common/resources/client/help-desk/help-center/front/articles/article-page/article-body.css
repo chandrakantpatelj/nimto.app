@@ -1,0 +1,70 @@
+.custom-page-body p:empty:before {
+  content: '';
+  display: inline-block;
+}
+
+.article-body .tsd-is-private {
+  @apply hidden;
+}
+
+.article-body .tsd-anchor {
+  @apply block h-0;
+}
+
+.article-body .tsd-panel-group {
+  @apply mb-40;
+}
+
+.article-body .tsd-panel {
+  @apply mb-24 p-16 border rounded;
+}
+
+.article-body .tsd-panel ul.tsd-signatures,
+.tsd-panel ul.tsd-descriptions {
+  @apply list-none pl-0;
+
+  > li {
+    @apply list-none m-0;
+  }
+}
+
+.article-body .tsd-panel .tsd-sources {
+  @apply hidden;
+}
+
+.article-body .tsd-panel ul.tsd-parameters {
+  @apply list-disc pl-40 mb-24;
+}
+
+.article-body .tsd-panel .tsd-signature-type,
+.article-body .tsd-panel .tsd-signature-symbol {
+  @apply italic font-normal font-mono;
+}
+
+.article-body .tsd-panel .tsd-kind-method {
+  @apply font-mono border-y py-14 m-0 text-sm;
+}
+
+.article-body .tsd-panel .tsd-comment {
+  @apply text-sm mt-14 mb-28;
+}
+
+.article-body .tsd-panel .ts-flagDefault {
+  @apply hidden;
+}
+
+.article-body .tsd-panel h3 {
+  @apply text-primary text-lg font-semibold mb-18;
+}
+
+.article-body .tsd-panel h4 {
+  @apply text-sm font-semibold;
+}
+
+.article-body .tsd-panel h5 {
+  @apply text-sm py-4 font-semibold;
+}
+
+.article-body .tsd-panel a {
+  @apply text-inherit pointer-events-none;
+}
