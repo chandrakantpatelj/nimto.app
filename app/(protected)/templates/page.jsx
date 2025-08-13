@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import Link from 'next/link';
-import { CirclePlus, Sparkles } from 'lucide-react';
+import { CirclePlus, Sparkles, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Container } from '@/components/common/container';
 import {
@@ -28,6 +28,11 @@ function TemplateManagementPage() {
           <ToolbarActions>
             <Button variant="secondary">
               <Sparkles /> Create With AI
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/templates/upload">
+                <Upload /> Upload Template
+              </Link>
             </Button>
             <Button variant="primary" asChild>
               <Link href="/templates/design">
