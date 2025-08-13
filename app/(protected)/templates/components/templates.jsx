@@ -145,7 +145,7 @@ const Templates = () => {
           </div>
         )}
         <div className="flex flex-col gap-2 justify-between h-100">
-          <div className="mb-2 min-h-32 h-100 overflow-hidden rounded-tr-xl rounded-tl-xl">
+          <div className=" min-h-32 h-100 overflow-hidden rounded-tr-xl rounded-tl-xl">
             <img
               src={
                 template.previewImageUrl ||
