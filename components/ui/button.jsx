@@ -76,6 +76,17 @@ const buttonVariants = cva(
     compoundVariants: [
       // Icons opacity for default mode
       {
+        variant: 'outline',
+        mode: 'primary',
+        className: 'border border-primary text-primary hover:bg-primary/10',
+      },
+      {
+        variant: 'secondary',
+        mode: 'default',
+        className:
+          'bg-secondary text-secondary-foreground hover:bg-secondary/90',
+      },
+      {
         variant: 'ghost',
         mode: 'default',
         className:

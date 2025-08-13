@@ -250,7 +250,7 @@ const Events = () => {
         <div id="projects_cards">
           {templates.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-4 py-12">
-              <p className="text-muted-foreground">No templates found</p>
+              <p className="text-muted-foreground">No events found</p>
               {searchQuery && (
                 <Button variant="outline" onClick={() => setSearchQuery('')}>
                   Clear search
