@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Container } from '@/components/common/container';
 
-export function TemplateHeader({ onSave, loading = false, templateName = '', onTemplateNameChange }) {
+export function TemplateHeader({ onSave, loading = false, templateName = '', onTemplateNameChange, isUpdate = false }) {
   const scrollPosition = useScrollPosition();
   const headerSticky = scrollPosition > 0;
 
@@ -51,7 +51,7 @@ export function TemplateHeader({ onSave, loading = false, templateName = '', onT
                 Saving...
               </>
             ) : (
-              'Save Template'
+              isUpdate ? 'Update Template' : 'Save Template'
             )}
           </Button>
         </div>
