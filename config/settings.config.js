@@ -1,6 +1,6 @@
 export const APP_SETTINGS = {
   layout: '',
-  container: 'fixed',
+  container: 'fluid',
   layouts: {
     demo1: {
       sidebarCollapse: false,
