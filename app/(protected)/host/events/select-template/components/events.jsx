@@ -40,7 +40,7 @@ const SelectEvents = () => {
 
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <Button variant="primary" asChild>
-                      <Link href="/host/events">Select Template</Link>
+                      <Link href="/events/design/64584">Select Template</Link>
                     </Button>
                   </div>
                 </div>
@@ -71,7 +71,7 @@ const SelectEvents = () => {
 
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <Button variant="primary" asChild>
-                      <Link href="/host/events">Select Template</Link>
+                      <Link href="/events/design/64584">Select Template</Link>
                     </Button>
                   </div>
                 </div>
@@ -102,7 +102,7 @@ const SelectEvents = () => {
 
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <Button variant="primary" asChild>
-                      <Link href="/host/events">Select Template</Link>
+                      <Link href="/events/design/64584">Select Template</Link>
                     </Button>
                   </div>
                 </div>
@@ -133,7 +133,7 @@ const SelectEvents = () => {
 
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <Button variant="primary" asChild>
-                      <Link href="/host/events">Select Template</Link>
+                      <Link href="/events/design/64584">Select Template</Link>
                     </Button>
                   </div>
                 </div>
