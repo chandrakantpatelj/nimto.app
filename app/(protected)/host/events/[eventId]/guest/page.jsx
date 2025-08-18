@@ -23,7 +23,7 @@ function EventManagementPage() {
           </ToolbarHeading>
           <ToolbarActions>
             <Button variant="secondary" appearance="ghost" asChild>
-              <Link href="/templates">
+              <Link href="/host/events">
                 <ArrowLeft /> Back
               </Link>
             </Button>
