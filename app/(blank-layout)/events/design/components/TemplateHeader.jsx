@@ -1,14 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowLeft, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useScrollPosition } from '@/hooks/use-scroll-position';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Container } from '@/components/common/container';
 
-export function TemplateHeader() {
+export function TemplateHeader({ activeStep, handleNext, handleBack }) {
   const scrollPosition = useScrollPosition();
   const headerSticky = scrollPosition > 0;
 
@@ -19,27 +17,48 @@ export function TemplateHeader() {
         headerSticky && 'border-b border-border',
       )}
     >
-      <Container
-        width="fluid"
-        className="flex justify-between items-stretch lg:gap-4"
-      >
+      <Container className="flex justify-between items-stretch lg:gap-4">
         <div className="flex items-center ">
-          <div className="flex flex-col gap-1 ">
-            <span className="text-md font-semibold ">
-              Step 1: Design Invitation
-            </span>
-            <span className="text-xs font-medium text-secondary-foreground">
-              Customize the look and fill in event details.
-            </span>
-          </div>
+          {activeStep === 0 && (
+            <div className="flex flex-col gap-1 ">
+              <span className="text-md font-semibold ">
+                Step 1: Design Invitation
+              </span>
+              <span className="text-xs font-medium text-secondary-foreground">
+                Customize the look and fill in event details.
+              </span>
+            </div>
+          )}
+          {activeStep === 1 && (
+            <div className="flex flex-col gap-1 ">
+              <span className="text-md font-semibold ">Step 2: Preview</span>
+              <span className="text-xs font-medium text-secondary-foreground">
+                See how your invitation will look to guests.
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="flex gap-1 items-center py-2 ml-auto">
           <Button variant="outline" asChild>
             <Link href="/host/events">Cancel</Link>
           </Button>
-          <span className="bg-gray-200 w-[1px] h-full mx-1 "></span>
-          <Button variant="primary">Next</Button>
+          <span className="bg-gray-200 w-[1px] h-full mx-1"></span>
+          <div className="flex  gap-1 ">
+            {activeStep > 0 && (
+              <Button
+                variant="outline"
+                mode="primary"
+                onClick={() => handleBack()}
+              >
+                Previous
+              </Button>
+            )}
+
+            <Button variant="primary" onClick={() => handleNext()}>
+              Next
+            </Button>
+          </div>
         </div>
       </Container>
     </header>
