@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import {
   CalendarCheck,
   Loader2,
@@ -26,10 +25,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { showCustomToast } from '@/components/common/custom-toast';
 
 const Events = () => {
-  const router = useRouter();
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -72,41 +69,7 @@ const Events = () => {
   };
 
   // Delete template function
-  const deleteTemplate = async (templateId) => {
-    try {
-      setDeleteLoading(true);
-      setDeletingTemplateId(templateId);
-
-      const response = await apiFetch(`/api/template/${templateId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete template');
-      }
-
-      const result = await response.json();
-
-      if (result.success) {
-        // Remove the deleted template from the list
-        setTemplates((prevTemplates) =>
-          prevTemplates.filter((template) => template.id !== templateId),
-        );
-        setShowDeleteDialog(false);
-        showCustomToast('Template deleted successfully', 'success');
-
-        setTemplateToDelete(null);
-      } else {
-        throw new Error(result.error || 'Failed to delete template');
-      }
-    } catch (err) {
-      console.error('Error deleting template:', err);
-      setError(err.message);
-    } finally {
-      setDeleteLoading(false);
-      setDeletingTemplateId(null);
-    }
-  };
+  const deleteTemplate = async (templateId) => {};
 
   // Handle delete button click
   const handleDeleteClick = (template) => {
@@ -125,15 +88,6 @@ const Events = () => {
   useEffect(() => {
     fetchTemplates();
   }, []);
-
-  // Search with debounce
-  // useEffect(() => {
-  //   const timeoutId = setTimeout(() => {
-  //     fetchTemplates(searchQuery);
-  //   }, 500);
-
-  //   return () => clearTimeout(timeoutId);
-  // }, [searchQuery]);
 
   const renderTemplate = (template, index) => {
     const isDeleting = deletingTemplateId === template.id;
@@ -216,24 +170,6 @@ const Events = () => {
     );
   };
 
-  // if (loading && templates.length === 0) {
-  //   return (
-  //     <div className="flex flex-col items-center justify-center gap-4 py-12">
-  //       <Loader2 className="h-8 w-8 animate-spin text-primary" />
-  //       <p className="text-muted-foreground">Loading templates...</p>
-  //     </div>
-  //   );
-  // }
-
-  // if (error) {
-  //   return (
-  //     <div className="flex flex-col items-center justify-center gap-4 py-12">
-  //       <p className="text-red-500">Error: {error}</p>
-  //       <Button onClick={() => fetchTemplates()}>Retry</Button>
-  //     </div>
-  //   );
-  // }
-
   return (
     <>
       <div className="flex flex-col items-stretch gap-4 lg:gap-6.5">
@@ -273,12 +209,10 @@ const Events = () => {
           )}
         </div>
       </div>
-
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Template</AlertDialogTitle>
+            <AlertDialogTitle>Delete Event</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to delete "{templateToDelete?.name}"? This
               action cannot be undone.

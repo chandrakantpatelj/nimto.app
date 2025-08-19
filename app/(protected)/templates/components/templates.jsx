@@ -277,7 +277,6 @@ const Templates = () => {
           )}
         </div>
       </div>
-
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
