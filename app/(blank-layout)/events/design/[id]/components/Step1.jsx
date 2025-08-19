@@ -116,7 +116,7 @@ function Step1() {
   return (
     <>
       <div className="flex flex-1 overflow-hidden">
-        <aside className="w-64 flex-shrink-0 bg-white p-4 border-r border-slate-200 overflow-y-auto min-h-[calc(100vh-var(--header-height))] h-100">
+        <aside className="w-64 flex-shrink-0 bg-background p-4 border-r border-slate-200 overflow-y-auto min-h-[calc(100vh-var(--header-height))] h-100">
           <Tabs
             defaultValue="profile"
             className="text-sm text-muted-foreground"
@@ -301,7 +301,7 @@ function Step1() {
             </div>
           </div>
         </main>
-        <aside className="w-74 flex-shrink-0 bg-white p-4 border-l border-slate-200 overflow-y-auto min-h-[calc(100vh-var(--header-height))] h-100">
+        <aside className="w-74 flex-shrink-0 bg-background p-4 border-l border-slate-200 overflow-y-auto min-h-[calc(100vh-var(--header-height))] h-100">
           <div className="space-y-6">
             <h3 className="font-semibold text-lg mb-2 border-b pb-2">
               Canvas Settings
