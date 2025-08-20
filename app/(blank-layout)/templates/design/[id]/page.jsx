@@ -1,21 +1,21 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { apiFetch } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showCustomToast } from '@/components/common/custom-toast';
-import { TemplateHeader } from '../components';
 import { PixieEditor } from '@/components/image-editor';
+import { TemplateHeader } from '../components';
 
 function EditTemplate() {
   const router = useRouter();
   const params = useParams();
   const templateId = params.id;
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -67,11 +67,11 @@ function EditTemplate() {
   const handleSave = async (editedImageData) => {
     try {
       setIsLoading(true);
-      
+
       // Here you can handle the edited image data
       // For example, save it to your server or update the form data
       console.log('Edited image data:', editedImageData);
-      
+
       // Update form data with the edited content
       setFormData((prev) => ({
         ...prev,
@@ -93,8 +93,6 @@ function EditTemplate() {
     // Handle cancel action - could navigate back or reset
     router.back();
   };
-
-
 
   // Handle background changes
   const handleBackgroundChange = (type, value) => {
@@ -131,12 +129,15 @@ function EditTemplate() {
 
       // Create a temporary URL for the uploaded file
       const tempImageUrl = URL.createObjectURL(file);
-      
+
       // Store the file for later saving
       setUploadedImageFile(file);
       setImageUrl(tempImageUrl);
-      
-      showCustomToast('Image loaded successfully. Click "Save Template" to save it permanently.', 'success');
+
+      showCustomToast(
+        'Image loaded successfully. Click "Save Template" to save it permanently.',
+        'success',
+      );
     } catch (error) {
       console.error('Error loading image:', error);
       showCustomToast('Failed to load image', 'error');
@@ -148,17 +149,21 @@ function EditTemplate() {
   // Get CSS background value for styling
   const getBackgroundStyle = (value) => {
     if (!value) return {};
-    
+
     // Check if it's a URL
     if (value.startsWith('http') || value.startsWith('/')) {
-      return { backgroundImage: `url(${value})`, backgroundSize: 'cover', backgroundPosition: 'center' };
+      return {
+        backgroundImage: `url(${value})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      };
     }
-    
+
     // Check if it's a gradient
     if (value.includes('gradient')) {
       return { background: value };
     }
-    
+
     // Default to color
     return { backgroundColor: value };
   };
@@ -186,7 +191,7 @@ function EditTemplate() {
 
       if (result.success && result.data) {
         const template = result.data;
-        
+
         // Prefill form with template data
         setFormData({
           name: template.name || '',
@@ -262,19 +267,19 @@ function EditTemplate() {
         if (!pixieSaved) {
           throw new Error('Failed to save image data');
         }
-        
+
         // Get the edited image from Pixie and save it
         if (window.pixieRef?.current?.getImage) {
           try {
             const imageBlob = await window.pixieRef.current.getImage();
             const formData = new FormData();
             formData.append('image', imageBlob, 'edited-image.png');
-            
+
             const response = await apiFetch('/api/save-image', {
               method: 'POST',
               body: formData,
             });
-            
+
             if (response.ok) {
               const result = await response.json();
               if (result.success) {
@@ -464,7 +469,9 @@ function EditTemplate() {
               <div className="py-3">
                 {/* Upload Image Section */}
                 <div className="mb-6">
-                  <Label className="text-muted-foreground mb-2 block">Load New Image</Label>
+                  <Label className="text-muted-foreground mb-2 block">
+                    Load New Image
+                  </Label>
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 transition-colors">
                     <input
                       type="file"
@@ -477,8 +484,18 @@ function EditTemplate() {
                       htmlFor="image-upload"
                       className="cursor-pointer flex flex-col items-center"
                     >
-                      <svg className="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                      <svg
+                        className="w-8 h-8 text-gray-400 mb-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                        />
                       </svg>
                       <span className="text-sm text-gray-600">
                         {isLoading ? 'Loading...' : 'Click to load new image'}
@@ -499,7 +516,11 @@ function EditTemplate() {
                     <div className="relative">
                       <img
                         src={imageUrl || templateImagePath}
-                        alt={uploadedImageFile ? 'Uploaded Image' : 'Template Image'}
+                        alt={
+                          uploadedImageFile
+                            ? 'Uploaded Image'
+                            : 'Template Image'
+                        }
                         className="w-full h-32 object-cover rounded-lg border border-gray-200"
                         onError={(e) => {
                           console.error('Image failed to load:', e.target.src);
@@ -507,7 +528,7 @@ function EditTemplate() {
                           e.target.nextSibling.style.display = 'flex';
                         }}
                       />
-                      <div 
+                      <div
                         className="absolute inset-0 bg-gray-100 rounded-lg flex items-center justify-center"
                         style={{ display: 'none' }}
                       >
@@ -517,44 +538,46 @@ function EditTemplate() {
                       </div>
                       <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-all rounded-lg flex items-center justify-center">
                         <span className="text-white text-xs font-medium opacity-0 hover:opacity-100">
-                          {uploadedImageFile ? 'Uploaded Image' : 'Current Template Image'}
+                          {uploadedImageFile
+                            ? 'Uploaded Image'
+                            : 'Current Template Image'}
                         </span>
                       </div>
                     </div>
                     <p className="text-xs text-gray-500 mt-2">
-                      {uploadedImageFile 
+                      {uploadedImageFile
                         ? 'This is your uploaded image. It will be saved when you save the template.'
-                        : 'This is the image from the template. Upload a new image to replace it.'
-                      }
+                        : 'This is the image from the template. Upload a new image to replace it.'}
                     </p>
                   </div>
                 )}
 
                 <div className="text-xs text-gray-500">
-                  {uploadedImageFile 
+                  {uploadedImageFile
                     ? 'Your uploaded image is ready for editing. Click "Save Template" to save it permanently.'
-                    : templateImagePath 
+                    : templateImagePath
                       ? 'Upload a new image to replace the template image, or edit the current one.'
-                      : 'Upload an image to get started. Images are saved when you save the template.'
-                  }
+                      : 'Upload an image to get started. Images are saved when you save the template.'}
                 </div>
               </div>
             </TabsContent>
           </Tabs>
         </aside>
-        <main 
+        <main
           className="flex-1 overflow-auto p-8"
           style={getBackgroundStyle(formData.pageBackground)}
         >
           <div className="container mx-auto px-4 py-8">
             <div className="mb-6">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">Image Editor</h1>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                Image Editor
+              </h1>
               <p className="text-gray-600">
                 Edit your image using the powerful Pixie editor
               </p>
             </div>
 
-            <div 
+            <div
               className="rounded-lg shadow-sm border border-gray-200 p-6"
               style={getBackgroundStyle(formData.background)}
             >
@@ -568,7 +591,7 @@ function EditTemplate() {
                   // Additional Pixie configuration options
                   ui: {
                     // Customize the UI as needed
-                  }
+                  },
                 }}
               />
             </div>
@@ -603,7 +626,7 @@ function EditTemplate() {
                   placeholder="e.g., #ffffff, linear-gradient(...), or image URL"
                 />
                 {/* Background preview */}
-                <div 
+                <div
                   className="w-full h-8 mt-2 rounded border"
                   style={getBackgroundStyle(formData.background)}
                 />
@@ -624,7 +647,7 @@ function EditTemplate() {
                   placeholder="e.g., #ffffff, linear-gradient(...), or image URL"
                 />
                 {/* Background preview */}
-                <div 
+                <div
                   className="w-full h-8 mt-2 rounded border"
                   style={getBackgroundStyle(formData.pageBackground)}
                 />
