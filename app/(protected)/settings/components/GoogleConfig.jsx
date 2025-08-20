@@ -39,7 +39,7 @@ export function GoogleConfig() {
         title="Google Login (OAuth 2.0)"
         description="Configure Google OAuth for user authentication"
         icon={Key}
-        iconColor="blue"
+        iconColor="primary"
       >
         <div className="space-y-4">
           <InputField

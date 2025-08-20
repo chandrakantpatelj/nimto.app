@@ -4,9 +4,9 @@ import React, { useState } from 'react';
 import { FileText } from 'lucide-react';
 import {
   InputField,
-  TabHeader,
   SaveButton,
   SettingsCard,
+  TabHeader,
   TextareaField,
 } from './common';
 
@@ -47,7 +47,7 @@ export function LandingPageContent() {
         subtitle="Main Landing Page Content"
         description="Configure the main headline and description that visitors see first"
         icon={FileText}
-        iconColor="blue"
+        iconColor="primary"
       >
         <div className="space-y-4">
           <InputField

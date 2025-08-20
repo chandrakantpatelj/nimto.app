@@ -52,7 +52,7 @@ export function UserNotifications() {
         title="Notification Channels (Specific Event Types)"
         description="Configure how users are notified about different types of events"
         icon={Bell}
-        iconColor="blue"
+        iconColor="primary"
       >
         <div className="space-y-4">
           <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50">

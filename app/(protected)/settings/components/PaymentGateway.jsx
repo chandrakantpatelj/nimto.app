@@ -58,7 +58,7 @@ export function PaymentGateway() {
         title="Stripe API Keys"
         description="Configure your Stripe API credentials"
         icon={WalletCards}
-        iconColor="blue"
+        iconColor="primary"
       >
         <div className="space-y-6">
           <InputField

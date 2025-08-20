@@ -84,7 +84,7 @@ export function EmailServer() {
         title="General Email Settings"
         description="Configure basic email settings and provider"
         icon={Mail}
-        iconColor="blue"
+        iconColor="primary"
       >
         <div className="space-y-4">
           <SelectField
