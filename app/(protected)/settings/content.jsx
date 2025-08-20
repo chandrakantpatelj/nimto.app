@@ -1,6 +1,5 @@
 'use client';
 
-import { cva } from 'class-variance-authority';
 import {
   Bell,
   BookImage,
@@ -11,22 +10,20 @@ import {
   UserRound,
   WalletCards,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  AppSettings,
+  EmailServer,
+  GoogleConfig,
+  LandingPageContent,
+  LogoBranding,
+  PaymentGateway,
+  SMSMessaging,
+  UserNotifications,
+} from './components';
 
 export function Settings() {
-  const tabTrigger = cva('justify-start px-3 py-2 transition-colors', {
-    variants: {
-      state: {
-        active: 'bg-blue-50 border-l-4 border-blue-500 text-blue-600',
-        inactive: 'text-gray-700 hover:bg-gray-50',
-      },
-    },
-    defaultVariants: {
-      state: 'inactive',
-    },
-  });
   return (
     <>
       <Tabs
@@ -40,28 +37,101 @@ export function Settings() {
               variant="button"
               className="flex flex-col items-stretch *:justify-start"
             >
-              <TabsTrigger className={cn(tabTrigger())} value="app-config">
+              <TabsTrigger
+                className="justify-start px-3 py-2 transition-colors
+    data-[state=active]:bg-gray-50
+    data-[state=active]:border-r-4 data-[state=active]:border-primary 
+    data-[state=active]:text-primary
+    data-[state=inactive]:text-gray-700
+    data-[state=inactive]:hover:bg-gray-50
+    rounded-r-none"
+                value="app-config"
+              >
                 <UserRound /> App Settings
               </TabsTrigger>
-              <TabsTrigger className={cn(tabTrigger())} value="landing-page">
+
+              <TabsTrigger
+                className="justify-start px-3 py-2 transition-colors
+  data-[state=active]:bg-gray-50
+  data-[state=active]:border-r-4 data-[state=active]:border-primary 
+  data-[state=active]:text-primary
+  data-[state=inactive]:text-gray-700
+  data-[state=inactive]:hover:bg-gray-50
+  rounded-r-none"
+                value="landing-page"
+              >
                 <BookText /> Landing Page Content
               </TabsTrigger>
-              <TabsTrigger className={cn(tabTrigger())} value="logo-branding">
+              <TabsTrigger
+                className="justify-start px-3 py-2 transition-colors
+  data-[state=active]:bg-gray-50
+  data-[state=active]:border-r-4 data-[state=active]:border-primary 
+  data-[state=active]:text-primary
+  data-[state=inactive]:text-gray-700
+  data-[state=inactive]:hover:bg-gray-50
+  rounded-r-none"
+                value="logo-branding"
+              >
                 <BookImage /> Logo & Branding
               </TabsTrigger>
-              <TabsTrigger className={cn(tabTrigger())} value="notifications">
+              <TabsTrigger
+                className="justify-start px-3 py-2 transition-colors
+  data-[state=active]:bg-gray-50
+  data-[state=active]:border-r-4 data-[state=active]:border-primary 
+  data-[state=active]:text-primary
+  data-[state=inactive]:text-gray-700
+  data-[state=inactive]:hover:bg-gray-50
+  rounded-r-none"
+                value="notifications"
+              >
                 <Bell /> User Notifications
               </TabsTrigger>
-              <TabsTrigger className={cn(tabTrigger())} value="payment-gateway">
+              <TabsTrigger
+                className="justify-start px-3 py-2 transition-colors
+  data-[state=active]:bg-gray-50
+  data-[state=active]:border-r-4 data-[state=active]:border-primary 
+  data-[state=active]:text-primary
+  data-[state=inactive]:text-gray-700
+  data-[state=inactive]:hover:bg-gray-50
+  rounded-r-none"
+                value="payment-gateway"
+              >
                 <WalletCards /> Payment Gateway
               </TabsTrigger>
-              <TabsTrigger className={cn(tabTrigger())} value="email-server">
+              <TabsTrigger
+                className="justify-start px-3 py-2 transition-colors
+  data-[state=active]:bg-gray-50
+  data-[state=active]:border-r-4 data-[state=active]:border-primary 
+  data-[state=active]:text-primary
+  data-[state=inactive]:text-gray-700
+  data-[state=inactive]:hover:bg-gray-50
+  rounded-r-none"
+                value="email-server"
+              >
                 <Mail /> Email Server
               </TabsTrigger>
-              <TabsTrigger className={cn(tabTrigger())} value="sms-messaging">
+              <TabsTrigger
+                className="justify-start px-3 py-2 transition-colors
+  data-[state=active]:bg-gray-50
+  data-[state=active]:border-r-4 data-[state=active]:border-primary 
+  data-[state=active]:text-primary
+  data-[state=inactive]:text-gray-700
+  data-[state=inactive]:hover:bg-gray-50
+  rounded-r-none"
+                value="sms-messaging"
+              >
                 <MessageCircleMore /> SMS/Messaging
               </TabsTrigger>
-              <TabsTrigger className={cn(tabTrigger())} value="google-config">
+              <TabsTrigger
+                className="justify-start px-3 py-2 transition-colors
+  data-[state=active]:bg-gray-50
+  data-[state=active]:border-r-4 data-[state=active]:border-primary 
+  data-[state=active]:text-primary
+  data-[state=inactive]:text-gray-700
+  data-[state=inactive]:hover:bg-gray-50
+  rounded-r-none"
+                value="google-config"
+              >
                 <KeyRound /> Google Config
               </TabsTrigger>
             </TabsList>
@@ -70,28 +140,28 @@ export function Settings() {
         <div className="py-2 col-span-12 md:col-span-9">
           <Card className="p-4">
             <TabsContent value="app-config">
-              Content for App Settings
+              <AppSettings />
             </TabsContent>
             <TabsContent value="landing-page">
-              Content for Landing Page Content
+              <LandingPageContent />
             </TabsContent>
             <TabsContent value="logo-branding">
-              Content for Logo & Branding
+              <LogoBranding />
             </TabsContent>
             <TabsContent value="notifications">
-              Content for Notifications
+              <UserNotifications />
             </TabsContent>
             <TabsContent value="payment-gateway">
-              Content for Payment Gateway
+              <PaymentGateway />
             </TabsContent>
             <TabsContent value="email-server">
-              Content for Email Server
+              <EmailServer />
             </TabsContent>
             <TabsContent value="sms-messaging">
-              Content for SMS/Messaging
+              <SMSMessaging />
             </TabsContent>
             <TabsContent value="google-config">
-              Content for Google Config
+              <GoogleConfig />
             </TabsContent>
           </Card>
         </div>
