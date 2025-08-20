@@ -43,7 +43,7 @@ export function AppSettings() {
         subtitle="Use Real API Endpoints"
         description="Enable this to connect to live backend services. Disable to use mock data for development."
         icon={Database}
-        iconColor="blue"
+        iconColor="primary"
       >
         <ToggleField
           checked={useRealApi}
