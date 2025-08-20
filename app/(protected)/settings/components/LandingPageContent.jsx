@@ -1,18 +1,16 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FileText, Info, Star } from 'lucide-react';
-import { useTheme } from 'next-themes';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
+import { FileText } from 'lucide-react';
+import {
+  InputField,
+  TabHeader,
+  SaveButton,
+  SettingsCard,
+  TextareaField,
+} from './common';
 
 export function LandingPageContent() {
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === 'dark';
-
   // State for form values
   const [heroTitle, setHeroTitle] = useState(
     'Nimto: Your Vision, Perfectly Orchestrated.',
@@ -35,132 +33,70 @@ export function LandingPageContent() {
     });
   };
 
-  const InputField = ({
-    label,
-    value,
-    onChange,
-    placeholder,
-    description,
-    multiline = false,
-  }) => (
-    <div className="space-y-2">
-      <Label
-        className={`text-sm font-medium ${isDark ? 'text-gray-200' : 'text-gray-700'}`}
-      >
-        {label}
-      </Label>
-      {multiline ? (
-        <textarea
-          value={value}
-          onChange={onChange}
-          placeholder={placeholder}
-          rows={4}
-          className={`w-full px-3 py-2 rounded-md border resize-none ${
-            isDark
-              ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400'
-              : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
-          }`}
-        />
-      ) : (
-        <Input
-          value={value}
-          onChange={onChange}
-          placeholder={placeholder}
-          className={`${isDark ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-300'}`}
-        />
-      )}
-      {description && (
-        <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-          {description}
-        </p>
-      )}
-    </div>
-  );
-
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h2
-          className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}
-        >
-          Manage Landing Page Content
-        </h2>
-        <p
-          className={`text-sm mt-1 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}
-        >
-          Customize the content displayed on your landing page
-        </p>
-      </div>
+      <TabHeader
+        title="Landing Page Content"
+        description="Customize the content displayed on your landing page"
+      />
 
       {/* Hero Section */}
-      <Card
-        className={`${isDark ? 'bg-gray-900/50 border-gray-700' : 'bg-white border-gray-200'}`}
+      <SettingsCard
+        title="Hero Section"
+        subtitle="Main Landing Page Content"
+        description="Configure the main headline and description that visitors see first"
+        icon={FileText}
+        iconColor="blue"
       >
-        <CardHeader>
-          <CardTitle
-            className={`flex items-center space-x-2 ${isDark ? 'text-white' : 'text-gray-900'}`}
-          >
-            <Star className="w-5 h-5" />
-            <span>Hero Section</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
+        <div className="space-y-4">
           <InputField
             label="Hero Title"
             value={heroTitle}
             onChange={(e) => setHeroTitle(e.target.value)}
-            placeholder="Enter your main hero title"
+            placeholder="Enter your main headline"
+            description="The primary title displayed prominently on your landing page"
           />
-
-          <InputField
+          <TextareaField
             label="Hero Subtitle"
             value={heroSubtitle}
             onChange={(e) => setHeroSubtitle(e.target.value)}
-            placeholder="Enter your hero subtitle"
-            multiline={true}
+            placeholder="Enter your subtitle or description"
+            description="A compelling description that explains your value proposition"
+            rows={3}
           />
-        </CardContent>
-      </Card>
+        </div>
+      </SettingsCard>
 
       {/* Features Section */}
-      <Card
-        className={`${isDark ? 'bg-gray-900/50 border-gray-700' : 'bg-white border-gray-200'}`}
+      <SettingsCard
+        title="Features Section"
+        subtitle="Why Choose Us Content"
+        description="Configure the content for your features or benefits section"
+        icon={FileText}
+        iconColor="green"
       >
-        <CardHeader>
-          <CardTitle
-            className={`flex items-center space-x-2 ${isDark ? 'text-white' : 'text-gray-900'}`}
-          >
-            <FileText className="w-5 h-5" />
-            <span>Features Section</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
+        <div className="space-y-4">
           <InputField
-            label="Features Section Title (e.g., Why Choose Us?)"
+            label="Features Title"
             value={featuresTitle}
             onChange={(e) => setFeaturesTitle(e.target.value)}
-            placeholder="Why Choose Us?"
+            placeholder="Enter features section title"
+            description="Title for the section highlighting your key features"
           />
-
-          <InputField
-            label="Features Section Subtitle"
+          <TextareaField
+            label="Features Subtitle"
             value={featuresSubtitle}
             onChange={(e) => setFeaturesSubtitle(e.target.value)}
-            placeholder="Enter features section subtitle"
-            description="            Managing individual feature items (icon, title, description) will
-              be available in a future update."
-            multiline={true}
+            placeholder="Enter features section description"
+            description="Description explaining what makes your platform special"
+            rows={3}
           />
-        </CardContent>
-      </Card>
+        </div>
+      </SettingsCard>
 
       {/* Save Button */}
-      <div className="flex justify-end">
-        <Button varinat="primary" onClick={handleSave}>
-          Save Landing Page Content
-        </Button>
-      </div>
+      <SaveButton onClick={handleSave} children="Save Landing Page Content" />
     </div>
   );
 }
