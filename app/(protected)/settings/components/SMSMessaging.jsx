@@ -48,7 +48,7 @@ export function SMSMessaging() {
         title="Twilio API Credentials"
         description="Configure your Twilio account credentials"
         icon={MessageCircle}
-        iconColor="blue"
+        iconColor="primary"
       >
         <div className="space-y-4">
           <InputField

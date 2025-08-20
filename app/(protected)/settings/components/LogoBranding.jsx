@@ -48,7 +48,7 @@ export function LogoBranding() {
           htmlFor={value}
           className={`flex flex-row gap-4 items-center p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer ${
             logoType === value
-              ? 'border-primary bg-primary/10'
+              ? 'border-primary bg-gray-50'
               : 'border-gray-200 hover:border-gray-300'
           }`}
         >

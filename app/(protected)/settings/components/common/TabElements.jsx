@@ -29,8 +29,8 @@ export const SectionHeader = ({
 
   const iconColors = {
     primary: isDark
-      ? 'bg-primary-500/20 text-primary-400'
-      : 'bg-primary-100 text-primary-600',
+      ? 'bg-primary-500/20 text-primary'
+      : 'bg-primary/5 text-primary',
     green: isDark
       ? 'bg-green-500/20 text-green-400'
       : 'bg-green-100 text-green-600',
