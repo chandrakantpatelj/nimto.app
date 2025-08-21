@@ -1,15 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { apiFetch } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showCustomToast } from '@/components/common/custom-toast';
-import { TemplateHeader } from '../components';
 import { PixieEditor } from '@/components/image-editor';
+import { TemplateHeader } from '../components';
 import { useTemplateImage } from '@/hooks/use-template-image';
 
 
@@ -17,7 +17,7 @@ function EditTemplate() {
   const router = useRouter();
   const params = useParams();
   const templateId = params.id;
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -149,17 +149,21 @@ function EditTemplate() {
   // Get CSS background value for styling
   const getBackgroundStyle = (value) => {
     if (!value) return {};
-    
+
     // Check if it's a URL
     if (value.startsWith('http') || value.startsWith('/')) {
-      return { backgroundImage: `url(${value})`, backgroundSize: 'cover', backgroundPosition: 'center' };
+      return {
+        backgroundImage: `url(${value})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      };
     }
-    
+
     // Check if it's a gradient
     if (value.includes('gradient')) {
       return { background: value };
     }
-    
+
     // Default to color
     return { backgroundColor: value };
   };
@@ -187,7 +191,7 @@ function EditTemplate() {
 
       if (result.success && result.data) {
         const template = result.data;
-        
+
         // Prefill form with template data
         setFormData({
           name: template.name || '',
@@ -521,7 +525,7 @@ function EditTemplate() {
                           e.target.nextSibling.style.display = 'flex';
                         }}
                       />
-                      <div 
+                      <div
                         className="absolute inset-0 bg-gray-100 rounded-lg flex items-center justify-center"
                         style={{ display: 'none' }}
                       >
@@ -551,19 +555,21 @@ function EditTemplate() {
             </TabsContent>
           </Tabs>
         </aside>
-        <main 
+        <main
           className="flex-1 overflow-auto p-8"
           style={getBackgroundStyle(formData.pageBackground)}
         >
           <div className="container mx-auto px-4 py-8">
             <div className="mb-6">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">Image Editor</h1>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                Image Editor
+              </h1>
               <p className="text-gray-600">
                 Edit your image using the powerful Pixie editor
               </p>
             </div>
 
-            <div 
+            <div
               className="rounded-lg shadow-sm border border-gray-200 p-6"
               style={getBackgroundStyle(formData.background)}
             >
@@ -577,7 +583,7 @@ function EditTemplate() {
                   // Additional Pixie configuration options
                   ui: {
                     // Customize the UI as needed
-                  }
+                  },
                 }}
               />
             </div>
@@ -612,7 +618,7 @@ function EditTemplate() {
                   placeholder="e.g., #ffffff, linear-gradient(...), or image URL"
                 />
                 {/* Background preview */}
-                <div 
+                <div
                   className="w-full h-8 mt-2 rounded border"
                   style={getBackgroundStyle(formData.background)}
                 />
@@ -633,7 +639,7 @@ function EditTemplate() {
                   placeholder="e.g., #ffffff, linear-gradient(...), or image URL"
                 />
                 {/* Background preview */}
-                <div 
+                <div
                   className="w-full h-8 mt-2 rounded border"
                   style={getBackgroundStyle(formData.pageBackground)}
                 />
