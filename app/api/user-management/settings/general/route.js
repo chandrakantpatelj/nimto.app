@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { getClientIP } from '@/lib/api';
 import { prisma } from '@/lib/prisma';
-import { deleteFromS3, uploadToS3 } from '@/lib/s3-upload';
 import { systemLog } from '@/services/system-log';
 import { GeneralSettingsSchema } from '@/app/(protected)/user-management/settings/forms/general-settings-schema';
 import authOptions from '@/app/api/auth/[...nextauth]/auth-options';
@@ -77,11 +76,8 @@ export async function POST(request) {
 
     // Handle logo removal
     if (logoAction === 'remove' && currentSettings?.logo) {
-      try {
-        await deleteFromS3(currentSettings.logo);
-      } catch (error) {
-        console.error('Failed to remove logo from S3:', error);
-      }
+      // S3 functionality removed - logo will be set to null
+      console.log('Logo removal requested - S3 functionality disabled');
     }
 
     // Handle new logo upload
@@ -91,14 +87,11 @@ export async function POST(request) {
       logoFile &&
       logoFile.size > 0
     ) {
-      try {
-        logoUrl = await uploadToS3(logoFile, 'misc');
-      } catch {
-        return NextResponse.json(
-          { message: 'Failed to upload logo.' },
-          { status: 500 },
-        );
-      }
+      // S3 functionality removed - return error
+      return NextResponse.json(
+        { message: 'Logo upload is currently disabled.' },
+        { status: 503 },
+      );
     }
 
     // Save or update the settings in the database
