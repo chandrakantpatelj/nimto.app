@@ -142,7 +142,13 @@ function SwitchWrapper({ className, children, permanent = false, ...props }) {
   );
 }
 
-function Switch({ className, thumbClassName = '', shape, size, ...props }) {
+function Switch({
+  className,
+  thumbClassName = '',
+  shape,
+  size = 'sm',
+  ...props
+}) {
   const context = useSwitchContext();
   const permanent = context?.permanent ?? false;
 

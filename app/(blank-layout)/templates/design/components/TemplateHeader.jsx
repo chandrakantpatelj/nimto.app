@@ -8,7 +8,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Container } from '@/components/common/container';
 
-export function TemplateHeader({ onSave, loading = false, templateName = '', onTemplateNameChange, isUpdate = false }) {
+export function TemplateHeader({
+  onSave,
+  loading = false,
+  templateName = '',
+  onTemplateNameChange,
+  isUpdate = false,
+}) {
   const scrollPosition = useScrollPosition();
   const headerSticky = scrollPosition > 0;
 
@@ -19,13 +25,15 @@ export function TemplateHeader({ onSave, loading = false, templateName = '', onT
         headerSticky && 'border-b border-border',
       )}
     >
-      <Container
-        width="fluid"
-        className="flex justify-between items-stretch lg:gap-4"
-      >
+      <Container className="flex justify-between items-stretch lg:gap-4">
         {/* Left Section */}
         <div className="flex items-center gap-4">
-          <Button variant="secondary" appearance="ghost" asChild disabled={loading}>
+          <Button
+            variant="secondary"
+            appearance="ghost"
+            asChild
+            disabled={loading}
+          >
             <Link href="/templates">
               <ArrowLeft /> Back
             </Link>
@@ -40,18 +48,16 @@ export function TemplateHeader({ onSave, loading = false, templateName = '', onT
         </div>
 
         <div className="flex items-center  ml-auto">
-          <Button 
-            variant="primary" 
-            onClick={onSave}
-            disabled={loading}
-          >
+          <Button variant="primary" onClick={onSave} disabled={loading}>
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Saving...
               </>
+            ) : isUpdate ? (
+              'Update Template'
             ) : (
-              isUpdate ? 'Update Template' : 'Save Template'
+              'Save Template'
             )}
           </Button>
         </div>

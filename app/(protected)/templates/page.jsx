@@ -1,4 +1,6 @@
-import React, { Fragment } from 'react';
+'use client';
+
+import React, { Fragment, useState } from 'react';
 import Link from 'next/link';
 import { CirclePlus, Sparkles, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,9 +15,12 @@ import {
   ToolbarPageTitle,
 } from '@/app/components/partials/common/toolbar';
 import { PageNavbar } from '../account/page-navbar';
+import CreatewithAIpopup from './components/CreatewithAIpopup';
 import { TemplateManagement } from './content';
 
 function TemplateManagementPage() {
+  const [showAIDialog, setShowAIDialog] = useState(false);
+
   return (
     <Fragment>
       <PageNavbar />
@@ -26,7 +31,7 @@ function TemplateManagementPage() {
             <ToolbarDescription>Super Admin (Super Admin)</ToolbarDescription>
           </ToolbarHeading>
           <ToolbarActions>
-            <Button variant="secondary">
+            <Button variant="secondary" onClick={() => setShowAIDialog(true)}>
               <Sparkles /> Create With AI
             </Button>
             <Button variant="outline" asChild>
@@ -45,6 +50,7 @@ function TemplateManagementPage() {
       <Container>
         <TemplateManagement />
       </Container>
+      <CreatewithAIpopup show={showAIDialog} setShow={setShowAIDialog} />
     </Fragment>
   );
 }
