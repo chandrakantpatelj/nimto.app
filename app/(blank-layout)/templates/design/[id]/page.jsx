@@ -10,6 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showCustomToast } from '@/components/common/custom-toast';
 import { TemplateHeader } from '../components';
 import { PixieEditor } from '@/components/image-editor';
+import { useTemplateImage } from '@/hooks/use-template-image';
+
 
 function EditTemplate() {
   const router = useRouter();
@@ -24,6 +26,15 @@ function EditTemplate() {
   const [uploadedImageFile, setUploadedImageFile] = useState(null); // Store uploaded file for later saving
   const [uploadedImagePath, setUploadedImagePath] = useState(''); // Store uploaded image path
   const [templateImagePath, setTemplateImagePath] = useState(''); // Store template image path
+  
+  // Template image operations
+  const { 
+    getTemplateImage, 
+    saveTemplateImage, 
+    uploadTemplateImage, 
+    loading: imageLoading, 
+    error: imageError 
+  } = useTemplateImage();
 
   // Form state
   const [formData, setFormData] = useState({
@@ -68,22 +79,20 @@ function EditTemplate() {
     try {
       setIsLoading(true);
       
-      // Here you can handle the edited image data
-      // For example, save it to your server or update the form data
-      console.log('Edited image data:', editedImageData);
-      
-      // Update form data with the edited content
+      // Store the edited image data temporarily, don't upload to S3 yet
+      // The image will be uploaded when the template is saved
       setFormData((prev) => ({
         ...prev,
         htmlContent: editedImageData.html || '',
         content: editedImageData.content || [],
         backgroundStyle: editedImageData.backgroundStyle || {},
+        editedImageData: editedImageData, // Store for later upload
       }));
 
-      showCustomToast('Image saved successfully', 'success');
+      showCustomToast('Image changes saved locally. Click "Save Template" to update the image in S3.', 'success');
     } catch (error) {
       console.error('Error saving image:', error);
-      showCustomToast('Failed to save image', 'error');
+      showCustomToast('Failed to save image changes', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -93,8 +102,6 @@ function EditTemplate() {
     // Handle cancel action - could navigate back or reset
     router.back();
   };
-
-
 
   // Handle background changes
   const handleBackgroundChange = (type, value) => {
@@ -109,7 +116,7 @@ function EditTemplate() {
     }
   };
 
-  // Handle image upload - only load into Pixie, don't save to server yet
+  // Handle image upload - store file for later upload on form submit
   const handleImageUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -127,21 +134,15 @@ function EditTemplate() {
     }
 
     try {
-      setIsLoading(true);
-
-      // Create a temporary URL for the uploaded file
-      const tempImageUrl = URL.createObjectURL(file);
-      
-      // Store the file for later saving
+      // Store the file for later upload
       setUploadedImageFile(file);
-      setImageUrl(tempImageUrl);
       
-      showCustomToast('Image loaded successfully. Click "Save Template" to save it permanently.', 'success');
+      // Create a preview URL for the image
+      const previewUrl = URL.createObjectURL(file);
+      setImageUrl(previewUrl);
     } catch (error) {
-      console.error('Error loading image:', error);
-      showCustomToast('Failed to load image', 'error');
-    } finally {
-      setIsLoading(false);
+      console.error('Error handling image:', error);
+      showCustomToast(`Failed to process image: ${error.message}`, 'error');
     }
   };
 
@@ -202,11 +203,17 @@ function EditTemplate() {
 
         // Set image URL if template has one
         if (template.imagePath) {
-          setImageUrl(template.imagePath);
-          setTemplateImagePath(template.imagePath);
+          try {
+            // Get the full S3 URL for the template image
+            const imageData = await getTemplateImage(templateId);
+            setImageUrl(imageData.imageUrl);
+            setTemplateImagePath(template.imagePath);
+          } catch (err) {
+            console.log('No image found for template or failed to load');
+          }
         }
 
-        showCustomToast('Template loaded successfully', 'success');
+
       } else {
         throw new Error(result.error || 'Failed to load template');
       }
@@ -230,62 +237,59 @@ function EditTemplate() {
       setLoading(true);
       setError(null);
 
-      // First, save any uploaded image to the server
-      let finalImagePath = imageUrl;
-      if (uploadedImageFile) {
+      // Handle image upload/update logic
+      let finalImagePath = templateImagePath;
+
+      // Handle edited image from Pixie if there are changes
+      if (formData.editedImageData) {
         try {
-          const formData = new FormData();
-          formData.append('image', uploadedImageFile);
-
-          const response = await apiFetch('/api/save-image', {
-            method: 'POST',
-            body: formData,
+          const result = await saveTemplateImage(templateId, formData.editedImageData);
+          finalImagePath = result.imagePath;
+          setTemplateImagePath(result.imagePath);
+          // Clear the edited image data
+          setFormData((prev) => {
+            const { editedImageData, ...rest } = prev;
+            return rest;
           });
-
-          if (response.ok) {
-            const result = await response.json();
-            if (result.success) {
-              finalImagePath = result.imagePath;
-              setUploadedImagePath(result.imagePath);
-            }
-          }
+          
+          showCustomToast(`Template image updated! ${result.oldImageDeleted ? 'Old image replaced.' : ''}`, 'success');
         } catch (error) {
-          console.error('Failed to save uploaded image:', error);
-          throw new Error('Failed to save uploaded image');
+          console.error('Failed to save edited image:', error);
+          throw new Error('Failed to save edited image to S3');
         }
       }
 
-      // Then, save the Pixie image data and get the edited image
-      let editedImagePath = finalImagePath;
-      if (window.pixieSaveFunction) {
-        const pixieSaved = await window.pixieSaveFunction();
-        if (!pixieSaved) {
-          throw new Error('Failed to save image data');
-        }
-        
-        // Get the edited image from Pixie and save it
-        if (window.pixieRef?.current?.getImage) {
-          try {
-            const imageBlob = await window.pixieRef.current.getImage();
-            const formData = new FormData();
-            formData.append('image', imageBlob, 'edited-image.png');
-            
-            const response = await apiFetch('/api/save-image', {
-              method: 'POST',
-              body: formData,
-            });
-            
-            if (response.ok) {
-              const result = await response.json();
-              if (result.success) {
-                editedImagePath = result.imagePath;
-              }
-            }
-          } catch (error) {
-            console.warn('Failed to save edited image:', error);
-            // Continue with original image path if saving edited image fails
+      // If there's a new uploaded file, handle it
+      if (uploadedImageFile) {
+        try {
+          // Check if template already has an imagePath
+          if (templateImagePath) {
+            // Update existing image in S3
+            const result = await uploadTemplateImage(templateId, uploadedImageFile);
+            finalImagePath = result.imagePath;
+            setTemplateImagePath(result.imagePath);
+            showCustomToast('Template image updated in S3!', 'success');
+          } else {
+            // Add new image to S3
+            const result = await uploadTemplateImage(templateId, uploadedImageFile);
+            finalImagePath = result.imagePath;
+            setTemplateImagePath(result.imagePath);
+            showCustomToast('New image added to S3!', 'success');
           }
+          
+          // Clear the uploaded file
+          setUploadedImageFile(null);
+        } catch (error) {
+          console.error('Failed to upload/update image:', error);
+          throw new Error('Failed to upload image to S3');
         }
+      }
+
+      // Skip image refresh for now since S3 is not publicly accessible
+      // The image will be updated when there are actual changes
+      if (templateImagePath && !formData.editedImageData && !uploadedImageFile) {
+        console.log('📁 Using existing image path:', templateImagePath);
+        finalImagePath = templateImagePath;
       }
 
       // Validate required fields
@@ -307,8 +311,8 @@ function EditTemplate() {
         content: formData.content,
         backgroundStyle: formData.backgroundStyle,
         htmlContent: formData.htmlContent || null,
-        imagePath: editedImagePath,
-        previewImageUrl: editedImagePath,
+        imagePath: finalImagePath,
+        previewImageUrl: finalImagePath,
       };
 
       let response;
@@ -464,7 +468,7 @@ function EditTemplate() {
               <div className="py-3">
                 {/* Upload Image Section */}
                 <div className="mb-6">
-                  <Label className="text-muted-foreground mb-2 block">Load New Image</Label>
+                  <Label className="text-muted-foreground mb-2 block">Upload New Image</Label>
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 transition-colors">
                     <input
                       type="file"
@@ -472,20 +476,30 @@ function EditTemplate() {
                       onChange={handleImageUpload}
                       className="hidden"
                       id="image-upload"
+                      disabled={loading}
                     />
                     <label
                       htmlFor="image-upload"
-                      className="cursor-pointer flex flex-col items-center"
+                      className={`cursor-pointer flex flex-col items-center ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
-                      <svg className="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                      </svg>
-                      <span className="text-sm text-gray-600">
-                        {isLoading ? 'Loading...' : 'Click to load new image'}
-                      </span>
-                      <span className="text-xs text-gray-500 mt-1">
-                        PNG, JPG, GIF up to 5MB (saved when you save template)
-                      </span>
+                      {loading ? (
+                        <>
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                          <span className="text-sm text-gray-600">Uploading...</span>
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                          </svg>
+                          <span className="text-sm text-gray-600">
+                            Click to upload new image
+                          </span>
+                          <span className="text-xs text-gray-500 mt-1">
+                            PNG, JPG, GIF up to 5MB (uploads immediately to S3)
+                          </span>
+                        </>
+                      )}
                     </label>
                   </div>
                 </div>
@@ -494,15 +508,15 @@ function EditTemplate() {
                 {(templateImagePath || imageUrl) && (
                   <div className="mb-4">
                     <Label className="text-muted-foreground mb-2 block">
-                      {uploadedImageFile ? 'Uploaded Image' : 'Template Image'}
+                      Current Template Image
                     </Label>
                     <div className="relative">
                       <img
                         src={imageUrl || templateImagePath}
-                        alt={uploadedImageFile ? 'Uploaded Image' : 'Template Image'}
+                        alt="Template Image"
                         className="w-full h-32 object-cover rounded-lg border border-gray-200"
                         onError={(e) => {
-                          console.error('Image failed to load:', e.target.src);
+                          // console.error('Image failed to load:', e.target.src);
                           e.target.style.display = 'none';
                           e.target.nextSibling.style.display = 'flex';
                         }}
@@ -517,25 +531,20 @@ function EditTemplate() {
                       </div>
                       <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-all rounded-lg flex items-center justify-center">
                         <span className="text-white text-xs font-medium opacity-0 hover:opacity-100">
-                          {uploadedImageFile ? 'Uploaded Image' : 'Current Template Image'}
+                          Current Template Image
                         </span>
                       </div>
                     </div>
                     <p className="text-xs text-gray-500 mt-2">
-                      {uploadedImageFile 
-                        ? 'This is your uploaded image. It will be saved when you save the template.'
-                        : 'This is the image from the template. Upload a new image to replace it.'
-                      }
+                      This is the current template image stored in S3. Upload a new image to replace it, or edit with Pixie.
                     </p>
                   </div>
                 )}
 
                 <div className="text-xs text-gray-500">
-                  {uploadedImageFile 
-                    ? 'Your uploaded image is ready for editing. Click "Save Template" to save it permanently.'
-                    : templateImagePath 
-                      ? 'Upload a new image to replace the template image, or edit the current one.'
-                      : 'Upload an image to get started. Images are saved when you save the template.'
+                  {templateImagePath 
+                    ? 'Template image loaded from S3. Edit with Pixie or upload a new image to replace it.'
+                    : 'Upload an image to get started. Images are stored in S3 with unique paths.'
                   }
                 </div>
               </div>

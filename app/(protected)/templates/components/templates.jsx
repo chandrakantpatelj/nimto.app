@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Loader2, Search, Trash2 } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { toAbsoluteUrl } from '@/lib/helpers';
+import TemplateImageDisplay from '@/components/template-image-display';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -145,18 +146,11 @@ const Templates = () => {
           </div>
         )}
         <div className="flex flex-col gap-2 justify-between h-100">
-          <div className=" min-h-32 h-100 overflow-hidden rounded-tr-xl rounded-tl-xl">
-            <img
-              src={
-                template.previewImageUrl ||
-                template.imagePath ||
-                toAbsoluteUrl('/media/template-img.png')
-              }
-              className="w-full "
-              alt={template.name}
-              onError={(e) => {
-                e.target.src = toAbsoluteUrl('/media/template-img.png');
-              }}
+          <div className="min-h-32 h-100 overflow-hidden rounded-tr-xl rounded-tl-xl">
+            <TemplateImageDisplay 
+              template={template}
+              className="w-full h-32 object-cover"
+              key={`template-image-${template.id}`}
             />
           </div>
           <div className="p-3">

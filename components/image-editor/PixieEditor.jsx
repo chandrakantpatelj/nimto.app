@@ -124,6 +124,7 @@ const PixieEditor = ({
         if (pixieRef.current?.getState) {
           try {
             const state = pixieRef.current.getState();
+            console.log('saving image:', state);
             if (onSave) await onSave(state);
             return true;
           } catch (error) {
@@ -199,18 +200,24 @@ const PixieEditor = ({
         </div>
       )}
 
-      {/* No Image State */}
+      {/* No Image State - Full Canvas */}
       {!error && !isLoading && !imageUrl && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-50 rounded-lg z-10">
-          <div className="text-center space-y-3">
-            <div className="w-16 h-16 mx-auto bg-gray-200 rounded-xl flex items-center justify-center">
-              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div 
+          style={{ width, height }}
+          className="border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 flex items-center justify-center"
+        >
+          <div className="text-center space-y-4">
+            <div className="w-20 h-20 mx-auto bg-gray-200 rounded-xl flex items-center justify-center">
+              <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
             <div>
-              <h3 className="text-lg font-medium text-gray-700">No Image Selected</h3>
-              <p className="text-sm text-gray-500">Please upload an image to get started</p>
+              <h3 className="text-xl font-medium text-gray-700 mb-2">No Image Selected</h3>
+              <p className="text-sm text-gray-500 mb-4">Please upload an image to get started</p>
+              <div className="text-xs text-gray-400">
+                Canvas Size: {width} × {height}
+              </div>
             </div>
           </div>
         </div>
