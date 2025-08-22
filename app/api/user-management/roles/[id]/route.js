@@ -67,13 +67,21 @@ export async function PUT(request, context) {
     }
 
     // Check if record exists
-    const existingCategory = await prisma.userRole.findUnique({
+    const existingRole = await prisma.userRole.findUnique({
       where: { id },
     });
-    if (!existingCategory) {
+    if (!existingRole) {
       return NextResponse.json(
         { message: 'Record not found. Someone might have deleted it already.' },
         { status: 404 },
+      );
+    }
+
+    // Check if the role is protected and prevent editing
+    if (existingRole.isProtected) {
+      return NextResponse.json(
+        { message: 'Cannot edit a protected role' },
+        { status: 403 },
       );
     }
 
