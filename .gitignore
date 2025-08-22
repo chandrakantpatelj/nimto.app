@@ -47,3 +47,6 @@ coverage/
 # Optional: build or temp folders
 dist/
 tmp/
+
+# Environment variables
+.env
