@@ -44,7 +44,7 @@ function ExitEditorPopup({ show, setShow }) {
             <Button variant="outline">Cancel</Button>
           </DialogClose>
           <Button variant="destructive" onClick={() => setShow(false)} asChild>
-            <Link href="/host/events"> Yes, Exit</Link>
+            <Link href="/events"> Yes, Exit</Link>
           </Button>
         </DialogFooter>
       </DialogContent>

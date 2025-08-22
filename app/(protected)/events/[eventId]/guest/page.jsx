@@ -1,6 +1,6 @@
 import { Fragment } from 'react';
 import Link from 'next/link';
-import { CirclePlus } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Container } from '@/components/common/container';
 import {
@@ -8,12 +8,9 @@ import {
   ToolbarActions,
   ToolbarHeading,
 } from '@/components/common/toolbar';
-import {
-  ToolbarDescription,
-  ToolbarPageTitle,
-} from '@/app/components/partials/common/toolbar';
-import { PageNavbar } from '../../account/page-navbar';
-import { EventManagement } from './content';
+import { PageNavbar } from '@/app/(protected)/account/page-navbar';
+import { ToolbarPageTitle } from '@/app/components/partials/common/toolbar';
+import { ManageGuestContent } from './content';
 
 function EventManagementPage() {
   return (
@@ -22,20 +19,19 @@ function EventManagementPage() {
       <Container>
         <Toolbar>
           <ToolbarHeading>
-            <ToolbarPageTitle text="Events" />
-            <ToolbarDescription>Super Admin (Super Admin)</ToolbarDescription>
+            <ToolbarPageTitle text="Manage Invitations: Birthday Party" />
           </ToolbarHeading>
           <ToolbarActions>
-            <Button variant="primary" asChild>
-              <Link href="/host/events/select-template">
-                <CirclePlus /> Create New Event
+            <Button variant="secondary" appearance="ghost" asChild>
+              <Link href="/events">
+                <ArrowLeft /> Back
               </Link>
             </Button>
           </ToolbarActions>
         </Toolbar>
       </Container>
       <Container>
-        <EventManagement />
+        <ManageGuestContent />
       </Container>
     </Fragment>
   );
