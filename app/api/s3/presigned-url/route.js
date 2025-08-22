@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import {  NextResponse } from 'next/server';
 import { generatePresignedUploadUrl, validateFile } from '@/lib/s3-presigned';
 
 export async function POST(request) {
