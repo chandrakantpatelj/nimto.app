@@ -8,16 +8,7 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import {
-  Ellipsis,
-  Plus,
-  Search,
-  ShieldAlert,
-  UserRound,
-  X,
-  Edit,
-  Trash2,
-} from 'lucide-react';
+import { Edit, Plus, Search, ShieldAlert, Trash2, X } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -26,16 +17,15 @@ import { DataGrid } from '@/components/ui/data-grid';
 import { DataGridColumnHeader } from '@/components/ui/data-grid-column-header';
 import { DataGridPagination } from '@/components/ui/data-grid-pagination';
 import { DataGridTable } from '@/components/ui/data-grid-table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import RoleDefaultDialog from './role-default-dialog';
 import RoleDeleteDialog from './role-delete-dialog';
 import RoleEditDialog from './role-edit-dialog';
@@ -104,7 +94,7 @@ const RoleList = () => {
 
     if (!response.ok) {
       throw new Error(
-        'Oops! Something didn\'t go as planned. Please try again in a moment.',
+        "Oops! Something didn't go as planned. Please try again in a moment.",
       );
     }
 
@@ -149,14 +139,16 @@ const RoleList = () => {
         accessorKey: 'description',
         id: 'description',
         header: ({ column }) => (
-          <DataGridColumnHeader title="DESCRIPTION" column={column} visibility />
+          <DataGridColumnHeader
+            title="DESCRIPTION"
+            column={column}
+            visibility
+          />
         ),
         cell: (info) => {
           const value = info.getValue();
           return (
-            <div className="text-sm text-muted-foreground">
-              {value || '-'}
-            </div>
+            <div className="text-sm text-muted-foreground">{value || '-'}</div>
           );
         },
         size: 300,
@@ -208,19 +200,31 @@ const RoleList = () => {
         header: 'ACTIONS',
         cell: ({ row }) => {
           const isProtected = row.original.isProtected;
-          
+
           return (
             <div className="flex items-center gap-2">
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => {
-                  setEditRole(row.original);
-                  setEditDialogOpen(true);
-                }}
-              >
-                <Edit className="h-4 w-4" />
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={isProtected}
+                      onClick={() => {
+                        setEditRole(row.original);
+                        setEditDialogOpen(true);
+                      }}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  {isProtected && (
+                    <TooltipContent>
+                      <p>Protected roles cannot be edited</p>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
               {!isProtected && (
                 <Button
                   size="sm"

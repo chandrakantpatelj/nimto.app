@@ -12,7 +12,7 @@ export function RoleBasedEventContent() {
   // Route mapping based on user role - only supporting the four specified roles
   const getRoleComponent = () => {
     if (roles.isSuperAdmin) {
-      return <HostEventContent />;
+      return <AdminEventContent />;
     }
 
     if (roles.isApplicationAdmin) {
