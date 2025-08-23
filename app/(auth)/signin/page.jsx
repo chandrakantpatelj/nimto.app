@@ -50,11 +50,21 @@ export default function Page() {
         rememberMe: values.rememberMe,
       });
 
+      // Debug logging for production
+      console.log('Environment:', process.env.NODE_ENV);
+      console.log('Base Path:', process.env.NEXT_PUBLIC_BASE_PATH);
+      console.log('SignIn Response:', response);
+
       if (response?.error) {
+        console.log('Auth Error:', response.error);
         const errorData = JSON.parse(response.error);
         setError(errorData.message);
-      } else {
+      } else if (response?.ok) {
+        console.log('Auth Success - Redirecting to /');
         router.push('/');
+      } else {
+        console.log('Unexpected response:', response);
+        setError('Authentication failed. Please try again.');
       }
     } catch (err) {
       setError(
