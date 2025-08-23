@@ -35,6 +35,9 @@ import { Switch } from '@/components/ui/switch';
 
 export function UserDropdownMenu({ trigger }) {
   const { data: session, status } = useSession();
+
+  console.log('session98597', session);
+
   const { changeLanguage, language } = useLanguage();
   const { theme, setTheme } = useTheme();
 
