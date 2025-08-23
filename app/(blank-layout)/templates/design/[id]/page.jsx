@@ -11,7 +11,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showCustomToast } from '@/components/common/custom-toast';
 import { PixieEditor } from '@/components/image-editor';
-import { TemplateHeader } from '../components';
+import { TemplateHeader } from '../../../events/components';
 
 function EditTemplate() {
   const router = useRouter();

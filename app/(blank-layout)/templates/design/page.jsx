@@ -9,7 +9,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showCustomToast } from '@/components/common/custom-toast';
 import PixieEditor from '@/components/image-editor/PixieEditor';
-import { TemplateHeader } from './components';
+import { TemplateHeader } from '../../events/components';
 
 function Design() {
   const router = useRouter();
