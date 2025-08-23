@@ -1,8 +1,10 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { apiFetch } from '@/lib/api';
+import { getProxiedImageUrl, isExternalImageUrl } from '@/lib/image-proxy';
+import { useTemplateImage } from '@/hooks/use-template-image';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -10,8 +12,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showCustomToast } from '@/components/common/custom-toast';
 import { PixieEditor } from '@/components/image-editor';
 import { TemplateHeader } from '../components';
-import { useTemplateImage } from '@/hooks/use-template-image';
-
 
 function EditTemplate() {
   const router = useRouter();
@@ -31,14 +31,14 @@ function EditTemplate() {
   const [pixieEditorReady, setPixieEditorReady] = useState(false); // Track if Pixie editor is ready
   const latestUserEditsRef = useRef(null); // Track the latest user edits for testing
   const pixieSaveFunctionRef = useRef(null); // Store the Pixie save function
-  
+
   // Template image operations
-  const { 
-    getTemplateImage, 
-    saveTemplateImage, 
-    uploadTemplateImage, 
-    loading: imageLoading, 
-    error: imageError 
+  const {
+    getTemplateImage,
+    saveTemplateImage,
+    uploadTemplateImage,
+    loading: imageLoading,
+    error: imageError,
   } = useTemplateImage();
 
   // Form state
@@ -80,104 +80,48 @@ function EditTemplate() {
   };
 
   // Extract only user edits from Pixie data
-  const extractUserEdits = (pixieData) => {
-    
-    if (!pixieData) {
-      return null;
-    }
+  const extractUserEdits = (data) => {
+    if (!data) return null;
 
-    // Parse the data if it's a string
-    let parsedData = pixieData;
-    if (typeof pixieData === 'string') {
+    let parsedData = data;
+    if (typeof data === 'string') {
       try {
-        parsedData = JSON.parse(pixieData);
-      } catch (error) {
+        parsedData = JSON.parse(data);
+      } catch (e) {
+        console.error('Failed to parse data:', e);
         return null;
       }
     }
 
+    // Return the complete data structure as-is
+    // This includes all user modifications: filters, text, drawings, stickers, frames, etc.
+    return {
+      // Complete Pixie state
+      // pixieState: parsedData,
 
-    let canvasData = null;
-    let objects = [];
-    
-    if (parsedData.canvas && parsedData.canvas.objects) {
-      canvasData = parsedData.canvas;
-      objects = parsedData.canvas.objects;
-    } else {
-      return null;
-    }
+      // Canvas data with all objects
+      canvas: parsedData.canvas || null,
 
+      // Editor state
+      editor: parsedData.editor || null,
 
-    const userEdits = {
-      canvas: {
-        version: canvasData.version || "5.3.0",
-        objects: [],
-        width: parsedData.canvasWidth || canvasData.width || 500,
-        height: parsedData.canvasHeight || canvasData.height || 389
-      },
-      editor: {
-        zoom: parsedData.editor?.zoom || 1,
-        activeObjectId: parsedData.editor?.activeObjectId || null
-      }
+      // Individual components for easy access
+      // objects: parsedData.canvas?.objects || [],
+      // filters: parsedData.filters || null,
+      // globalFilters: parsedData.globalFilters || null,
+      // imageFilters: parsedData.imageFilters || null,
+      // filteredObjects: parsedData.filteredObjects || null,
+
+      // Metadata
+      timestamp: parsedData.timestamp || new Date().toISOString(),
+      version: parsedData.version || '1.0',
+
+      // Exported image
+      // exportedImage: parsedData.exportedImage || null,
+
+      // HTML content if available
+      // htmlContent: parsedData.html || null
     };
-
-    // Process objects to find user-created content
-    if (Array.isArray(objects)) {
-      objects.forEach((obj, index) => {
-        
-        
-        // Skip the main image object (it's the base image)
-        if (obj.name === 'mainImage' || obj.type === 'image') {
-          return;
-        }
-        
-                // Include all objects except the base image
-        if (obj.type !== 'image') {
-          
-          // Optimize the object by keeping only essential properties
-          const optimizedObj = {
-            type: obj.type,
-            left: obj.left,
-            top: obj.top,
-            width: obj.width,
-            height: obj.height,
-            angle: obj.angle || 0,
-            scaleX: obj.scaleX || 1,
-            scaleY: obj.scaleY || 1,
-            fill: obj.fill,
-            opacity: obj.opacity || 1,
-            visible: obj.visible !== false
-          };
-
-          // Add type-specific properties
-          if (obj.type === 'i-text' || obj.type === 'text') {
-            optimizedObj.text = obj.text;
-            optimizedObj.fontFamily = obj.fontFamily;
-            optimizedObj.fontSize = obj.fontSize;
-            optimizedObj.fontWeight = obj.fontWeight || 'normal';
-            optimizedObj.textAlign = obj.textAlign || 'initial';
-            optimizedObj.underline = obj.underline || false;
-            optimizedObj.fontStyle = obj.fontStyle || 'normal';
-          } else if (obj.type === 'path') {
-            optimizedObj.path = obj.path;
-            optimizedObj.stroke = obj.stroke;
-            optimizedObj.strokeWidth = obj.strokeWidth;
-            optimizedObj.strokeLineCap = obj.strokeLineCap;
-            optimizedObj.strokeLineJoin = obj.strokeLineJoin;
-          } else if (obj.type === 'rect' || obj.type === 'circle' || obj.type === 'triangle' || obj.type === 'polygon') {
-            optimizedObj.stroke = obj.stroke;
-            optimizedObj.strokeWidth = obj.strokeWidth;
-            if (obj.type === 'circle') {
-              optimizedObj.radius = obj.radius;
-            }
-          }
-
-          userEdits.canvas.objects.push(optimizedObj);
-        } 
-      });
-    }
-
-    return userEdits;
   };
 
   // Pixie editor handlers
@@ -185,32 +129,39 @@ function EditTemplate() {
     try {
       setIsLoading(true);
 
-      // Extract only user edits
+      // Debug: Log the full edited image data to see all modifications
+      console.log('Complete Pixie data:', editedImageData);
+
+      // Extract all user edits and modifications
       const userEdits = extractUserEdits(editedImageData);
-      
+
+      // Debug: Log the extracted user edits
+      console.log('Extracted complete user edits:', userEdits);
+
       // Store the latest user edits in ref for testing
       latestUserEditsRef.current = userEdits;
-      
-      // Store only the user edits in the content field
+
+      // Store the complete data in the content field
       setFormData((prev) => {
         const newFormData = {
           ...prev,
+          content: userEdits, // Store complete data
           htmlContent: editedImageData.html || '',
-          content: userEdits, // Store only user edits, not the full canvas state
-          backgroundStyle: editedImageData.backgroundStyle || {},
-          editedImageData: editedImageData, // Keep full data for image generation if needed
+          background: editedImageData.background || prev.background,
+          pageBackground: editedImageData.pageBackground || prev.pageBackground,
         };
-        
+
+        // Update local storage with complete data
+        localStorage.setItem('templateFormData', JSON.stringify(newFormData));
+
         return newFormData;
       });
 
-      // Set flag to indicate Pixie data has been captured
-      setPixieDataCaptured(true);
-
-      showCustomToast('Image changes saved locally. Click "Save Template" to update the template with user edits.', 'success');
+      // Show success message
+      showCustomToast('Template saved successfully!', 'success');
     } catch (error) {
-      console.error('Error saving image:', error);
-      showCustomToast('Failed to save image changes', 'error');
+      console.error('Error saving template:', error);
+      showCustomToast('Failed to save template', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -236,9 +187,7 @@ function EditTemplate() {
 
   // Handle Pixie editor ready
   const handlePixieEditorReady = (saveFunction) => {
-    pixieSaveFunctionRef.current = saveFunction;
-    setPixieEditorReady(true);
-    setPixieDataCaptured(false); // Reset capture status when editor is ready
+    // Store the save function for later use
   };
 
   // Fallback to mark editor as ready after a timeout
@@ -251,41 +200,6 @@ function EditTemplate() {
       return () => clearTimeout(timeout);
     }
   }, [imageUrl, pixieEditorReady]);
-
-  // Test function to manually capture Pixie editor data
-  const handleTestPixieData = async () => {
-    try {
-      
-      // Check if Pixie editor is ready
-      if (!pixieEditorReady) {
-        showCustomToast('Pixie editor is still loading. Please wait a moment and try again.', 'error');
-        return;
-      }
-      
-      // Check if Pixie editor is available (try ref first, then window as fallback)
-      const saveFunction = pixieSaveFunctionRef.current || window.pixieSaveFunction;
-      if (saveFunction) {
-        const success = await saveFunction();
-        if (success) {
-          
-          // Show the latest user edits from ref
-          const latestUserEdits = latestUserEditsRef.current;
-      
-          
-          // Also show current formData for comparison
-          
-          showCustomToast('User edits captured! Check console for details.', 'success');
-        } else {
-          showCustomToast('Failed to capture Pixie data', 'error');
-        }
-      } else {
-        showCustomToast('Pixie editor not ready yet. Please wait for it to load.', 'error');
-      }
-    } catch (error) {
-      console.error('Error testing Pixie data capture:', error);
-      showCustomToast('Error testing Pixie data capture', 'error');
-    }
-  };
 
   // Handle image upload - store file for later upload on form submit
   const handleImageUpload = async (event) => {
@@ -305,18 +219,15 @@ function EditTemplate() {
 
     try {
       // Store the file for later upload
+      console.log('file', file);
       setUploadedImageFile(file);
-      
+
       // Create a preview URL for the image
       const previewUrl = URL.createObjectURL(file);
+      console.log('previewUrl', previewUrl);
+
       setImageUrl(previewUrl);
-      
-      // Reset editor state when image changes
-      setPixieEditorReady(false);
-      setPixieDataCaptured(false);
-      pixieSaveFunctionRef.current = null;
     } catch (error) {
-      console.error('Error handling image:', error);
       showCustomToast(`Failed to process image: ${error.message}`, 'error');
     }
   };
@@ -382,9 +293,7 @@ function EditTemplate() {
 
         // Log the retrieved Pixie data
         if (template.content) {
-       
           // Show toast notification about loading saved edits
-          showCustomToast(`Loading ${template.content?.canvas?.objects?.length || 0} saved user edits...`, 'info');
         }
 
         // Set image URL if template has one
@@ -393,14 +302,25 @@ function EditTemplate() {
             setTemplateImageLoading(true);
             // Get the full S3 URL for the template image
             const imageData = await getTemplateImage(templateId);
-            setImageUrl(imageData.imageUrl);
+            const originalUrl = imageData.imageUrl;
+
+            // Use proxied URL for external images to avoid CORS issues
+            if (isExternalImageUrl(originalUrl)) {
+              const proxiedUrl = getProxiedImageUrl(originalUrl);
+              setImageUrl(proxiedUrl);
+            } else {
+              setImageUrl(originalUrl);
+            }
+
             setTemplateImagePath(template.imagePath);
           } catch (err) {
             console.error('❌ Failed to load template image:', err);
             // Try to construct the URL manually as fallback
             try {
               const fallbackUrl = `https://nimptotemplatebucket.s3.ap-southeast-2.amazonaws.com/nimptotemplatebucket/${template.imagePath}`;
-              setImageUrl(fallbackUrl);
+              // Use proxied URL for the fallback as well
+              const proxiedFallbackUrl = getProxiedImageUrl(fallbackUrl);
+              setImageUrl(proxiedFallbackUrl);
               setTemplateImagePath(template.imagePath);
             } catch (fallbackErr) {
               console.error('❌ Fallback URL also failed:', fallbackErr);
@@ -408,10 +328,7 @@ function EditTemplate() {
           } finally {
             setTemplateImageLoading(false);
           }
-        } 
-
-
-
+        }
       } else {
         throw new Error(result.error || 'Failed to load template');
       }
@@ -427,7 +344,6 @@ function EditTemplate() {
   // Load template data on component mount
   useEffect(() => {
     fetchTemplateData();
-
   }, [templateId]);
 
   // Save template function
@@ -435,14 +351,15 @@ function EditTemplate() {
     try {
       setLoading(true);
       setError(null);
-      let userEdits={}
-      const saveFunction = pixieSaveFunctionRef.current || window.pixieSaveFunction;
+      let userEdits = {};
+      const saveFunction =
+        pixieSaveFunctionRef.current || window.pixieSaveFunction;
       if (saveFunction) {
         const success = await saveFunction();
         if (success) {
           const latestUserEdits = latestUserEditsRef.current;
-           userEdits = extractUserEdits(latestUserEdits);
-        
+          console.log('latestUserEdits', latestUserEdits);
+          userEdits = extractUserEdits(latestUserEdits);
         }
       }
 
@@ -472,17 +389,16 @@ function EditTemplate() {
       let response;
       let successMessage;
 
-    
-        // Update existing template
-        response = await apiFetch(`/api/template/${templateId}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(templateData),
-        });
-        successMessage = 'Template updated successfully with Pixie edits';
-      
+      // Update existing template
+      response = await apiFetch(`/api/template/${templateId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(templateData),
+      });
+      successMessage = 'Template updated successfully with Pixie edits';
+
       // else {
       //   // Create new template
       //   response = await apiFetch('/api/template/create-template', {
@@ -497,7 +413,6 @@ function EditTemplate() {
 
       if (!response.ok) {
         const errorData = await response.json();
-    
 
         throw new Error(errorData.error || 'Failed to save template');
       }
@@ -505,15 +420,13 @@ function EditTemplate() {
       const result = await response.json();
 
       if (result.success) {
-   
-        uploadedImageFile && await uploadTemplateImage(templateId, uploadedImageFile);
+        uploadedImageFile &&
+          (await uploadTemplateImage(templateId, uploadedImageFile));
 
-        showCustomToast(successMessage, 'success');
         router.push('/templates');
       } else {
         throw new Error(result.error || 'Failed to save template');
       }
-      
     } catch (err) {
       console.error('Error in save template function:', err);
       setError(err.message);
@@ -544,173 +457,147 @@ function EditTemplate() {
       />
       <div className="flex flex-1 overflow-hidden">
         <aside className="w-64 flex-shrink-0 bg-white p-4 border-r border-slate-200 overflow-y-auto min-h-[calc(100vh-var(--header-height))] h-100">
-          <Tabs
-            defaultValue="profile"
-            className="text-sm text-muted-foreground"
-          >
-            <TabsList variant="line">
-              <TabsTrigger value="profile">Details</TabsTrigger>
-              <TabsTrigger value="security">Design</TabsTrigger>
-            </TabsList>
-            <TabsContent value="profile">
-              <div className="py-3">
-                {error && (
-                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-                    <p className="text-red-600 text-sm">{error}</p>
-                  </div>
-                )}
+          <div className="py-3">
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-red-600 text-sm">{error}</p>
+              </div>
+            )}
 
-                <div className="w-full mb-5">
-                  <Label className="text-muted-foreground">Template Name</Label>
-                  <Input
-                    type="text"
-                    value={formData.name}
-                    onChange={handleTemplateNameChange}
-                    placeholder="Enter template name"
-                  />
-                </div>
-                <div className="w-full mb-5">
-                  <Label className="text-muted-foreground">Category</Label>
-                  <Input
-                    type="text"
-                    value={formData.category}
-                    onChange={(e) =>
-                      handleInputChange('category', e.target.value)
-                    }
-                    placeholder="e.g., Birthday, Corporate, Wedding"
-                  />
-                </div>
-                <Label className="text-muted-foreground">Type </Label>
+            <div className="w-full mb-5">
+              <Label className="text-muted-foreground">Template Name</Label>
+              <Input
+                type="text"
+                value={formData.name}
+                onChange={handleTemplateNameChange}
+                placeholder="Enter template name"
+              />
+            </div>
+            <div className="w-full mb-5">
+              <Label className="text-muted-foreground">Category</Label>
+              <Input
+                type="text"
+                value={formData.category}
+                onChange={(e) => handleInputChange('category', e.target.value)}
+                placeholder="e.g., Birthday, Corporate, Wedding"
+              />
+            </div>
+            <Label className="text-muted-foreground">Type </Label>
 
-                <RadioGroup
-                  value={formData.isPremium ? 'premium' : 'free'}
-                  onValueChange={handleTypeChange}
-                  className="flex items-center gap-5 mb-5"
+            <RadioGroup
+              value={formData.isPremium ? 'premium' : 'free'}
+              onValueChange={handleTypeChange}
+              className="flex items-center gap-5 mb-5"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="free" id="free" />
+                <Label
+                  htmlFor="free"
+                  className="text-foreground text-sm font-normal"
                 >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="free" id="free" />
-                    <Label
-                      htmlFor="free"
-                      className="text-foreground text-sm font-normal"
-                    >
-                      Free
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="premium" id="premium" />
-                    <Label
-                      htmlFor="premium"
-                      className="text-foreground text-sm font-normal"
-                    >
-                      Premium
-                    </Label>
-                  </div>
-                </RadioGroup>
-                {formData.isPremium && (
-                  <div className="w-full mb-5">
-                    <Label className="text-muted-foreground">
-                      Price (in dollars)
-                    </Label>
-                    <Input
-                      type="number"
-                      value={formData.price}
-                      onChange={(e) =>
-                        handleInputChange('price', e.target.value)
-                      }
-                      placeholder="0.00"
-                      min="0"
-                      step="0.01"
-                    />
-                  </div>
-                )}
+                  Free
+                </Label>
               </div>
-            </TabsContent>
-            <TabsContent value="security">
-              <div className="py-3">
-                {/* Upload Image Section */}
-                <div className="mb-6">
-                  <Label className="text-muted-foreground mb-2 block">Upload New Image</Label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 transition-colors">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="hidden"
-                      id="image-upload"
-                      disabled={loading}
-                    />
-                    <label
-                      htmlFor="image-upload"
-                      className={`cursor-pointer flex flex-col items-center ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    >
-                      {loading ? (
-                        <>
-                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-                          <span className="text-sm text-gray-600">Uploading...</span>
-                        </>
-                      ) : (
-                        <>
-                          <svg className="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                          </svg>
-                          <span className="text-sm text-gray-600">
-                            Click to upload new image
-                          </span>
-                          <span className="text-xs text-gray-500 mt-1">
-                            PNG, JPG, GIF up to 5MB (uploads immediately to S3)
-                          </span>
-                        </>
-                      )}
-                    </label>
-                  </div>
-                </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="premium" id="premium" />
+                <Label
+                  htmlFor="premium"
+                  className="text-foreground text-sm font-normal"
+                >
+                  Premium
+                </Label>
+              </div>
+            </RadioGroup>
+            {formData.isPremium && (
+              <div className="w-full mb-5">
+                <Label className="text-muted-foreground">
+                  Price (in dollars)
+                </Label>
+                <Input
+                  type="number"
+                  value={formData.price}
+                  onChange={(e) => handleInputChange('price', e.target.value)}
+                  placeholder="0.00"
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+            )}
 
-                {/* Current Image Section */}
-                {(templateImagePath || imageUrl) && (
-                  <div className="mb-4">
-                    <Label className="text-muted-foreground mb-2 block">
-                      Current Template Image
-                    </Label>
-                    <div className="relative">
-                      <img
-                        src={imageUrl || templateImagePath}
-                        alt="Template Image"
-                        className="w-full h-32 object-cover rounded-lg border border-gray-200"
-                        onError={(e) => {
-                          // console.error('Image failed to load:', e.target.src);
-                          e.target.style.display = 'none';
-                          e.target.nextSibling.style.display = 'flex';
-                        }}
+            {/* Upload Image Section */}
+            <div className="w-full mb-5">
+              <Label className="text-muted-foreground mb-2 block">
+                Template Image
+              </Label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+                id="image-upload"
+                disabled={loading}
+              />
+              <label
+                htmlFor="image-upload"
+                className={`inline-flex items-center px-4 py-2 border border-blue-300 rounded-md shadow-sm text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+              >
+                {loading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      className="w-4 h-4 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                       />
-                      <div
-                        className="absolute inset-0 bg-gray-100 rounded-lg flex items-center justify-center"
-                        style={{ display: 'none' }}
-                      >
-                        <span className="text-gray-500 text-xs">
-                          Image failed to load
-                        </span>
-                      </div>
-                      <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-all rounded-lg flex items-center justify-center">
-                        <span className="text-white text-xs font-medium opacity-0 hover:opacity-100">
-                          Current Template Image
-                        </span>
-                      </div>
-                    </div>
-                    <p className="text-xs text-gray-500 mt-2">
-                      This is the current template image stored in S3. Upload a new image to replace it, or edit with Pixie.
-                    </p>
-                  </div>
+                    </svg>
+                    Upload Image
+                  </>
                 )}
+              </label>
+              <p className="text-xs text-gray-500 mt-1">
+                PNG, JPG, GIF up to 5MB
+              </p>
+            </div>
 
-                <div className="text-xs text-gray-500">
-                  {templateImagePath 
-                    ? 'Template image loaded from S3. Edit with Pixie or upload a new image to replace it.'
-                    : 'Upload an image to get started. Images are stored in S3 with unique paths.'
-                  }
+            {/* Current Image Preview */}
+            {(templateImagePath || imageUrl) && (
+              <div className="w-full mb-5">
+                <Label className="text-muted-foreground mb-2 block">
+                  Current Image
+                </Label>
+                <div className="relative">
+                  <img
+                    src={imageUrl || templateImagePath}
+                    alt="Template Image"
+                    className="w-full h-24 object-cover rounded-lg border border-gray-200"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                  <div
+                    className="absolute inset-0 bg-gray-100 rounded-lg flex items-center justify-center"
+                    style={{ display: 'none' }}
+                  >
+                    <span className="text-gray-500 text-xs">
+                      Image failed to load
+                    </span>
+                  </div>
                 </div>
               </div>
-            </TabsContent>
-          </Tabs>
+            )}
+          </div>
         </aside>
         <main
           className="flex-1 overflow-auto p-8"
@@ -735,8 +622,12 @@ function EditTemplate() {
                   <div className="text-center space-y-4">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
                     <div>
-                      <h3 className="text-lg font-medium text-gray-700">Loading Template Image</h3>
-                      <p className="text-sm text-gray-500">Fetching image from S3...</p>
+                      <h3 className="text-lg font-medium text-gray-700">
+                        Loading Template Image
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        Fetching image from S3...
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -756,12 +647,21 @@ function EditTemplate() {
                     allowExternalImages: true,
                     cors: {
                       allowExternalImages: true,
-                      allowCrossOrigin: true
+                      allowCrossOrigin: true,
+                      allowCredentials: true,
                     },
                     export: {
                       allowExternalImages: true,
-                      ignoreExternalImageErrors: true
-                    }
+                      ignoreExternalImageErrors: true,
+                      format: 'png',
+                      quality: 1,
+                    },
+                    tools: {
+                      crop: {
+                        allowExternalImages: true,
+                        ignoreExternalImageErrors: true,
+                      },
+                    },
                   }}
                 />
               )}
@@ -782,247 +682,7 @@ function EditTemplate() {
             <h3 className="font-semibold text-lg mb-2 border-b pb-2">
               Canvas Settings
             </h3>
-            
-            {/* Test Button for Pixie Data Capture */}
-            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <h4 className="font-medium text-yellow-800 mb-2">🧪 Testing Mode</h4>
-              <p className="text-sm text-yellow-700 mb-3">
-                Click to manually capture user edits (text, drawings, shapes) and log to console
-              </p>
-              <div className="text-xs text-yellow-600 mb-3 p-2 bg-yellow-100 rounded">
-                <strong>Note:</strong> External images (from S3) may show export warnings, but user edits will still be captured.
-              </div>
-              {!pixieEditorReady && (
-                <div className="text-xs text-blue-600 mb-3 p-2 bg-blue-100 rounded">
-                  <strong>Loading:</strong> Please wait for the Pixie editor to fully load before testing.
-                </div>
-              )}
-              <button
-                onClick={handleTestPixieData}
-                className="w-full px-3 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition-colors text-sm font-medium mb-2"
-              >
-                Test Pixie Data Capture
-              </button>
-              
-              {!pixieEditorReady && (
-                <button
-                  onClick={() => {
-                    setPixieEditorReady(true);
-                  }}
-                  className="w-full px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm font-medium mb-2"
-                >
-                  Force Editor Ready
-                </button>
-              )}
-              
-              {/* Debug: Set test image */}
-              <button
-                onClick={() => {
-                  const testImageUrl = 'https://nimptotemplatebucket.s3.ap-southeast-2.amazonaws.com/nimptotemplatebucket/templates%2Ftemplate_cme2ghnk3000354ndo7qalwb4_1755170687671_1755170688254.png';
-                  setImageUrl(testImageUrl);
-                }}
-                className="w-full px-3 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors text-sm font-medium mb-2"
-              >
-                Set Test Image
-              </button>
-              
-              {pixieEditorReady && formData.content && (
-                <button
-                  onClick={() => {
-                    if (window.pixieRef && window.pixieRef.current) {
-                      // Trigger the applyInitialContent function
-                      const applyContent = async () => {
-                        const content = formData.content;
-                        if (content && content.canvas && content.canvas.objects) {
-                        
-                           // Try to get the fabric canvas and fabric object from different possible locations
-                           let fabricCanvas = null;
-                           let fabric = null;
-                           
-                           // First, try to get the global fabric object (this is what we need for constructors)
-                           if (window.fabric) {
-                             fabric = window.fabric;
-                           }
-                           
-                           // Then find the canvas
-                           if (window.pixieRef.current.fabric && window.pixieRef.current.fabric.canvas) {
-                             fabricCanvas = window.pixieRef.current.fabric.canvas;
-                           }
-                           // Check if pixieRef.current.canvas exists
-                           else if (window.pixieRef.current.canvas) {
-                             fabricCanvas = window.pixieRef.current.canvas;
-                           }
-                           // Check if pixieRef.current has a fabric property
-                           else if (window.pixieRef.current.fabric) {
-                             fabricCanvas = window.pixieRef.current.fabric;
-                           }
-                           
-                           // If we still don't have fabric, try to get it from the Pixie instance
-                           if (!fabric && window.pixieRef.current.fabric && window.pixieRef.current.fabric.fabric) {
-                             fabric = window.pixieRef.current.fabric.fabric;
-                           }
-                           
-                           if (fabricCanvas && fabricCanvas.add && fabric) {
-                             
-                             for (const obj of content.canvas.objects) {
-                               try {
-                                 // Create proper Fabric.js objects instead of adding raw objects
-                                 if (obj.type === 'i-text' || obj.type === 'text') {
-                                   const fabricText = new fabric.IText(obj.text, {
-                                     left: obj.left,
-                                     top: obj.top,
-                                     fontSize: obj.fontSize,
-                                     fontFamily: obj.fontFamily,
-                                     fill: obj.fill,
-                                     fontWeight: obj.fontWeight,
-                                     textAlign: obj.textAlign,
-                                     angle: obj.angle,
-                                     scaleX: obj.scaleX,
-                                     scaleY: obj.scaleY,
-                                     opacity: obj.opacity,
-                                     visible: obj.visible
-                                   });
-                                   fabricCanvas.add(fabricText);
-                                 } else if (obj.type === 'path') {
-                                   const fabricPath = new fabric.Path(obj.path, {
-                                     left: obj.left,
-                                     top: obj.top,
-                                     fill: obj.fill,
-                                     stroke: obj.stroke,
-                                     strokeWidth: obj.strokeWidth,
-                                     strokeLineCap: obj.strokeLineCap,
-                                     strokeLineJoin: obj.strokeLineJoin,
-                                     angle: obj.angle,
-                                     scaleX: obj.scaleX,
-                                     scaleY: obj.scaleY,
-                                     opacity: obj.opacity,
-                                     visible: obj.visible
-                                   });
-                                   fabricCanvas.add(fabricPath);
-                                 } else if (obj.type === 'rect') {
-                                   const fabricRect = new fabric.Rect({
-                                     left: obj.left,
-                                     top: obj.top,
-                                     width: obj.width,
-                                     height: obj.height,
-                                     fill: obj.fill,
-                                     stroke: obj.stroke,
-                                     strokeWidth: obj.strokeWidth,
-                                     opacity: obj.opacity,
-                                     visible: obj.visible
-                                   });
-                                   fabricCanvas.add(fabricRect);
-                                 } else if (obj.type === 'circle') {
-                                   const fabricCircle = new fabric.Circle({
-                                     left: obj.left,
-                                     top: obj.top,
-                                     radius: obj.radius,
-                                     fill: obj.fill,
-                                     stroke: obj.stroke,
-                                     strokeWidth: obj.strokeWidth,
-                                     opacity: obj.opacity,
-                                     visible: obj.visible
-                                   });
-                                   fabricCanvas.add(fabricCircle);
-                                 }
-                               } catch (addError) {
-                                 console.error('❌ Failed to add object to fabric canvas:', addError);
-                               }
-                             }
-                             
-                             // Render the canvas to show changes
-                             fabricCanvas.renderAll();
-                           } else {
-                           
-                             
-                             // Fallback: Try using Pixie's own API methods
-                             try {
-                               for (const obj of content.canvas.objects) {
-                                 if (obj.type === 'i-text' || obj.type === 'text') {
-                                   // Try to use Pixie's addText method if available
-                                   if (window.pixieRef.current.addText) {
-                                     window.pixieRef.current.addText(obj.text, {
-                                       left: obj.left,
-                                       top: obj.top,
-                                       fontSize: obj.fontSize,
-                                       fontFamily: obj.fontFamily,
-                                       fill: obj.fill,
-                                       fontWeight: obj.fontWeight,
-                                       textAlign: obj.textAlign,
-                                       angle: obj.angle,
-                                       scaleX: obj.scaleX,
-                                       scaleY: obj.scaleY
-                                     });
-                                   } else {
-                                     console.warn('⚠️ Pixie addText method not available');
-                                   }
-                                 } else if (obj.type === 'path') {
-                                   // Try to add path using Pixie's API if available
-                                   if (window.pixieRef.current.addPath) {
-                                     window.pixieRef.current.addPath(obj.path, {
-                                       left: obj.left,
-                                       top: obj.top,
-                                       fill: obj.fill,
-                                       stroke: obj.stroke,
-                                       strokeWidth: obj.strokeWidth,
-                                       strokeLineCap: obj.strokeLineCap,
-                                       strokeLineJoin: obj.strokeLineJoin,
-                                       angle: obj.angle,
-                                       scaleX: obj.scaleX,
-                                       scaleY: obj.scaleY
-                                     });
-                                   } else if (window.pixieRef.current.addObject) {
-                                     // Try generic addObject method
-                                     window.pixieRef.current.addObject(obj);
-                                   } else {
-                                     console.warn('⚠️ Pixie path methods not available');
-                                   }
-                                 }
-                               }
-                             } catch (fallbackError) {
-                               console.error('❌ Pixie API fallback also failed:', fallbackError);
-                             }
-                           }
-                        }
-                      };
-                      applyContent();
-                    }
-                  }}
-                  className="w-full px-3 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors text-sm font-medium"
-                >
-                  Apply Saved Content
-                </button>
-              )}
-              
-              {/* Status indicator */}
-              <div className="mt-3 p-2 bg-white rounded border">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">Pixie Editor:</span>
-                  <span className={`px-2 py-1 rounded text-xs font-medium ${
-                    pixieEditorReady
-                      ? 'bg-blue-100 text-blue-800' 
-                      : 'bg-gray-100 text-gray-600'
-                  }`}>
-                    {pixieEditorReady ? '✅ Ready' : '⏳ Loading'}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-sm mt-1">
-                  <span className="text-gray-600">User Data:</span>
-                  <span className={`px-2 py-1 rounded text-xs font-medium ${
-                    pixieDataCaptured 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-gray-100 text-gray-600'
-                  }`}>
-                    {pixieDataCaptured ? '✅ Captured' : '⏳ Waiting'}
-                  </span>
-                </div>
-                {pixieDataCaptured && (
-                  <p className="text-xs text-green-700 mt-1">
-                    User edits ready for template save
-                  </p>
-                )}
-              </div>
-            </div>
+
             <div className="py-3">
               <p className="text-primary fw-500">Canvas Background</p>
               <div className="w-full mb-5">
