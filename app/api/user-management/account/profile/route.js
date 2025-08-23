@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { getClientIP } from '@/lib/api';
 import { prisma } from '@/lib/prisma';
-import { deleteFromS3, uploadToS3 } from '@/lib/s3-upload';
 import { systemLog } from '@/services/system-log';
 import { AccountProfileSchema } from '@/app/(protected)/user-management/account/forms/account-profile-schema';
 import authOptions from '@/app/api/auth/[...nextauth]/auth-options';
@@ -40,11 +39,8 @@ export async function POST(request) {
 
     // Handle avatar removal
     if (avatarAction === 'remove' && session.user?.avatar) {
-      try {
-        await deleteFromS3(session.user.avatar);
-      } catch (error) {
-        console.error('Failed to remove avatar from S3:', error);
-      }
+      // S3 functionality removed - avatar will be set to null
+      console.log('Avatar removal requested - S3 functionality disabled');
     }
 
     // Handle new avatar upload
@@ -54,15 +50,11 @@ export async function POST(request) {
       avatarFile &&
       avatarFile.size > 0
     ) {
-      try {
-        avatarUrl = await uploadToS3(avatarFile, 'avatars');
-      } catch (error) {
-        console.error('Failed to upload avatar to S3:', error);
-        return NextResponse.json(
-          { message: 'Failed to upload avatar.' },
-          { status: 500 },
-        );
-      }
+      // S3 functionality removed - return error
+      return NextResponse.json(
+        { message: 'Avatar upload is currently disabled.' },
+        { status: 503 },
+      );
     }
 
     // Save or update the user in the database

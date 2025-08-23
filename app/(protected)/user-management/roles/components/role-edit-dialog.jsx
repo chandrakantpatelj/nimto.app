@@ -70,7 +70,9 @@ const RoleEditDialog = ({ open, closeDialog, role }) => {
 
   useEffect(() => {
     if (open) {
-      const permissionIds = role?.permissions?.map((p) => p.id) ?? [];
+      // Handle both nested permission structure and flat structure
+      const permissionIds =
+        role?.permissions?.map((p) => p.id || p.permission?.id) ?? [];
 
       form.reset({
         name: role?.name || '',

@@ -1,12 +1,6 @@
 import { Fragment } from 'react';
-import { CirclePlus, Sparkles } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Container } from '@/components/common/container';
-import {
-  Toolbar,
-  ToolbarActions,
-  ToolbarHeading,
-} from '@/components/common/toolbar';
+import { Toolbar, ToolbarHeading } from '@/components/common/toolbar';
 import {
   ToolbarDescription,
   ToolbarPageTitle,
@@ -21,7 +15,7 @@ function ReportingsPage() {
       <Container>
         <Toolbar>
           <ToolbarHeading>
-            <ToolbarPageTitle />
+            <ToolbarPageTitle text="Reporting & Analytics" />
             <ToolbarDescription>Super Admin (Super Admin)</ToolbarDescription>
           </ToolbarHeading>
         </Toolbar>
