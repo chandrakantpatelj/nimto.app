@@ -36,7 +36,11 @@ const Events = () => {
               Sijans birthday
             </span>
             <div className="absolute top-4 right-4 flex gap-1">
-              <Button variant="softPrimary" mode="icon">
+              <Button
+                variant="softPrimary"
+                mode="icon"
+                onClick={() => router.push('/events/45566')}
+              >
                 <Pencil className="text-primary" />
               </Button>
 
@@ -63,7 +67,7 @@ const Events = () => {
                 variant="secondary"
                 mode="default"
                 size="md"
-                onClick={() => router.push('/host/events/45566/guest')}
+                onClick={() => router.push('/events/45566/guest')}
                 className="mx-auto w-full max-w-50"
               >
                 <Users />
@@ -74,7 +78,7 @@ const Events = () => {
                 variant="outline"
                 mode="primary"
                 size="md"
-                onClick={() => router.push(`/host/events`)}
+                onClick={() => router.push(`/events`)}
                 className="mx-auto w-full max-w-50"
               >
                 <Earth />
