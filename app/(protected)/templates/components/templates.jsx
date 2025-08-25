@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { Loader2, Search, Trash2 } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { toAbsoluteUrl } from '@/lib/helpers';
-import TemplateImageDisplay from '@/components/template-image-display';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,6 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { showCustomToast } from '@/components/common/custom-toast';
+import TemplateImageDisplay from '@/components/template-image-display';
 
 const Templates = () => {
   const router = useRouter();
@@ -146,10 +146,10 @@ const Templates = () => {
           </div>
         )}
         <div className="flex flex-col gap-2 justify-between h-100">
-          <div className="min-h-32 h-100 overflow-hidden rounded-tr-xl rounded-tl-xl">
-            <TemplateImageDisplay 
+          <div className=" h-full overflow-hidden rounded-tr-xl rounded-tl-xl">
+            <TemplateImageDisplay
               template={template}
-              className="w-full h-32 object-cover"
+              className="w-full h-full object-cover"
               key={`template-image-${template.id}`}
             />
           </div>
