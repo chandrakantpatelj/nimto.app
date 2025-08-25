@@ -65,15 +65,7 @@ const nextConfig = {
     ];
   },
   
-  // Copy Pixie assets to public directory
-  async rewrites() {
-    return [
-      {
-        source: '/pixie-assets/:path*',
-        destination: '/local_modules/pixie/assets/:path*',
-      },
-    ];
-  },
+
 };
 
 export default nextConfig;

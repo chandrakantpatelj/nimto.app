@@ -37,13 +37,14 @@ export async function GET(request) {
     });
 
     // Generate S3 URLs for templates with imagePath
-    const templatesWithUrls = templates.map(template => {
+    const templatesWithUrls = templates.map((template) => {
       if (template.imagePath) {
         // Generate S3 URL (already encoded by generateS3Url)
         const s3ImageUrl = generateS3Url(template.imagePath);
-        // Use proxy URL to avoid CORS issues - don't double encode
-        const proxyImageUrl = `/api/test-image?url=${s3ImageUrl}`;
-        
+
+        // Use proxy URL to avoid CORS issues and access private S3 bucket
+        const proxyImageUrl = `/api/image-proxy?url=${s3ImageUrl}`;
+
         return {
           ...template,
           s3ImageUrl: proxyImageUrl,
@@ -60,7 +61,7 @@ export async function GET(request) {
     console.error('Error fetching templates:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch templates' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
