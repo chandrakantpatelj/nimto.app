@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Loader2, Search, Trash2 } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { toAbsoluteUrl } from '@/lib/helpers';
+import TemplateImageDisplay from '@/components/template-image-display';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -145,18 +146,11 @@ const Templates = () => {
           </div>
         )}
         <div className="flex flex-col gap-2 justify-between h-100">
-          <div className="mb-2 min-h-32 h-100 overflow-hidden rounded-tr-xl rounded-tl-xl">
-            <img
-              src={
-                template.previewImageUrl ||
-                template.imagePath ||
-                toAbsoluteUrl('/media/template-img.png')
-              }
-              className="w-full "
-              alt={template.name}
-              onError={(e) => {
-                e.target.src = toAbsoluteUrl('/media/template-img.png');
-              }}
+          <div className="min-h-32 h-100 overflow-hidden rounded-tr-xl rounded-tl-xl">
+            <TemplateImageDisplay 
+              template={template}
+              className="w-full h-32 object-cover"
+              key={`template-image-${template.id}`}
             />
           </div>
           <div className="p-3">
@@ -263,7 +257,7 @@ const Templates = () => {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5 lg:gap-7.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 lg:gap-4.5">
                 {templates.map((template, index) => {
                   return renderTemplate(template, index);
                 })}
@@ -277,7 +271,6 @@ const Templates = () => {
           )}
         </div>
       </div>
-
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>

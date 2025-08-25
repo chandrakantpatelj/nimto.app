@@ -83,7 +83,7 @@ function TemplatePreview() {
             <ToolbarPageTitle text={`Preview: ${template?.name}`} />
           </ToolbarHeading>
           <ToolbarActions>
-            <Button variant="secondary" onClick={() => router.push()} asChild>
+            <Button variant="secondary" asChild>
               <Link href={`/templates/design/${params?.id}`}>
                 Design Template
               </Link>

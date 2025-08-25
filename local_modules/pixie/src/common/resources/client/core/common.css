@@ -1,0 +1,69 @@
+@import '../ui/library/progress/animation.css';
+@import '../ui/library/skeleton/skeleton.css';
+@import '../ui/dashboard-layout/dashbboard-layout.css';
+@import '../text-editor/highlight/editor-styles.css';
+@import '../admin/ads/ad-host.css';
+@import '../uploads/file-type-colors.css';
+@import '../player/player-styles.css';
+@import '../custom-page/custom-page-body.css';
+@import './scrollbar.css';
+
+@layer base {
+  html,
+  body,
+  #root {
+    @apply min-h-screen;
+    @apply antialiased;
+  }
+
+  html {
+    font-family: var(--be-font-family, theme('fontFamily.sans'));
+  }
+
+  body {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #root {
+    @apply bg text-main;
+  }
+
+  .diagonal-lines {
+    background: linear-gradient(
+        to top left,
+        rgba(0, 0, 0, 0) 0%,
+        rgba(0, 0, 0, 0) calc(50% - 1px),
+        rgba(239, 68, 68, 0.4) 50%,
+        rgba(0, 0, 0, 0) calc(50% + 1px),
+        rgba(0, 0, 0, 0) 100%
+      ),
+      linear-gradient(
+        to top right,
+        rgba(0, 0, 0, 0) 0%,
+        rgba(0, 0, 0, 0) calc(50% - 1px),
+        rgba(239, 68, 68, 0.4) 50%,
+        rgba(0, 0, 0, 0) calc(50% + 1px),
+        rgba(0, 0, 0, 0) 100%
+      );
+  }
+
+  .svg-image-container svg {
+    width: inherit;
+    height: inherit;
+    max-width: 100%;
+  }
+
+  .no-page-overflow {
+    overflow: hidden;
+  }
+  .no-page-overflow body {
+    overflow: hidden;
+  }
+  .no-page-overflow #root {
+    overflow: hidden;
+  }
+}
+
+.prose li > p {
+  margin: 0;
+}
