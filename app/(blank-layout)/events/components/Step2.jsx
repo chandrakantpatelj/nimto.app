@@ -22,7 +22,7 @@ function Step2() {
         {/* Subtle Event Banner */}
         <div className="relative">
           {/* Main Banner Card */}
-          <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100">
+          <div className="bg-background rounded-xl overflow-hidden shadow-sm border border-gray-100">
             {/* Event Banner Content */}
             <div className="relative h-72 bg-gradient-to-br from-slate-50 to-gray-100">
               {/* Subtle Background Elements */}
@@ -30,7 +30,7 @@ function Step2() {
               <div className="absolute bottom-0 left-0 w-20 h-20 bg-purple-500/5 rounded-full blur-lg transform -translate-x-10 translate-y-10"></div>
 
               {/* Banner Image with Subtle Styling */}
-              <div className="absolute top-6 left-6 w-36 h-24 bg-white rounded-lg shadow-sm overflow-hidden">
+              <div className="absolute top-6 left-6 w-36 h-24 bg-background rounded-lg shadow-sm overflow-hidden">
                 <img
                   src={eventData.bannerImage}
                   alt="Event Banner"
@@ -52,7 +52,7 @@ function Step2() {
 
               {/* Event Title with Clean Typography */}
               <div className="absolute bottom-6 left-6 right-6">
-                <div className="bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-sm border border-gray-100">
+                <div className="bg-background/90 backdrop-blur-sm rounded-lg p-4 shadow-sm border border-gray-100">
                   <h1 className="text-2xl font-bold text-gray-900">
                     Major Tech Conference
                   </h1>
@@ -73,7 +73,7 @@ function Step2() {
         </div>
       </main>
 
-      <aside className="w-124 flex-shrink-0 bg-white p-6 border-l border-gray-200 overflow-y-auto min-h-[calc(100vh-var(--header-height))] h-100">
+      <aside className="w-124 flex-shrink-0 bg-background p-6 border-l border-gray-200 overflow-y-auto min-h-[calc(100vh-var(--header-height))] h-100">
         <div className="space-y-6">
           {/* Subtle Conference Label */}
           <div>

@@ -2,38 +2,20 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import {
-  CalendarCheck,
-  Loader2,
-  MapPin,
-  Pencil,
-  Search,
-  Trash2,
-} from 'lucide-react';
+import { CalendarCheck, MapPin, Pencil, Search, Trash2 } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { toAbsoluteUrl } from '@/lib/helpers';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import DeleteEvent from './delete-event';
 
 const Events = () => {
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [deleteLoading, setDeleteLoading] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState(null);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deletingTemplateId, setDeletingTemplateId] = useState(null);
 
   // Fetch templates from API
@@ -75,13 +57,6 @@ const Events = () => {
   const handleDeleteClick = (template) => {
     setTemplateToDelete(template);
     setShowDeleteDialog(true);
-  };
-
-  // Handle delete confirmation
-  const handleDeleteConfirm = () => {
-    if (templateToDelete) {
-      deleteTemplate(templateToDelete.id);
-    }
   };
 
   // Initial fetch
@@ -128,12 +103,7 @@ const Events = () => {
                 <Pencil className="text-primary" />
               </Button>
 
-              <Button
-                variant="softDanger"
-                mode="icon"
-                onClick={() => handleDeleteClick(template)}
-                disabled={deleteLoading || isDeleting}
-              >
+              <Button variant="softDanger" mode="icon">
                 <Trash2 className="text-red-500" />
               </Button>
             </div>
@@ -209,36 +179,6 @@ const Events = () => {
           )}
         </div>
       </div>
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Event</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete "{templateToDelete?.name}"? This
-              action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleteLoading}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteConfirm}
-              disabled={deleteLoading}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              {deleteLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Deleting...
-                </>
-              ) : (
-                'Delete'
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 };
