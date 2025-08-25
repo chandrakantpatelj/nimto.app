@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import { apiFetch } from '@/lib/api';
 import { Alert, AlertIcon, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -81,6 +82,21 @@ export default function Page() {
         const { message } = await response.json();
         setError(message);
       } else {
+        const { message } = await response.json();
+        toast.success(
+          message ||
+            'You have successfully signed up! Please check your email to verify your account.',
+          {
+            duration: 6000,
+            style: {
+              fontSize: '16px',
+              fontWeight: '500',
+              padding: '16px 20px',
+              borderRadius: '8px',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+            },
+          },
+        );
         router.push('/');
       }
     } catch (err) {
@@ -274,10 +290,7 @@ export default function Page() {
                       onCheckedChange={(checked) => field.onChange(!!checked)}
                     />
                     <div className="flex flex-col gap-1">
-                      <label
-                        htmlFor="isHost"
-                        className="text-sm text-black"
-                      >
+                      <label htmlFor="isHost" className="text-sm text-black">
                         I'm interested in hosting events.
                       </label>
                       <label
@@ -307,10 +320,7 @@ export default function Page() {
                       onCheckedChange={(checked) => field.onChange(!!checked)}
                     />
 
-                    <label
-                      htmlFor="accept"
-                      className="text-sm text-black"
-                    >
+                    <label htmlFor="accept" className="text-sm text-black">
                       I agree to the
                     </label>
                     <Link
