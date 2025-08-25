@@ -48,22 +48,24 @@ export default function Page() {
         email: values.email,
         password: values.password,
         rememberMe: values.rememberMe,
+        callbackUrl: '/', // always return here after login
       });
 
-      // Debug logging for production
-      console.log('Environment:', process.env.NODE_ENV);
-      console.log('Base Path:', process.env.NEXT_PUBLIC_BASE_PATH);
       console.log('SignIn Response:', response);
 
       if (response?.error) {
-        console.log('Auth Error:', response.error);
-        const errorData = JSON.parse(response.error);
-        setError(errorData.message);
-      } else if (response?.ok) {
-        console.log('Auth Success - Redirecting to /');
-        router.push('/');
+        // Handle both plain string and JSON error formats safely
+        try {
+          const errorData = JSON.parse(response.error);
+          setError(errorData.message || 'Authentication failed');
+        } catch {
+          setError(response.error);
+        }
+      } else if (response?.ok && response.url) {
+        // Successful login: redirect and refresh session
+        router.push(response.url);
+        router.refresh();
       } else {
-        console.log('Unexpected response:', response);
         setError('Authentication failed. Please try again.');
       }
     } catch (err) {
@@ -83,35 +85,38 @@ export default function Page() {
         onSubmit={form.handleSubmit(onSubmit)}
         className="block w-full space-y-5"
       >
+        {/* Header */}
         <div className="space-y-1.5 pb-3">
           <h1 className="text-2xl font-semibold tracking-tight text-center">
             Sign in to Metronic
           </h1>
         </div>
 
+        {/* Demo Alert */}
         <Alert size="sm" close={false}>
           <AlertIcon>
             <RiErrorWarningFill className="text-primary" />
           </AlertIcon>
           <AlertTitle className="text-accent-foreground">
-            Use <span className="text-mono font-semibold">demo@kt.com</span>{' '}
-            username and{' '}
-            <span className="text-mono font-semibold">demo123</span> for demo
+            Use <span className="font-mono font-semibold">demo@kt.com</span> and{' '}
+            <span className="font-mono font-semibold">demo123</span> for demo
             access.
           </AlertTitle>
         </Alert>
 
+        {/* Social Login */}
         <div className="flex flex-col gap-3.5">
           <Button
             variant="outline"
             type="button"
             onClick={() => signIn('google', { callbackUrl: '/' })}
           >
-            <Icons.googleColorful className="size-5! opacity-100!" /> Sign in
-            with Google
+            <Icons.googleColorful className="size-5 opacity-100" /> Sign in with
+            Google
           </Button>
         </div>
 
+        {/* Divider */}
         <div className="relative py-1.5">
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t" />
@@ -121,6 +126,7 @@ export default function Page() {
           </div>
         </div>
 
+        {/* Error Alert */}
         {error && (
           <Alert variant="destructive">
             <AlertIcon>
@@ -130,6 +136,7 @@ export default function Page() {
           </Alert>
         )}
 
+        {/* Email */}
         <FormField
           control={form.control}
           name="email"
@@ -144,6 +151,7 @@ export default function Page() {
           )}
         />
 
+        {/* Password */}
         <FormField
           control={form.control}
           name="password"
@@ -161,17 +169,16 @@ export default function Page() {
               <div className="relative">
                 <Input
                   placeholder="Your password"
-                  type={passwordVisible ? 'text' : 'password'} // Toggle input type
+                  type={passwordVisible ? 'text' : 'password'}
                   {...field}
                 />
-
                 <Button
                   type="button"
                   variant="ghost"
                   mode="icon"
                   size="sm"
-                  onClick={() => setPasswordVisible(!passwordVisible)} // Toggle visibility
-                  className="absolute end-0 top-1/2 -translate-y-1/2 h-7 w-7 me-1.5 bg-transparent!"
+                  onClick={() => setPasswordVisible(!passwordVisible)}
+                  className="absolute end-0 top-1/2 -translate-y-1/2 h-7 w-7 me-1.5"
                   aria-label={
                     passwordVisible ? 'Hide password' : 'Show password'
                   }
@@ -188,6 +195,7 @@ export default function Page() {
           )}
         />
 
+        {/* Remember Me */}
         <div className="flex items-center space-x-2">
           <FormField
             control={form.control}
@@ -199,7 +207,6 @@ export default function Page() {
                   checked={field.value}
                   onCheckedChange={(checked) => field.onChange(!!checked)}
                 />
-
                 <label
                   htmlFor="remember-me"
                   className="text-sm leading-none text-muted-foreground"
@@ -211,15 +218,17 @@ export default function Page() {
           />
         </div>
 
+        {/* Submit */}
         <div className="flex flex-col gap-2.5">
           <Button type="submit" disabled={isProcessing}>
-            {isProcessing ? (
-              <LoaderCircleIcon className="size-4 animate-spin" />
-            ) : null}
+            {isProcessing && (
+              <LoaderCircleIcon className="size-4 animate-spin mr-2" />
+            )}
             Continue
           </Button>
         </div>
 
+        {/* Signup link */}
         <p className="text-sm text-muted-foreground text-center">
           Don&apos;t have an account?{' '}
           <Link
