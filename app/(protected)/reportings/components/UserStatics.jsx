@@ -1,6 +1,5 @@
-import React from 'react';
 import { useTheme } from 'next-themes';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { KeenIcon } from '@/components/keenicons/keenicons';
 
@@ -32,7 +31,7 @@ function UserStatics() {
 
   const StatCard = ({ title, value, description, icon, iconColor, trend }) => (
     <Card
-      className={`transition-all duration-200 ${isDark ? 'bg-gray-900/50 border-gray-700' : 'bg-white border-gray-200'} shadow-sm`}
+      className={`transition-all duration-200 border border-border shadow-sm`}
     >
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
@@ -44,21 +43,9 @@ function UserStatics() {
                 <KeenIcon icon={icon} className="text-lg" />
               </div>
             </div>
-            <h3
-              className={`text-2xl font-bold mb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}
-            >
-              {value}
-            </h3>
-            <p
-              className={`text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}
-            >
-              {title}
-            </p>
-            <p
-              className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}
-            >
-              {description}
-            </p>
+            <h3 className={`text-2xl font-bold mb-1 `}>{value}</h3>
+            <p className={`text-sm font-medium mb-1 text-mono`}>{title}</p>
+            <p className={`text-xs text-secondary-foreground`}>{description}</p>
             {trend && (
               <div className="mt-2">
                 <div className="flex items-center space-x-1">
@@ -85,12 +72,12 @@ function UserStatics() {
 
   const RoleDistributionCard = ({ roles }) => (
     <Card
-      className={`transition-all duration-200 ${isDark ? 'bg-gray-900/50 border-gray-700' : 'bg-white border-gray-200'} shadow-sm`}
+      className={`transition-all duration-200 border border-border shadow-sm`}
     >
       <CardContent className="p-6">
         <div className="flex items-center space-x-2 mb-4">
           <div
-            className={`w-10 h-10 rounded-lg flex items-center justify-center ${isDark ? 'bg-purple-500/20' : 'bg-purple-100'}`}
+            className={`w-10 h-10 rounded-lg flex items-center justify-center  bg-purple-100  dark:bg-purple-500/20`}
           >
             <KeenIcon
               icon="users"
@@ -98,26 +85,16 @@ function UserStatics() {
             />
           </div>
           <div>
-            <h3
-              className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}
-            >
-              Role Distribution
-            </h3>
+            <h3 className={`text-lg font-semibold `}>Role Distribution</h3>
           </div>
         </div>
         <div className="space-y-3">
           {Object.entries(roles).map(([role, count]) => (
             <div key={role} className="flex items-center justify-between">
-              <span
-                className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}
-              >
+              <span className={`text-sm text-secondary-foreground`}>
                 {role}
               </span>
-              <span
-                className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}
-              >
-                {count}
-              </span>
+              <span className={`text-sm font-semibold `}>{count}</span>
             </div>
           ))}
         </div>
@@ -128,14 +105,8 @@ function UserStatics() {
   return (
     <div className="space-y-6">
       <div>
-        <h2
-          className={`text-xl font-semibold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}
-        >
-          User Statistics
-        </h2>
-        <p
-          className={`text-sm mb-4 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}
-        >
+        <h2 className={`text-xl font-semibold mb-2 `}>User Statistics</h2>
+        <p className={`text-sm mb-4 text-secondary-foreground`}>
           Overview of user data and activity
         </p>
       </div>
@@ -182,22 +153,20 @@ function UserStatics() {
         <RoleDistributionCard roles={userStats.roleDistribution} />
 
         <Card
-          className={`transition-all duration-200 ${isDark ? 'bg-gray-900/50 border-gray-700' : 'bg-white border-gray-200'} shadow-sm`}
+          className={`transition-all duration-200 border border-border shadow-sm`}
         >
           <CardContent className="p-6">
             <div className="flex items-center space-x-2 mb-4">
               <div
-                className={`w-10 h-10 rounded-lg flex items-center justify-center ${isDark ? 'bg-blue-500/20' : 'bg-blue-100'}`}
+                className={`w-10 h-10 rounded-lg flex items-center justify-center bg-primary/10`}
               >
                 <KeenIcon
                   icon="chart-simple"
-                  className={`text-lg ${isDark ? 'text-blue-400' : 'text-blue-600'}`}
+                  className={`text-lg text-primary `}
                 />
               </div>
               <div>
-                <h3
-                  className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}
-                >
+                <h3 className={`text-lg font-semibold `}>
                   Popular Event Categories
                 </h3>
               </div>
@@ -209,9 +178,7 @@ function UserStatics() {
                   className="grid grid-cols-12 gap-4 items-end"
                 >
                   <div className=" col-span-12 md:col-span-2">
-                    <span
-                      className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}
-                    >
+                    <span className={`text-sm text-secondary-foreground`}>
                       {category.name}
                     </span>
                   </div>
@@ -221,14 +188,10 @@ function UserStatics() {
                         <Progress
                           value={category.percentage}
                           className="h-2"
-                          indicatorClassName={
-                            isDark ? 'bg-blue-400' : 'bg-blue-500'
-                          }
+                          indicatorClassName="bg-primary"
                         />
                       </div>
-                      <span
-                        className={`text-xs flex-shrink-0 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}
-                      >
+                      <span className={`text-xs flex-shrink-0 text-gray-500`}>
                         {category.events} events ({category.percentage}%)
                       </span>
                     </div>
