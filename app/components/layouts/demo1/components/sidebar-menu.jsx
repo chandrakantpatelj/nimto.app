@@ -28,16 +28,16 @@ export function SidebarMenu() {
 
   // Global classNames for consistent styling
   const classNames = {
-    root: 'space-y-2 py-4',
-    group: 'gap-1',
+    root: 'lg:ps-1 space-y-3',
+    group: 'gap-px',
     label:
       'uppercase text-xs font-medium text-muted-foreground/70 pt-2.25 pb-px',
     separator: '',
-    item: 'h-10 px-3 rounded-lg hover:bg-primary/10 text-gray-400 hover:text-primary data-[selected=true]:text-primary data-[selected=true]:bg-gray-100 data-[selected=true]:font-medium transition-all duration-200 border-0',
+    item: 'h-8 hover:bg-transparent text-accent-foreground hover:text-primary data-[selected=true]:text-primary data-[selected=true]:bg-muted data-[selected=true]:font-medium',
     sub: '',
     subTrigger:
-      'h-10 px-3 rounded-lg hover:bg-primary/10 text-gray-400 hover:text-primary data-[selected=true]:text-primary data-[selected=true]:bg-gray-100 data-[selected=true]:font-medium transition-all duration-200 border-0',
-    subContent: 'py-0 border-0',
+      'h-8 hover:bg-transparent text-accent-foreground hover:text-primary data-[selected=true]:text-primary data-[selected=true]:bg-muted data-[selected=true]:font-medium',
+    subContent: 'py-0',
     indicator: '',
   };
 
@@ -82,9 +82,9 @@ export function SidebarMenu() {
         >
           <Link
             href={item.path || '#'}
-            className="flex items-center gap-3 w-full"
+            className="flex items-center justify-start grow gap-2"
           >
-            {item.icon && <item.icon data-slot="accordion-menu-icon" className="w-5 h-5" />}
+            {item.icon && <item.icon data-slot="accordion-menu-icon" />}
             <span data-slot="accordion-menu-title">{item.title}</span>
           </Link>
         </AccordionMenuItem>
@@ -195,7 +195,7 @@ export function SidebarMenu() {
   };
 
   return (
-    <div className="kt-scrollable-y-hover flex grow shrink-0 py-4 px-4 lg:max-h-[calc(100vh-5.5rem)]">
+    <div className="kt-scrollable-y-hover flex grow shrink-0 py-5 px-5 lg:max-h-[calc(100vh-5.5rem)]">
       <AccordionMenu
         selectedValue={pathname}
         matchPath={matchPath}
