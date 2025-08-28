@@ -1,183 +1,310 @@
 'use client';
 
-import React from 'react';
-import { Building, Calendar, Clock, MapPin, Star, Users } from 'lucide-react';
+import React, { useState } from 'react';
+import { format } from 'date-fns';
+import { CalendarDays, Info, MapPin, User } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { TimeField } from '@/components/ui/datefield';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Textarea } from '@/components/ui/textarea';
+import { useEventCreation } from '../context/EventCreationContext';
 
 function Step2() {
-  // Mock event data - in real app this would come from props or API
-  const eventData = {
-    title: 'gfdgggdfg gdfg',
-    date: 'Thursday, August 21, 2025',
-    time: '00:25',
-    location: 'Surat, Gujarat, India',
-    description: 'test cdasfsf ds fsdf',
-    bannerImage: '/media/images/sunrise-mountains.jpg', // Placeholder image path
-    attendees: '150+',
-    rating: '4.8',
-  };
+  const { eventData, updateEventData } = useEventCreation();
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+
+  // Format the date for display
+  const formattedDate = eventData.date
+    ? format(eventData.date, 'EEEE, MMMM d, yyyy')
+    : 'TBD';
 
   return (
-    <div className="flex flex-1 overflow-hidden bg-gray-50">
-      <main className="flex-1 overflow-auto p-8">
-        {/* Subtle Event Banner */}
-        <div className="relative">
-          {/* Main Banner Card */}
-          <div className="bg-background rounded-xl overflow-hidden shadow-sm border border-gray-100">
-            {/* Event Banner Content */}
-            <div className="relative h-72 bg-gradient-to-br from-slate-50 to-gray-100">
-              {/* Subtle Background Elements */}
-              <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-xl transform translate-x-12 -translate-y-12"></div>
-              <div className="absolute bottom-0 left-0 w-20 h-20 bg-purple-500/5 rounded-full blur-lg transform -translate-x-10 translate-y-10"></div>
+    <div className="flex h-screen bg-gray-50">
+      {/* Left Side - Preview */}
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <div className="bg-white border-b border-gray-200 px-6 py-4">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-gradient-to-br from-pink-500 to-purple-600 rounded-lg flex items-center justify-center">
+              <span className="text-white text-sm font-bold">2</span>
+            </div>
+            <div>
+              <h1 className="text-lg font-semibold text-gray-900">
+                Event Details
+              </h1>
+              <p className="text-sm text-gray-500">
+                Preview your event invitation
+              </p>
+            </div>
+          </div>
+        </div>
 
-              {/* Banner Image with Subtle Styling */}
-              <div className="absolute top-6 left-6 w-36 h-24 bg-background rounded-lg shadow-sm overflow-hidden">
-                <img
-                  src={eventData.bannerImage}
-                  alt="Event Banner"
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'flex';
-                  }}
-                />
-                <div className="hidden w-full h-full bg-gradient-to-br from-primary-100 to-purple-100 items-center justify-center">
-                  <div className="text-center">
-                    <Star className="w-5 h-5 text-primary mx-auto mb-1" />
-                    <span className="text-xs text-gray-600 font-medium">
-                      Event Banner
+        {/* Preview Content */}
+        <div className="flex-1 p-6 overflow-auto">
+          <div className="max-w-4xl mx-auto">
+            {/* Template Preview */}
+            <div className="mb-6">
+              <h3 className="text-sm font-medium text-gray-700 mb-3">
+                Template Preview
+              </h3>
+              <div className="relative">
+                {eventData.imagePath ? (
+                  <div className="relative rounded-lg overflow-hidden border border-gray-200">
+                    <img
+                      src={eventData.imagePath}
+                      alt="Template Preview"
+                      className="w-full h-48 object-cover"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'flex';
+                      }}
+                    />
+                    <div
+                      className="absolute inset-0 bg-gray-100 flex items-center justify-center"
+                      style={{ display: 'none' }}
+                    >
+                      <span className="text-gray-500 text-sm">
+                        Template Image
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg border border-gray-200 flex items-center justify-center">
+                    <span className="text-gray-500 text-sm">
+                      No template image
+                    </span>
+                  </div>
+                )}
+                <div className="mt-2 text-sm text-gray-500">
+                  {eventData.title || 'Template Name'}
+                </div>
+              </div>
+            </div>
+
+            {/* Event Preview Card */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              {/* Event Banner */}
+              <div className="relative h-48 bg-gradient-to-br from-blue-50 to-purple-50">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10"></div>
+                <div className="absolute bottom-4 left-4 right-4">
+                  <div className="bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-sm">
+                    <h2 className="text-xl font-bold text-gray-900">
+                      {eventData.title || 'Your Event Title'}
+                    </h2>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {eventData.description ||
+                        'Event description will appear here'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Event Details */}
+              <div className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Date & Time */}
+                  <div className="flex items-start space-x-3">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <CalendarDays className="w-4 h-4 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">WHEN</p>
+                      <p className="text-sm text-gray-600">
+                        {eventData.date
+                          ? format(eventData.date, 'PPP')
+                          : 'Pick a date & time'}
+                      </p>
+                      {eventData.time && (
+                        <p className="text-sm text-gray-500 mt-1">
+                          {eventData.time}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Location */}
+                  <div className="flex items-start space-x-3">
+                    <div className="p-2 bg-green-100 rounded-lg">
+                      <MapPin className="w-4 h-4 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">
+                        LOCATION
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        {eventData.location || 'Add a location'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Host Details */}
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-purple-100 rounded-lg">
+                      <User className="w-4 h-4 text-purple-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">
+                        HOST DETAILS
+                      </p>
+                      <p className="text-sm text-purple-600 font-medium">
+                        ajay Devakar
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Who's Coming */}
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Info className="w-4 h-4 text-gray-400" />
+                      <span className="text-sm font-medium text-gray-700">
+                        Who's coming
+                      </span>
+                    </div>
+                    <span className="text-sm text-gray-500">
+                      See all guests
                     </span>
                   </div>
                 </div>
               </div>
-
-              {/* Event Title with Clean Typography */}
-              <div className="absolute bottom-6 left-6 right-6">
-                <div className="bg-background/90 backdrop-blur-sm rounded-lg p-4 shadow-sm border border-gray-100">
-                  <h1 className="text-2xl font-bold text-gray-900">
-                    Major Tech Conference
-                  </h1>
-                  <div className="flex items-center space-x-6 mt-2">
-                    <div className="flex items-center space-x-1 text-sm text-gray-600">
-                      <Users className="w-4 h-4" />
-                      <span>{eventData.attendees} attending</span>
-                    </div>
-                    <div className="flex items-center space-x-1 text-sm text-gray-600">
-                      <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                      <span>{eventData.rating}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
-      </main>
+      </div>
 
-      <aside className="w-124 flex-shrink-0 bg-background p-6 border-l border-gray-200 overflow-y-auto min-h-[calc(100vh-var(--header-height))] h-100">
-        <div className="space-y-6">
-          {/* Subtle Conference Label */}
-          <div>
-            <span className="inline-block px-2 py-1 text-xs font-medium text-primary bg-primary/5 rounded-md uppercase tracking-wide">
-              Conference
-            </span>
-          </div>
+      {/* Right Side - Form */}
+      <div className="w-96 bg-white border-l border-gray-200 flex flex-col">
+        {/* Form Header */}
+        <div className="p-6 border-b border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            Edit Invitation Details
+          </h3>
+          <p className="text-sm text-gray-500">
+            Fill in your event information
+          </p>
+        </div>
 
-          {/* Conference Title */}
-          <div className="space-y-2">
-            <h2 className="text-2xl font-bold text-gray-900 leading-tight">
-              {eventData.title}
-            </h2>
-            <div className="w-12 h-0.5 bg-primary rounded-full"></div>
-          </div>
-
-          {/* Date and Time */}
-          <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
-            <div className="flex items-start space-x-3">
-              <div className="p-2 bg-primary/10 rounded-md">
-                <Calendar className="w-4 h-4 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-700">
-                  Date and Time
-                </p>
-                <p className="text-sm text-gray-600 font-medium">
-                  {eventData.date}
-                </p>
-                <div className="flex items-center space-x-1 mt-1">
-                  <Clock className="w-3 h-3 text-primary" />
-                  <p className="text-sm text-gray-600">{eventData.time}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Location */}
-          <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
-            <div className="flex items-start space-x-3">
-              <div className="p-2 bg-green-500/10 rounded-md">
-                <MapPin className="w-4 h-4 text-green-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-700">Location</p>
-                <p className="text-sm text-gray-600 font-medium">
-                  {eventData.location}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* About Section */}
-          <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
-            <h3 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
-              <div className="w-1.5 h-1.5 bg-purple-500 rounded-full mr-2"></div>
-              About this event
-            </h3>
-            <p className="text-sm text-gray-600 leading-relaxed">
-              {eventData.description}
-            </p>
-          </div>
-
-          {/* Location Map */}
-          <div className="space-y-3">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-gray-500/10 rounded-md">
-                <Building className="w-4 h-4 text-gray-600" />
-              </div>
-              <span className="text-sm font-medium text-gray-700">
-                Location
-              </span>
+        {/* Form Content */}
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="space-y-6">
+            {/* Event Title */}
+            <div>
+              <Label
+                htmlFor="title"
+                className="text-sm font-medium text-gray-700 mb-2 block"
+              >
+                EVENT TITLE*
+              </Label>
+              <Input
+                id="title"
+                type="text"
+                placeholder="Your event title"
+                value={eventData.title}
+                onChange={(e) => updateEventData({ title: e.target.value })}
+                className="w-full"
+              />
             </div>
 
-            {/* Map Container */}
-            <div className="bg-gray-50 rounded-lg p-4 min-h-[180px] flex items-center justify-center border border-gray-100">
-              <div className="text-center">
-                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <MapPin className="w-6 h-6 text-primary" />
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-gray-700 font-medium">
-                    Google Maps Platform rejected your request.
-                  </p>
-                  <p className="text-xs text-gray-500 max-w-xs">
-                    This API key is not authorized to use this service or API.
-                  </p>
-                </div>
+            {/* Date & Time */}
+            <div>
+              <Label className="text-sm font-medium text-gray-700 mb-2 block">
+                DATE & TIME*
+              </Label>
+              <div className="space-y-3">
+                <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        'w-full justify-start text-left font-normal',
+                        !eventData.date && 'text-muted-foreground',
+                      )}
+                    >
+                      <CalendarDays className="mr-2 h-4 w-4" />
+                      {eventData.date ? (
+                        format(eventData.date, 'PPP')
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={eventData.date}
+                      onSelect={(date) => {
+                        updateEventData({ date });
+                        setDatePickerOpen(false);
+                      }}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+
+                <TimeField
+                  value={eventData.time}
+                  onChange={(time) => updateEventData({ time })}
+                  placeholder="Pick a time"
+                  className="w-full"
+                />
               </div>
             </div>
-          </div>
 
-          {/* Google Maps Link */}
-          <div className="pt-4 border-t border-gray-200">
-            <a
-              href="#"
-              className="inline-flex items-center space-x-2 text-sm font-medium text-primary hover:text-primary-700 transition-colors"
-            >
-              <span>View on Google Maps</span>
-              <span>→</span>
-            </a>
+            {/* Location */}
+            <div>
+              <Label
+                htmlFor="location"
+                className="text-sm font-medium text-gray-700 mb-2 block"
+              >
+                LOCATION
+              </Label>
+              <div className="relative">
+                <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  id="location"
+                  type="text"
+                  placeholder="Add a location"
+                  value={eventData.location}
+                  onChange={(e) =>
+                    updateEventData({ location: e.target.value })
+                  }
+                  className="pl-10"
+                />
+              </div>
+            </div>
+
+            {/* Host Note */}
+            <div>
+              <Label
+                htmlFor="description"
+                className="text-sm font-medium text-gray-700 mb-2 block"
+              >
+                HOST NOTE
+              </Label>
+              <Textarea
+                id="description"
+                placeholder="Consider adding parking info, contact number, venue requirements, dress code, entertainment schedule, etc."
+                value={eventData.description}
+                onChange={(e) =>
+                  updateEventData({ description: e.target.value })
+                }
+                className="w-full min-h-[100px] resize-none"
+              />
+            </div>
           </div>
         </div>
-      </aside>
+      </div>
     </div>
   );
 }

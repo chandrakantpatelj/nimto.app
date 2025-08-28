@@ -12,13 +12,8 @@ export default function TemplateImageDisplay({
 
   // Memoize the image URL to prevent unnecessary re-renders
   const imageUrl = useMemo(() => {
-    // Debug logging
-    console.log('TemplateImageDisplay - Template:', template?.name);
-    console.log('TemplateImageDisplay - s3ImageUrl:', template?.s3ImageUrl);
-
     // Use S3 URL directly from template data (should be provided by API)
     if (template?.s3ImageUrl) {
-      console.log('TemplateImageDisplay - Using URL:', template.s3ImageUrl);
       return template.s3ImageUrl;
     }
 

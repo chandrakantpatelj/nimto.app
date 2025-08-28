@@ -1,6 +1,15 @@
 import React, { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
 import { format } from 'date-fns';
-import { CalendarDays, Clock3 } from 'lucide-react';
+import {
+  CalendarDays,
+  Clock3,
+  Info,
+  Loader2,
+  MapPin,
+  User,
+} from 'lucide-react';
+import { apiFetch } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -15,32 +24,102 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { showCustomToast } from '@/components/common/custom-toast';
+import PixieEditor from '@/components/image-editor/PixieEditor';
+import { useEventCreation } from '../context/EventCreationContext';
 
 function Step1() {
+  const params = useParams();
+  const templateId = params.id;
+  const { eventData, updateEventData } = useEventCreation();
+
   const [isLoading, setIsLoading] = useState(false);
+  const [templateLoading, setTemplateLoading] = useState(true);
   const [imageUrl, setImageUrl] = useState('');
   const [uploadedImageFile, setUploadedImageFile] = useState(null);
   const [templateImagePath, setTemplateImagePath] = useState('');
+  const [newImageBase64, setNewImageBase64] = useState(null); // Store base64 data for new images
 
-  // Form state
-  const [formData, setFormData] = useState({
-    name: '',
-    category: '',
-    isPremium: false,
-    price: 0,
-    background: '#FFFFFF',
-    pageBackground: '#e2e8f0',
-    content: [],
-    backgroundStyle: {},
-    htmlContent: '',
-  });
+  // Date picker popover state
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+
+  // Fetch template data
+  const fetchTemplate = async () => {
+    if (!templateId) return;
+
+    try {
+      setTemplateLoading(true);
+      const response = await apiFetch(`/api/template/${templateId}`);
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch template');
+      }
+
+      const result = await response.json();
+
+      if (result.success) {
+        const template = result.data;
+
+        // Update form data with template data
+        updateEventData({
+          templateId: template.id,
+          jsonContent: template.jsonContent || '',
+          backgroundStyle: template.backgroundStyle
+            ? JSON.stringify(template.backgroundStyle)
+            : '',
+          htmlContent: template.htmlContent || '',
+          background: template.background || '#FFFFFF',
+          pageBackground: template.pageBackground || '#e2e8f0',
+          title: template.name || '',
+        });
+
+        // Set template image path if available
+        if (template.s3ImageUrl) {
+          setTemplateImagePath(template.s3ImageUrl);
+          updateEventData({ imagePath: template.imagePath }); // Store the actual S3 path, not the proxy URL
+        }
+
+        // Load template content into Pixie editor
+        loadTemplateIntoPixie(template);
+
+        showCustomToast('Template loaded successfully', 'success');
+      } else {
+        throw new Error(result.error || 'Failed to fetch template');
+      }
+    } catch (error) {
+      console.error('Error fetching template:', error);
+      showCustomToast('Failed to load template', 'error');
+    } finally {
+      setTemplateLoading(false);
+    }
+  };
+
+  // Load template content into Pixie editor
+  const loadTemplateIntoPixie = (template) => {
+    if (!template.jsonContent) return;
+
+    try {
+      // jsonContent is already parsed by the API
+      const jsonContent = template.jsonContent;
+
+      // Initialize Pixie editor with template content
+      if (window.pixieEditor && window.pixieEditor.loadTemplate) {
+        window.pixieEditor.loadTemplate(jsonContent);
+      } else {
+        // Fallback: wait for Pixie to be ready
+        setTimeout(() => {
+          if (window.pixieEditor && window.pixieEditor.loadTemplate) {
+            window.pixieEditor.loadTemplate(jsonContent);
+          }
+        }, 1000);
+      }
+    } catch (error) {
+      console.error('Error loading template into Pixie:', error);
+    }
+  };
 
   // Handle background changes
   const handleBackgroundChange = (type, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [type]: value,
-    }));
+    updateEventData({ [type]: value });
 
     // Apply background changes to Pixie editor if available
     if (window.pixieEditor && window.pixieEditor.applyBackground) {
@@ -70,6 +149,15 @@ function Step1() {
 
       // Create a temporary URL for the uploaded file
       const tempImageUrl = URL.createObjectURL(file);
+
+      // Convert file to base64 for later use
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const base64Data = e.target.result;
+        setNewImageBase64(base64Data);
+        updateEventData({ newImageBase64: base64Data });
+      };
+      reader.readAsDataURL(file);
 
       // Store the file for later saving
       setUploadedImageFile(file);
@@ -108,250 +196,225 @@ function Step1() {
     // Default to color
     return { backgroundColor: value };
   };
-  const [date, setDate] = useState(null);
 
+  // Fetch template on component mount
   useEffect(() => {
-    setDate(new Date(1984, 0, 20));
-  }, []);
+    if (templateId) {
+      fetchTemplate();
+    }
+  }, [templateId]);
+
   return (
-    <>
-      <div className="flex flex-1 overflow-hidden">
-        <aside className="w-64 flex-shrink-0 bg-background p-4 border-r border-slate-200 overflow-y-auto min-h-[calc(100vh-var(--header-height))] h-100">
-          <Tabs
-            defaultValue="profile"
-            className="text-sm text-muted-foreground"
-          >
-            <TabsList variant="line">
-              <TabsTrigger value="profile">Details</TabsTrigger>
-              <TabsTrigger value="security">Design</TabsTrigger>
-            </TabsList>
-            <TabsContent value="profile">
-              <div className="py-3">
-                <h1 className="text-xl font-bold text-gray-900 mb-2">
-                  Event Details
-                </h1>
-                <div className="w-full mb-5">
-                  <Label className="text-muted-foreground">Title</Label>
-                  <Input type="text" placeholder="Enter template name" />
-                </div>
-                <div className="w-full mb-5">
-                  <Label className="text-muted-foreground">Date</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        mode="input"
-                        variant="outline"
-                        id="date"
-                        className={cn(
-                          'w-full data-[state=open]:border-primary',
-                          !date && 'text-muted-foreground',
-                        )}
-                      >
-                        <CalendarDays className="-ms-0.5" />
-                        {date ? (
-                          format(date, 'LLL dd, y')
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                        {/* <span>Pick a date</span> */}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        initialFocus
-                        mode="single" // Single date selection
-                        defaultMonth={date}
-                        selected={date}
-                        onSelect={setDate}
-                        numberOfMonths={1}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-                <div className="w-full mb-5">
-                  <Label className="text-muted-foreground">Time</Label>
-                  <InputGroup className="w-full">
-                    <InputAddon mode="icon">
-                      <Clock3 />
-                    </InputAddon>
-                    <TimeField>
-                      <DateInput />
-                    </TimeField>
-                  </InputGroup>
-                </div>
-                <div className="w-full mb-5">
-                  <Label className="text-muted-foreground">Location</Label>
-                  <Input type="text" />
-                </div>
-                <div className="w-full mb-5">
-                  <Label className="text-muted-foreground">Description</Label>
-                  <Textarea />
-                </div>
-              </div>
-            </TabsContent>
-            <TabsContent value="security">
-              <div className="py-3">
-                <div className="mb-6">
-                  <Label className="text-muted-foreground mb-2 block">
-                    Load New Image
-                  </Label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 transition-colors">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="hidden"
-                      id="image-upload"
-                    />
-                    <label
-                      htmlFor="image-upload"
-                      className="cursor-pointer flex flex-col items-center"
-                    >
-                      <svg
-                        className="w-8 h-8 text-gray-400 mb-2"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                        />
-                      </svg>
-                      <span className="text-sm text-gray-600">
-                        {isLoading ? 'Loading...' : 'Click to load new image'}
-                      </span>
-                      <span className="text-xs text-gray-500 mt-1">
-                        PNG, JPG, GIF up to 5MB (saved when you save template)
-                      </span>
-                    </label>
-                  </div>
-                </div>
-
-                {/* Current Image Section */}
-                {(templateImagePath || imageUrl) && (
-                  <div className="mb-4">
-                    <Label className="text-muted-foreground mb-2 block">
-                      {uploadedImageFile ? 'Uploaded Image' : 'Template Image'}
-                    </Label>
-                    <div className="relative">
-                      <img
-                        src={imageUrl || templateImagePath}
-                        alt={
-                          uploadedImageFile
-                            ? 'Uploaded Image'
-                            : 'Template Image'
-                        }
-                        className="w-full h-32 object-cover rounded-lg border border-gray-200"
-                        onError={(e) => {
-                          console.error('Image failed to load:', e.target.src);
-                          e.target.style.display = 'none';
-                          e.target.nextSibling.style.display = 'flex';
-                        }}
-                      />
-                      <div
-                        className="absolute inset-0 bg-gray-100 rounded-lg flex items-center justify-center"
-                        style={{ display: 'none' }}
-                      >
-                        <span className="text-gray-500 text-xs">
-                          Image failed to load
-                        </span>
-                      </div>
-                      <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-all rounded-lg flex items-center justify-center">
-                        <span className="text-white text-xs font-medium opacity-0 hover:opacity-100">
-                          {uploadedImageFile
-                            ? 'Uploaded Image'
-                            : 'Current Template Image'}
-                        </span>
-                      </div>
-                    </div>
-                    <p className="text-xs text-gray-500 mt-2">
-                      {uploadedImageFile
-                        ? 'This is your uploaded image. It will be saved when you save the template.'
-                        : 'This is the image from the template. Upload a new image to replace it.'}
-                    </p>
-                  </div>
-                )}
-
-                <div className="text-xs text-gray-500">
-                  {uploadedImageFile
-                    ? 'Your uploaded image is ready for editing. Click "Save Template" to save it permanently.'
-                    : templateImagePath
-                      ? 'Upload a new image to replace the template image, or edit the current one.'
-                      : 'Upload an image to get started. Images are saved when you save the template.'}
-                </div>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </aside>
-        <main
-          className="flex-1 overflow-auto p-8"
-          style={getBackgroundStyle(formData.pageBackground)}
-        >
-          <div className="container mx-auto px-4 py-8">
-            <div className="mb-6">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                Image Editor
+    <div className="flex h-screen bg-gray-50">
+      {/* Left Side - Full Size Pixie Editor */}
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <div className="bg-white border-b border-gray-200 px-6 py-4">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-gradient-to-br from-pink-500 to-purple-600 rounded-lg flex items-center justify-center">
+              <span className="text-white text-sm font-bold">1</span>
+            </div>
+            <div>
+              <h1 className="text-lg font-semibold text-gray-900">
+                Design Your Event
               </h1>
-              <p className="text-gray-600">
-                Edit your image using the powerful Pixie editor
+              <p className="text-sm text-gray-500">
+                Customize your event invitation design
               </p>
             </div>
           </div>
-        </main>
-        <aside className="w-74 flex-shrink-0 bg-background p-4 border-l border-slate-200 overflow-y-auto min-h-[calc(100vh-var(--header-height))] h-100">
-          <div className="space-y-6">
-            <h3 className="font-semibold text-lg mb-2 border-b pb-2">
-              Canvas Settings
-            </h3>
-            <div className="py-3">
-              <p className="text-primary fw-500">Canvas Background</p>
-              <div className="w-full mb-5">
-                <Label className="text-muted-foreground">
-                  Color, Gradient, or URL
-                </Label>
-                <Input
-                  type="text"
-                  value={formData.background}
-                  onChange={(e) =>
-                    handleBackgroundChange('background', e.target.value)
-                  }
-                  placeholder="e.g., #ffffff, linear-gradient(...), or image URL"
-                />
-                {/* Background preview */}
-                <div
-                  className="w-full h-8 mt-2 rounded border"
-                  style={getBackgroundStyle(formData.background)}
-                />
-              </div>
-              <hr className="my-3" />
-              <p className="text-primary fw-500">Page Background</p>
+        </div>
 
-              <div className="w-full mb-5">
-                <Label className="text-muted-foreground">
-                  Color, Gradient, or URL
-                </Label>
-                <Input
-                  type="text"
-                  value={formData.pageBackground}
-                  onChange={(e) =>
-                    handleBackgroundChange('pageBackground', e.target.value)
-                  }
-                  placeholder="e.g., #ffffff, linear-gradient(...), or image URL"
-                />
-                {/* Background preview */}
-                <div
-                  className="w-full h-8 mt-2 rounded border"
-                  style={getBackgroundStyle(formData.pageBackground)}
-                />
+        {/* Pixie Editor Container */}
+        <div className="flex-1 p-6">
+          {templateLoading ? (
+            <div className="h-full flex items-center justify-center">
+              <div className="text-center space-y-4">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+                <p className="text-gray-600">Loading template...</p>
               </div>
             </div>
-          </div>
-        </aside>
+          ) : (
+            <div className="h-full rounded-lg overflow-hidden border border-gray-200 bg-white">
+              <PixieEditor
+                initialImageUrl={imageUrl || templateImagePath}
+                initialContent={eventData.jsonContent}
+                initialCanvasState={eventData.jsonContent}
+                width="100%"
+                height="100%"
+                onEditorReady={(saveFunction) => {
+                  // Store the save function globally for access
+                  window.pixieEditor = {
+                    save: saveFunction,
+                    applyBackground: (type, value) => {
+                      // Apply background changes to Pixie editor
+                      if (window.pixieRef?.current?.canvas) {
+                        const canvas = window.pixieRef.current.canvas;
+                        if (type === 'background') {
+                          canvas.backgroundColor = value;
+                        } else if (type === 'pageBackground') {
+                          // This would be applied to the page container
+                        }
+                        canvas.renderAll();
+                      }
+                    },
+                    loadTemplate: (content) => {
+                      // Load template content into Pixie editor
+                      if (window.pixieRef?.current?.setState) {
+                        window.pixieRef.current.setState(content);
+                      }
+                    },
+                  };
+                }}
+                onSave={(state) => {
+                  console.log('Template saved:', state);
+                  updateEventData({ jsonContent: state });
+                  showCustomToast('Template saved successfully', 'success');
+                }}
+                onImageUpload={(file) => {
+                  // Handle image upload in Pixie editor
+                  setUploadedImageFile(file);
+                  const tempUrl = URL.createObjectURL(file);
+                  setImageUrl(tempUrl);
+                }}
+              />
+            </div>
+          )}
+        </div>
       </div>
-    </>
+
+      {/* Right Side - Design Tools */}
+      <div className="w-80 bg-white border-l border-gray-200 flex flex-col">
+        {/* Design Tools Header */}
+        <div className="p-6 border-b border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            Design Tools
+          </h3>
+          <p className="text-sm text-gray-500">
+            Customize your invitation design
+          </p>
+        </div>
+
+        {/* Design Tools Content */}
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="space-y-6">
+            {/* Image Upload */}
+            <div>
+              <Label className="text-sm font-medium text-gray-700 mb-3 block">
+                Upload New Image
+              </Label>
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 transition-colors">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                  id="image-upload"
+                />
+                <label
+                  htmlFor="image-upload"
+                  className="cursor-pointer flex flex-col items-center"
+                >
+                  <svg
+                    className="w-8 h-8 text-gray-400 mb-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                    />
+                  </svg>
+                  <span className="text-sm text-gray-600">
+                    {isLoading ? 'Loading...' : 'Click to upload image'}
+                  </span>
+                  <span className="text-xs text-gray-500 mt-1">
+                    PNG, JPG, GIF up to 5MB
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            {/* Current Image Preview */}
+            {(templateImagePath || imageUrl) && (
+              <div>
+                <Label className="text-sm font-medium text-gray-700 mb-3 block">
+                  {uploadedImageFile ? 'Uploaded Image' : 'Template Image'}
+                </Label>
+                <div className="relative rounded-lg overflow-hidden border border-gray-200">
+                  <img
+                    src={imageUrl || templateImagePath}
+                    alt={
+                      uploadedImageFile ? 'Uploaded Image' : 'Template Image'
+                    }
+                    className="w-full h-32 object-cover"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                  <div
+                    className="absolute inset-0 bg-gray-100 flex items-center justify-center"
+                    style={{ display: 'none' }}
+                  >
+                    <span className="text-gray-500 text-xs">
+                      Image failed to load
+                    </span>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  {uploadedImageFile
+                    ? 'Your uploaded image is ready for editing.'
+                    : 'This is the template image. Upload a new image to replace it.'}
+                </p>
+              </div>
+            )}
+
+            {/* Background Settings */}
+            <div>
+              <Label className="text-sm font-medium text-gray-700 mb-3 block">
+                Canvas Background
+              </Label>
+              <Input
+                type="text"
+                value={eventData.background}
+                onChange={(e) =>
+                  handleBackgroundChange('background', e.target.value)
+                }
+                placeholder="e.g., #ffffff, linear-gradient(...), or image URL"
+                className="w-full"
+              />
+              <div
+                className="w-full h-8 mt-2 rounded border"
+                style={getBackgroundStyle(eventData.background)}
+              />
+            </div>
+
+            <div>
+              <Label className="text-sm font-medium text-gray-700 mb-3 block">
+                Page Background
+              </Label>
+              <Input
+                type="text"
+                value={eventData.pageBackground}
+                onChange={(e) =>
+                  handleBackgroundChange('pageBackground', e.target.value)
+                }
+                placeholder="e.g., #ffffff, linear-gradient(...), or image URL"
+                className="w-full"
+              />
+              <div
+                className="w-full h-8 mt-2 rounded border"
+                style={getBackgroundStyle(eventData.pageBackground)}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
