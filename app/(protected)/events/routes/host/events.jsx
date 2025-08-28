@@ -22,6 +22,7 @@ const Events = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [events, setEvents] = useState([]);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -47,6 +48,16 @@ const Events = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDeleteClick = (event) => {
+    setSelectedEvent(event);
+    setShowDeleteDialog(true);
+  };
+
+  const handleEventDeleted = () => {
+    // Refresh the events list after deletion
+    fetchEvents();
   };
 
   const formatDate = (dateString) => {
@@ -93,7 +104,7 @@ const Events = () => {
               <Button
                 variant="softDanger"
                 mode="icon"
-                onClick={() => setShowDeleteDialog(true)}
+                onClick={() => handleDeleteClick(event)}
               >
                 <Trash2 className="text-red-500" />
               </Button>
@@ -188,7 +199,13 @@ const Events = () => {
         </div>
       </div>
 
-      <DeleteEvent show={showDeleteDialog} setShow={setShowDeleteDialog} />
+      <DeleteEvent
+        show={showDeleteDialog}
+        setShow={setShowDeleteDialog}
+        eventId={selectedEvent?.id}
+        eventTitle={selectedEvent?.title}
+        onEventDeleted={handleEventDeleted}
+      />
     </>
   );
 };
