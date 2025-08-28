@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 function ManageGuestForm() {
   return (
     <>
-      <div className="w-full p-4 bg-white">
+      <div className="w-full mb-2 ">
         <h2 className="text-md font-medium mb-2">Add Guest</h2>
 
         {/* Row 1 */}
