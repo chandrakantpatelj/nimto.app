@@ -24,7 +24,7 @@ function Design() {
     background: '',
     pageBackground: '',
     content: [], // This will be populated from the canvas
-    backgroundStyle: {}, // This will be populated from the canvas
+    backgroundStyle: '{}', // This will be populated from the canvas as JSON string
     htmlContent: '', // This will be populated from the canvas
   });
 

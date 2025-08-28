@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { useState } from 'react';
 import { TriangleAlert } from 'lucide-react';
 import {
   Alert,
@@ -14,8 +14,45 @@ import DialogContent, {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { showCustomToast } from '@/components/common/custom-toast';
 
-function DeleteEvent({ show, setShow }) {
+function DeleteEvent({ show, setShow, eventId, eventTitle, onEventDeleted }) {
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (!eventId) {
+      showCustomToast('Event ID is required', 'error');
+      return;
+    }
+
+    try {
+      setIsDeleting(true);
+      
+      const response = await fetch(`/api/events/${eventId}`, {
+        method: 'DELETE',
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        showCustomToast('Event deleted successfully', 'success');
+        setShow(false);
+        
+        // Call the callback to refresh the events list
+        if (onEventDeleted) {
+          onEventDeleted();
+        }
+      } else {
+        showCustomToast(data.error || 'Failed to delete event', 'error');
+      }
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      showCustomToast('An error occurred while deleting the event', 'error');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <Dialog open={show} onOpenChange={setShow}>
       <DialogContent>
@@ -36,15 +73,29 @@ function DeleteEvent({ show, setShow }) {
             <AlertTitle className="font-medium">
               Are you sure you want to delete this event?
             </AlertTitle>
+            {eventTitle && (
+              <p className="text-sm text-gray-600 mt-2">
+                <strong>"{eventTitle}"</strong>
+              </p>
+            )}
+            <p className="text-sm text-gray-600 mt-2">
+              This action cannot be undone. All associated guests will also be deleted.
+            </p>
           </AlertContent>
         </Alert>
 
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
+            <Button variant="outline" disabled={isDeleting}>
+              Cancel
+            </Button>
           </DialogClose>
-          <Button variant="destructive" onClick={() => setShow(false)} asChild>
-            <Link href="/events"> Delete</Link>
+          <Button 
+            variant="destructive" 
+            onClick={handleDelete}
+            disabled={isDeleting}
+          >
+            {isDeleting ? 'Deleting...' : 'Delete Event'}
           </Button>
         </DialogFooter>
       </DialogContent>
