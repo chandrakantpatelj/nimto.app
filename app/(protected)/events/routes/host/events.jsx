@@ -15,11 +15,14 @@ import { toAbsoluteUrl } from '@/lib/helpers';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import DeleteEvent from '../../components/delete-event';
 
 const Events = () => {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [events, setEvents] = useState([]);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -90,12 +93,7 @@ const Events = () => {
               <Button
                 variant="softDanger"
                 mode="icon"
-                onClick={() => {
-                  if (confirm('Are you sure you want to delete this event?')) {
-                    // Delete logic here
-                    console.log('Delete event:', event.id);
-                  }
-                }}
+                onClick={() => setShowDeleteDialog(true)}
               >
                 <Trash2 className="text-red-500" />
               </Button>
@@ -189,6 +187,8 @@ const Events = () => {
           </div>
         </div>
       </div>
+
+      <DeleteEvent show={showDeleteDialog} setShow={setShowDeleteDialog} />
     </>
   );
 };

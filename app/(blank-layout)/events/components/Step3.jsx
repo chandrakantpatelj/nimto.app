@@ -43,11 +43,11 @@ function Step3() {
   );
 
   return (
-    <div className="flex flex-1 overflow-hidden bg-gray-50">
+    <div className="flex flex-1 overflow-hidden">
       <main className="flex-1 overflow-auto p-8">
         <div className="max-w-4xl mx-auto">
           {/* Main Card */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-background rounded-xl shadow-sm border border-gray-100 p-6">
             <div className="space-y-8">
               {/* Add a Guest Section */}
               <div>
@@ -171,7 +171,7 @@ function Step3() {
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-background divide-y divide-gray-200">
                       {filteredGuests.map((guest) => (
                         <tr key={guest.id} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
