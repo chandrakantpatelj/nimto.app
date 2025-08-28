@@ -4,18 +4,11 @@ import React, { useState } from 'react';
 import { Search, Settings, UserPlus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useEventCreation } from '../context/EventCreationContext';
 import GuestSettingsDrawer from './GuestSettingsDrawer';
 
 function Step3() {
-  const [guests, setGuests] = useState([
-    {
-      id: 1,
-      name: 'dhruvi',
-      contact: 'dhruvi@jspinfotech.com',
-      status: 'Pending',
-    },
-  ]);
-
+  const { eventData, addGuest, removeGuest, clearGuests } = useEventCreation();
   const [newGuest, setNewGuest] = useState({
     name: '',
     contact: '',
@@ -26,26 +19,24 @@ function Step3() {
 
   const handleAddGuest = () => {
     if (newGuest.name.trim() && newGuest.contact.trim()) {
-      const guest = {
-        id: Date.now(),
+      addGuest({
         name: newGuest.name,
         contact: newGuest.contact,
         status: 'Pending',
-      };
-      setGuests([...guests, guest]);
+      });
       setNewGuest({ name: '', contact: '' });
     }
   };
 
   const handleRemoveGuest = (id) => {
-    setGuests(guests.filter((guest) => guest.id !== id));
+    removeGuest(id);
   };
 
   const handleClearAll = () => {
-    setGuests([]);
+    clearGuests();
   };
 
-  const filteredGuests = guests.filter(
+  const filteredGuests = eventData.guests.filter(
     (guest) =>
       guest.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       guest.contact.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -103,9 +94,39 @@ function Step3() {
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-semibold text-gray-900">
-                    Invited Guests ({guests.length})
+                    Invited Guests ({eventData.guests.length})
                   </h2>
                 </div>
+
+                {/* Guest Requirement Notice */}
+                {eventData.guests.length === 0 && (
+                  <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                    <div className="flex items-start gap-3">
+                      <div className="w-5 h-5 bg-amber-100 rounded-full flex items-center justify-center mt-0.5">
+                        <svg
+                          className="w-3 h-3 text-amber-600"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-amber-900 mb-1">
+                          Guest Required
+                        </p>
+                        <p className="text-xs text-amber-700">
+                          You must add at least one guest to create an event.
+                          Events without guests cannot be published.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Search and Actions Bar */}
                 <div className="flex items-center gap-4 mb-6">
