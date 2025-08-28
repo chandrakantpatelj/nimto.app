@@ -14,6 +14,9 @@ export function TemplateHeader({
   activeStep,
   handleNext,
   handleBack,
+  onPublishEvent,
+  isCreating = false,
+  hasGuests = false, // Add this prop to check if guests exist
 
   // Template editor props
   onSave,
@@ -175,7 +178,25 @@ export function TemplateHeader({
                   )}
 
                   {activeStep === 2 ? (
-                    <Button variant="primary">Publish Event</Button>
+                    <div className="relative">
+                      <Button
+                        variant="primary"
+                        onClick={onPublishEvent}
+                        disabled={isCreating || !hasGuests}
+                        className={
+                          !hasGuests ? 'opacity-50 cursor-not-allowed' : ''
+                        }
+                      >
+                        {isCreating ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            Creating...
+                          </>
+                        ) : (
+                          'Publish Event'
+                        )}
+                      </Button>
+                    </div>
                   ) : (
                     <Button variant="primary" onClick={() => handleNext()}>
                       Next
