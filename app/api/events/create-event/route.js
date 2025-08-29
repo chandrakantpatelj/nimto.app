@@ -208,7 +208,11 @@ export async function POST(request) {
             templateImagePath,
           );
           if (oldImageExists) {
-            await deleteImageFromS3(s3Client, bucket, templateImagePath);
+            await deleteImageFromS3(
+              s3Client,
+              bucket,
+              templateImagePath,
+            );
           }
         }
 
