@@ -30,6 +30,7 @@ import { useEventCreation } from '../context/EventCreationContext';
 function Step1() {
   const params = useParams();
   const templateId = params.id;
+  const eventId = params.eventId; // For edit mode
   const { eventData, updateEventData } = useEventCreation();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -38,16 +39,101 @@ function Step1() {
   const [uploadedImageFile, setUploadedImageFile] = useState(null);
   const [templateImagePath, setTemplateImagePath] = useState('');
   const [newImageBase64, setNewImageBase64] = useState(null); // Store base64 data for new images
+  // State flags to prevent multiple API calls and unnecessary re-renders
+  const [hasUploadedNewImage, setHasUploadedNewImage] = useState(false); // Track if user uploaded a new image
+  const [templateFetched, setTemplateFetched] = useState(false); // Track if template has been fetched
+  const [eventDataLoaded, setEventDataLoaded] = useState(false); // Track if event data has been loaded
 
   // Date picker popover state
   const [datePickerOpen, setDatePickerOpen] = useState(false);
 
-  // Fetch template data
+  // Check if we're in edit mode or create mode
+  const isEditMode = !!eventId;
+
+  // Initialize with existing event data if in edit mode
+  // This useEffect is optimized to prevent multiple API calls and unnecessary re-renders
+  useEffect(() => {
+    // Handle edit mode
+    if (isEditMode && eventData && !eventDataLoaded) {
+      setTemplateLoading(false);
+      setEventDataLoaded(true);
+
+      // Set the image path from existing event data
+      if (eventData.imagePath && !hasUploadedNewImage) {
+        setTemplateImagePath(eventData.imagePath);
+
+        // Use the s3ImageUrl that's already provided by the API
+        if (eventData.s3ImageUrl) {
+          setImageUrl(eventData.s3ImageUrl);
+        } else {
+          // Fallback: use image proxy API with the image path
+          const proxyImageUrl = `/api/image-proxy?path=${encodeURIComponent(eventData.imagePath)}`;
+          setImageUrl(proxyImageUrl);
+        }
+      } else if (hasUploadedNewImage) {
+        // Skipping eventData image setup - new image uploaded
+      }
+
+      // Load existing event content into Pixie editor if available
+      if (eventData.jsonContent) {
+        console.log('eventData.jsonContent', eventData.jsonContent);
+        loadEventContentIntoPixie(eventData);
+      }
+    }
+    // Handle create mode - fetch template
+    else if (templateId && !isEditMode && !templateFetched) {
+      setTemplateFetched(true);
+      fetchTemplate();
+    }
+    // Handle case when no template ID is available
+    else if (!templateId && !isEditMode) {
+      setTemplateLoading(false);
+    }
+    // Handle case when template is already fetched but still loading
+    else if (templateFetched && templateLoading) {
+      setTemplateLoading(false);
+    }
+  }, [
+    isEditMode,
+    templateId,
+    hasUploadedNewImage,
+    templateFetched,
+    eventDataLoaded,
+  ]);
+  // Reset flags when templateId changes
+  useEffect(() => {
+    setTemplateFetched(false);
+    setEventDataLoaded(false);
+    setHasUploadedNewImage(false);
+  }, [templateId, eventId]);
+
+  // Initial load effect - ensure template is fetched on mount
+  useEffect(() => {
+    if (templateId && !isEditMode && !templateFetched && !templateLoading) {
+      setTemplateFetched(true);
+      fetchTemplate();
+    }
+  }, [templateId, isEditMode, templateFetched, templateLoading]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      // Cleanup any pending operations
+      setTemplateLoading(false);
+      setTemplateFetched(false);
+      setEventDataLoaded(false);
+    };
+  }, []);
+
+  // Fetch template data (only for create mode)
   const fetchTemplate = async () => {
-    if (!templateId) return;
+    if (!templateId) {
+      return;
+    }
 
     try {
       setTemplateLoading(true);
+
       const response = await apiFetch(`/api/template/${templateId}`);
 
       if (!response.ok) {
@@ -76,6 +162,7 @@ function Step1() {
         if (template.s3ImageUrl) {
           setTemplateImagePath(template.s3ImageUrl);
           updateEventData({ imagePath: template.imagePath }); // Store the actual S3 path, not the proxy URL
+          setImageUrl(template.s3ImageUrl);
         }
 
         // Load template content into Pixie editor
@@ -86,8 +173,9 @@ function Step1() {
         throw new Error(result.error || 'Failed to fetch template');
       }
     } catch (error) {
-      console.error('Error fetching template:', error);
       showCustomToast('Failed to load template', 'error');
+      // Reset the flag on error so user can retry
+      setTemplateFetched(false);
     } finally {
       setTemplateLoading(false);
     }
@@ -98,8 +186,8 @@ function Step1() {
     if (!template.jsonContent) return;
 
     try {
-      // jsonContent is already parsed by the API
-      const jsonContent = template.jsonContent;
+      const jsonContent = parseJsonContent(template.jsonContent);
+      if (!jsonContent) return;
 
       // Initialize Pixie editor with template content
       if (window.pixieEditor && window.pixieEditor.loadTemplate) {
@@ -113,7 +201,31 @@ function Step1() {
         }, 1000);
       }
     } catch (error) {
-      console.error('Error loading template into Pixie:', error);
+      // Error loading template into Pixie
+    }
+  };
+
+  // Load existing event content into Pixie editor
+  const loadEventContentIntoPixie = (event) => {
+    if (!event.jsonContent) return;
+
+    try {
+      const jsonContent = parseJsonContent(event.jsonContent);
+      if (!jsonContent) return;
+
+      // Initialize Pixie editor with existing event content
+      if (window.pixieEditor && window.pixieEditor.loadTemplate) {
+        window.pixieEditor.loadTemplate(jsonContent);
+      } else {
+        // Fallback: wait for Pixie to be ready
+        setTimeout(() => {
+          if (window.pixieEditor && window.pixieEditor.loadTemplate) {
+            window.pixieEditor.loadTemplate(jsonContent);
+          }
+        }, 1000);
+      }
+    } catch (error) {
+      // Error loading event content into Pixie
     }
   };
 
@@ -161,17 +273,34 @@ function Step1() {
 
       // Store the file for later saving
       setUploadedImageFile(file);
+
+      // Update the image URL to force Pixie editor to reload with new image
       setImageUrl(tempImageUrl);
+
+      // Clear the template image path since we're using a new image
+      setTemplateImagePath('');
+      setHasUploadedNewImage(true); // Mark that a new image has been uploaded
 
       showCustomToast(
         'Image loaded successfully. Click "Save Template" to save it permanently.',
         'success',
       );
     } catch (error) {
-      console.error('Error loading image:', error);
       showCustomToast('Failed to load image', 'error');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Helper function to parse JSON content safely
+  const parseJsonContent = (content) => {
+    if (!content) return null;
+
+    try {
+      return typeof content === 'string' ? JSON.parse(content) : content;
+    } catch (error) {
+      console.error('Error parsing JSON content:', error);
+      return null;
     }
   };
 
@@ -196,13 +325,6 @@ function Step1() {
     // Default to color
     return { backgroundColor: value };
   };
-
-  // Fetch template on component mount
-  useEffect(() => {
-    if (templateId) {
-      fetchTemplate();
-    }
-  }, [templateId]);
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -231,15 +353,17 @@ function Step1() {
             <div className="h-full flex items-center justify-center">
               <div className="text-center space-y-4">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
-                <p className="text-gray-600">Loading template...</p>
+                <p className="text-gray-600">
+                  {isEditMode ? 'Loading event...' : 'Loading template...'}
+                </p>
               </div>
             </div>
           ) : (
             <div className="h-full rounded-lg overflow-hidden border border-gray-200 bg-white">
               <PixieEditor
+                key={`pixie-${templateId || eventId}-${hasUploadedNewImage}`} // Use templateId/eventId instead of imageUrl to prevent unnecessary re-renders
                 initialImageUrl={imageUrl || templateImagePath}
-                initialContent={eventData.jsonContent}
-                initialCanvasState={eventData.jsonContent}
+                initialContent={parseJsonContent(eventData.jsonContent)}
                 width="100%"
                 height="100%"
                 onEditorReady={(saveFunction) => {
@@ -267,15 +391,28 @@ function Step1() {
                   };
                 }}
                 onSave={(state) => {
-                  console.log('Template saved:', state);
+                  console.log('state1234', state);
                   updateEventData({ jsonContent: state });
-                  showCustomToast('Template saved successfully', 'success');
+                  // showCustomToast('Template saved successfully', 'success');
                 }}
                 onImageUpload={(file) => {
                   // Handle image upload in Pixie editor
                   setUploadedImageFile(file);
                   const tempUrl = URL.createObjectURL(file);
                   setImageUrl(tempUrl);
+
+                  // Clear the template image path since we're using a new image
+                  setTemplateImagePath('');
+                  setHasUploadedNewImage(true); // Mark that a new image has been uploaded
+
+                  // Convert file to base64 for later use
+                  const reader = new FileReader();
+                  reader.onload = (e) => {
+                    const base64Data = e.target.result;
+                    setNewImageBase64(base64Data);
+                    updateEventData({ newImageBase64: base64Data });
+                  };
+                  reader.readAsDataURL(file);
                 }}
               />
             </div>

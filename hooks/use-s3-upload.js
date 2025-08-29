@@ -57,7 +57,7 @@ export function useS3Upload() {
       }
 
       // Step 3: Generate public URL using clean path format
-      const publicUrl = `https://${bucket}.s3.${region}.amazonaws.com/${key}`;
+      const publicUrl = `https://${bucket}.s3.${region}.amazonaws.com/${bucket}/${key}`;
 
       setUploadProgress(100);
       return {
@@ -117,7 +117,7 @@ export function useS3Upload() {
 
           xhr.addEventListener('load', () => {
             if (xhr.status === 200) {
-              const publicUrl = `https://${bucket}.s3.${region}.amazonaws.com/${key}`;
+              const publicUrl = `https://${bucket}.s3.${region}.amazonaws.com/${bucket}/${key}`;
               setUploadProgress(100);
               resolve({
                 success: true,

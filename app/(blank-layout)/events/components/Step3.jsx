@@ -11,20 +11,25 @@ function Step3() {
   const { eventData, addGuest, removeGuest, clearGuests } = useEventCreation();
   const [newGuest, setNewGuest] = useState({
     name: '',
-    contact: '',
+    email: '',
+    phone: '',
   });
 
   const [searchTerm, setSearchTerm] = useState('');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const handleAddGuest = () => {
-    if (newGuest.name.trim() && newGuest.contact.trim()) {
+    if (
+      newGuest.name.trim() &&
+      (newGuest.email.trim() || newGuest.phone.trim())
+    ) {
       addGuest({
         name: newGuest.name,
-        contact: newGuest.contact,
-        status: 'Pending',
+        email: newGuest.email.trim() || null,
+        phone: newGuest.phone.trim() || null,
+        status: 'PENDING',
       });
-      setNewGuest({ name: '', contact: '' });
+      setNewGuest({ name: '', email: '', phone: '' });
     }
   };
 
@@ -39,7 +44,10 @@ function Step3() {
   const filteredGuests = eventData.guests.filter(
     (guest) =>
       guest.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      guest.contact.toLowerCase().includes(searchTerm.toLowerCase()),
+      (guest.email &&
+        guest.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (guest.phone &&
+        guest.phone.toLowerCase().includes(searchTerm.toLowerCase())),
   );
 
   return (
@@ -70,14 +78,27 @@ function Step3() {
                   </div>
                   <div className="flex-1">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Email or Phone
+                      Email
                     </label>
                     <Input
-                      type="text"
+                      type="email"
                       placeholder="jane.doe@example.com"
-                      value={newGuest.contact}
+                      value={newGuest.email}
                       onChange={(e) =>
-                        setNewGuest({ ...newGuest, contact: e.target.value })
+                        setNewGuest({ ...newGuest, email: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Phone
+                    </label>
+                    <Input
+                      type="tel"
+                      placeholder="+1234567890"
+                      value={newGuest.phone}
+                      onChange={(e) =>
+                        setNewGuest({ ...newGuest, phone: e.target.value })
                       }
                     />
                   </div>
@@ -161,7 +182,10 @@ function Step3() {
                           NAME
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          CONTACT
+                          EMAIL
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          PHONE
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           STATUS
@@ -173,12 +197,18 @@ function Step3() {
                     </thead>
                     <tbody className="bg-background divide-y divide-gray-200">
                       {filteredGuests.map((guest) => (
-                        <tr key={guest.id} className="hover:bg-gray-50">
+                        <tr
+                          key={guest.id || guest.tempId}
+                          className="hover:bg-gray-50"
+                        >
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                             {guest.name}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {guest.contact}
+                            {guest.email || '-'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {guest.phone || '-'}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
@@ -189,7 +219,9 @@ function Step3() {
                             <Button
                               variant="destructive"
                               appearance="ghost"
-                              onClick={() => handleRemoveGuest(guest.id)}
+                              onClick={() =>
+                                handleRemoveGuest(guest.id || guest.tempId)
+                              }
                             >
                               <X className="w-4 h-4" />
                             </Button>
