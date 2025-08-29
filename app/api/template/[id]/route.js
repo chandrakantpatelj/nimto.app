@@ -9,7 +9,7 @@ const prisma = new PrismaClient();
 // GET /api/template/[id] - Get a specific template
 export async function GET(request, { params }) {
   try {
-    const { id } = await params;
+    const { id } = params;
 
     const template = await prisma.template.findFirst({
       where: {

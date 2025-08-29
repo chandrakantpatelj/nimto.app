@@ -1,21 +1,50 @@
 import { NextResponse } from 'next/server';
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { getS3Config } from '@/lib/s3-utils';
 
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const imageUrl = searchParams.get('url');
+    const imagePath = searchParams.get('path');
 
-    if (!imageUrl) {
+    console.log('Image proxy - Received URL:', imageUrl, 'Path:', imagePath);
+
+    let s3Url = imageUrl;
+
+    // If we have a path instead of a full URL, construct the S3 URL
+    if (!s3Url && imagePath) {
+      const { bucket, region, endpoint } = getS3Config();
+      console.log('Image proxy - S3 config:', { bucket, region, endpoint });
+
+      if (endpoint) {
+        s3Url = `${endpoint}/${imagePath}`;
+      } else if (bucket && region) {
+        s3Url = `https://${bucket}.s3.${region}.amazonaws.com/${imagePath}`;
+      } else {
+        return NextResponse.json(
+          { error: 'S3 configuration not found' },
+          { status: 500 },
+        );
+      }
+      console.log('Image proxy - Constructed S3 URL:', s3Url);
+    }
+
+    if (!s3Url) {
       return NextResponse.json(
-        { error: 'URL parameter is required' },
+        { error: 'URL or path parameter is required' },
         { status: 400 },
       );
     }
 
     // Parse the S3 URL to extract bucket and key
-    const url = new URL(imageUrl);
+    const url = new URL(s3Url);
     const pathParts = url.pathname.split('/').filter((part) => part);
+
+    console.log('Image proxy - Parsed URL:', {
+      hostname: url.hostname,
+      pathParts,
+    });
 
     if (pathParts.length === 0) {
       return NextResponse.json({ error: 'Invalid S3 URL' }, { status: 400 });

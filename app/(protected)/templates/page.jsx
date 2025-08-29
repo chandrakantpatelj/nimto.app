@@ -34,14 +34,14 @@ function TemplateManagementPage() {
             <Button variant="secondary" onClick={() => setShowAIDialog(true)}>
               <Sparkles /> Create With AI
             </Button>
-            {/* <Button variant="outline" asChild>
+            <Button variant="outline" asChild>
               <Link href="/templates/upload">
                 <Upload /> Upload Template
               </Link>
-            </Button> */}
+            </Button>
             <Button variant="primary" asChild>
               <Link href="/templates/design">
-                <CirclePlus /> Create New Template
+                <CirclePlus /> Create New Manually
               </Link>
             </Button>
           </ToolbarActions>

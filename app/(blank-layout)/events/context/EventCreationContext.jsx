@@ -25,6 +25,7 @@ export function EventCreationProvider({ children }) {
 
     // Step 3: Guests
     guests: [],
+    originalGuests: [], // Track original guests to identify new ones
   });
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -36,7 +37,14 @@ export function EventCreationProvider({ children }) {
   const addGuest = (guest) => {
     setEventData((prev) => ({
       ...prev,
-      guests: [...prev.guests, { ...guest, id: Date.now() }],
+      guests: [
+        ...prev.guests,
+        {
+          ...guest,
+          tempId: `temp-${Date.now()}-${Math.random()}`,
+          isNew: true,
+        },
+      ], // Give temp ID for new guests
     }));
   };
 
@@ -75,6 +83,7 @@ export function EventCreationProvider({ children }) {
       imagePath: '',
       newImageBase64: null,
       guests: [],
+      originalGuests: [],
     });
     setCurrentStep(0);
   };

@@ -10,19 +10,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showCustomToast } from '@/components/common/custom-toast';
 import PixieEditor from '@/components/image-editor/PixieEditor';
 import { TemplateHeader } from '../../events/components';
-import { useTemplateImage } from '@/hooks/use-template-image';
 
 function Design() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  // Template image operations
-  const {
-    uploadTemplateImage,
-    loading: imageLoading,
-    error: imageError,
-  } = useTemplateImage();
 
   // Form state
   const [formData, setFormData] = useState({
@@ -40,7 +32,6 @@ function Design() {
   // Image state
   const [imageUrl, setImageUrl] = useState('');
   const [canvasState, setCanvasState] = useState(null);
-  const [uploadedImageFile, setUploadedImageFile] = useState(null); // Store uploaded file for later saving
 
   // Handle form field changes
   const handleInputChange = (field, value) => {
@@ -67,34 +58,16 @@ function Design() {
     }));
   };
 
-  // Handle image upload - store file for later upload on form submit
-  const handleImageUpload = async (file) => {
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      showCustomToast('Please select a valid image file', 'error');
-      return;
-    }
+  // Handle image upload
+  const handleImageUpload = (file) => {
+    // Create a temporary URL for the uploaded image
+    const tempUrl = URL.createObjectURL(file);
+    setImageUrl(tempUrl);
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      showCustomToast('Image size should be less than 5MB', 'error');
-      return;
-    }
-
-    try {
-      // Store the file for later upload
-      console.log('file', file);
-      setUploadedImageFile(file);
-
-      // Create a preview URL for the image
-      const previewUrl = URL.createObjectURL(file);
-      console.log('previewUrl', previewUrl);
-
-      setImageUrl(previewUrl);
-      showCustomToast('Image selected successfully!', 'success');
-    } catch (error) {
-      showCustomToast(`Failed to process image: ${error.message}`, 'error');
-    }
+    // Clean up the temporary URL after a delay
+    setTimeout(() => {
+      URL.revokeObjectURL(tempUrl);
+    }, 1000);
   };
 
   // Handle canvas save
@@ -138,7 +111,6 @@ function Design() {
         imagePath: null,
       };
 
-      // Create template first
       const response = await apiFetch('/api/template/create-template', {
         method: 'POST',
         headers: {
@@ -155,19 +127,8 @@ function Design() {
       const result = await response.json();
 
       if (result.success) {
-        // Upload image if one was selected
-        if (uploadedImageFile) {
-          try {
-            showCustomToast('Uploading image to S3...', 'info');
-            await uploadTemplateImage(result.data.id, uploadedImageFile);
-            showCustomToast('Image uploaded successfully!', 'success');
-          } catch (uploadError) {
-            console.error('Error uploading image:', uploadError);
-            showCustomToast('Template created but image upload failed', 'warning');
-          }
-        }
-
         showCustomToast('Template created successfully', 'success');
+
         router.push('/templates');
       } else {
         throw new Error(result.error || 'Failed to create template');
@@ -296,7 +257,7 @@ function Design() {
                         Click to upload new image
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
-                        PNG, JPG, GIF up to 5MB (uploads when template is saved)
+                        PNG, JPG, GIF up to 5MB (uploads immediately to S3)
                       </p>
                       <input
                         type="file"
@@ -308,30 +269,12 @@ function Design() {
                             handleImageUpload(file);
                           }
                         }}
-                        disabled={loading || imageLoading}
                       />
                     </label>
                   </div>
-                  {imageLoading && (
-                    <div className="mt-2">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div className="bg-blue-600 h-2 rounded-full animate-pulse"></div>
-                        </div>
-                        <span className="text-xs text-gray-500">Uploading...</span>
-                      </div>
-                    </div>
-                  )}
-                  {uploadedImageFile && (
-                    <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded">
-                      <p className="text-xs text-green-600">
-                        ✓ Image selected: {uploadedImageFile.name}
-                      </p>
-                    </div>
-                  )}
                   <p className="text-xs text-gray-500 mt-2">
-                    Upload an image to get started. Images are uploaded to S3 when
-                    the template is saved.
+                    Upload an image to get started. Images are stored in S3 with
+                    unique paths.
                   </p>
                 </div>
               </div>
