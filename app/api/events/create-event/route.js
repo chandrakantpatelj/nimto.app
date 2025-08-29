@@ -202,7 +202,6 @@ export async function POST(request) {
         console.log(`Uploaded new event image to S3: ${newImagePath}`);
 
         // If template has an existing image, delete it from S3 (optional cleanup)
-        let oldImageDeleted = false;
         if (templateImagePath && templateImagePath !== newImagePath) {
           const oldImageExists = await checkImageExists(
             s3Client,
@@ -210,11 +209,7 @@ export async function POST(request) {
             templateImagePath,
           );
           if (oldImageExists) {
-            oldImageDeleted = await deleteImageFromS3(
-              s3Client,
-              bucket,
-              templateImagePath,
-            );
+            await deleteImageFromS3(s3Client, bucket, templateImagePath);
           }
         }
 
