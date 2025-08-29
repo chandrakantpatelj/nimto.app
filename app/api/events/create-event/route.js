@@ -8,7 +8,6 @@ import {
 import { PrismaClient } from '@prisma/client';
 import { getServerSession } from 'next-auth';
 import { uid } from '@/lib/helpers';
-import { generateS3Url } from '@/lib/s3-utils';
 import { sendEmail } from '@/services/send-email';
 import authOptions from '../../auth/[...nextauth]/auth-options';
 
