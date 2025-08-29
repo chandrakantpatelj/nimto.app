@@ -53,6 +53,7 @@ function Step1() {
   // Initialize with existing event data if in edit mode
   // This useEffect is optimized to prevent multiple API calls and unnecessary re-renders
   useEffect(() => {
+    console.log('eventData', eventData);
     // Handle edit mode
     if (isEditMode && eventData && !eventDataLoaded) {
       setTemplateLoading(false);
@@ -67,7 +68,7 @@ function Step1() {
           setImageUrl(eventData.s3ImageUrl);
         } else {
           // Fallback: use image proxy API with the image path
-          const proxyImageUrl = `/api/image-proxy?path=${encodeURIComponent(eventData.imagePath)}`;
+          const proxyImageUrl = `/api/image-proxy?path=${encodeURIComponent(eventData.s3ImageUrl)}`;
           setImageUrl(proxyImageUrl);
         }
       } else if (hasUploadedNewImage) {

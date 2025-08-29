@@ -38,23 +38,7 @@ function EditEventContent() {
         const event = data.data;
 
         // Update context with existing event data
-        updateEventData({
-          title: event.title || '',
-          description: event.description || '',
-          date: event.date ? new Date(event.date) : null,
-          time: event.time || '',
-          location: event.location || '',
-          templateId: event.templateId || '',
-          jsonContent: event.jsonContent || '',
-          backgroundStyle: event.backgroundStyle || '{}',
-          htmlContent: event.htmlContent || '',
-          background: event.background || '#FFFFFF',
-          pageBackground: event.pageBackground || '#e2e8f0',
-          imagePath: event.imagePath || '',
-          status: event.status || 'DRAFT',
-          guests: event.guests || [],
-          originalGuests: event.guests || [], // Store original guests for comparison
-        });
+        updateEventData(event);
       } else {
         setError('Failed to load event data');
         showCustomToast('Failed to load event data', 'error');
