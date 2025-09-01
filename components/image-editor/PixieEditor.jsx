@@ -526,7 +526,7 @@ const PixieEditor = ({
             const savedState = initialCanvasState || initialContent;
             console.log('PixieEditor: savedState:', savedState);
             console.log('PixieEditor: savedState.canvas:', savedState?.canvas);
-            if (savedState?.canvas?.objects?.length > 0) {
+            if (savedState?.canvas && savedState?.canvas?.objects?.length > 0) {
               console.log('PixieEditor: Setting state with savedState');
               try {
                 await editor.setState(savedState);

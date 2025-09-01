@@ -184,22 +184,31 @@ function Step1() {
 
   // Load template content into Pixie editor
   const loadTemplateIntoPixie = (template) => {
-    if (!template.jsonContent) return;
+    if (!template?.jsonContent) return;
 
     try {
       const jsonContent = parseJsonContent(template.jsonContent);
-      if (!jsonContent) return;
+      const hasObjects =
+        jsonContent?.canvas &&
+        Array.isArray(jsonContent.canvas.objects) &&
+        jsonContent.canvas.objects.length > 0;
+      if (!hasObjects) return;
 
       // Initialize Pixie editor with template content
+      const trySetState = () => {
+        if (window.pixieRef?.current?.setState) {
+          try {
+            window.pixieRef.current.setState(jsonContent);
+          } catch (err) {
+            // ignore bad state
+          }
+        }
+      };
+
       if (window.pixieEditor && window.pixieEditor.loadTemplate) {
         window.pixieEditor.loadTemplate(jsonContent);
       } else {
-        // Fallback: wait for Pixie to be ready
-        setTimeout(() => {
-          if (window.pixieEditor && window.pixieEditor.loadTemplate) {
-            window.pixieEditor.loadTemplate(jsonContent);
-          }
-        }, 1000);
+        setTimeout(trySetState, 1000);
       }
     } catch (error) {
       // Error loading template into Pixie
@@ -208,22 +217,31 @@ function Step1() {
 
   // Load existing event content into Pixie editor
   const loadEventContentIntoPixie = (event) => {
-    if (!event.jsonContent) return;
+    if (!event?.jsonContent) return;
 
     try {
       const jsonContent = parseJsonContent(event.jsonContent);
-      if (!jsonContent) return;
+      const hasObjects =
+        jsonContent?.canvas &&
+        Array.isArray(jsonContent.canvas.objects) &&
+        jsonContent.canvas.objects.length > 0;
+      if (!hasObjects) return;
 
       // Initialize Pixie editor with existing event content
+      const trySetState = () => {
+        if (window.pixieRef?.current?.setState) {
+          try {
+            window.pixieRef.current.setState(jsonContent);
+          } catch (err) {
+            // ignore bad state
+          }
+        }
+      };
+
       if (window.pixieEditor && window.pixieEditor.loadTemplate) {
         window.pixieEditor.loadTemplate(jsonContent);
       } else {
-        // Fallback: wait for Pixie to be ready
-        setTimeout(() => {
-          if (window.pixieEditor && window.pixieEditor.loadTemplate) {
-            window.pixieEditor.loadTemplate(jsonContent);
-          }
-        }, 1000);
+        setTimeout(trySetState, 1000);
       }
     } catch (error) {
       // Error loading event content into Pixie
@@ -364,7 +382,16 @@ function Step1() {
               <PixieEditor
                 key={`pixie-${templateId || eventId}-${hasUploadedNewImage}`} // Use templateId/eventId instead of imageUrl to prevent unnecessary re-renders
                 initialImageUrl={imageUrl || templateImagePath}
-                initialContent={parseJsonContent(eventData.jsonContent)}
+                initialContent={(() => {
+                  const parsed = eventData?.jsonContent
+                    ? parseJsonContent(eventData.jsonContent)
+                    : null;
+                  const valid =
+                    parsed?.canvas &&
+                    Array.isArray(parsed.canvas.objects) &&
+                    parsed.canvas.objects.length > 0;
+                  return valid ? parsed : null;
+                })()}
                 width="100%"
                 height="100%"
                 onEditorReady={(saveFunction) => {
@@ -384,9 +411,18 @@ function Step1() {
                       }
                     },
                     loadTemplate: (content) => {
-                      // Load template content into Pixie editor
+                      // Load template content into Pixie editor with validation
+                      const hasObjects =
+                        content?.canvas &&
+                        Array.isArray(content.canvas.objects) &&
+                        content.canvas.objects.length > 0;
+                      if (!hasObjects) return;
                       if (window.pixieRef?.current?.setState) {
-                        window.pixieRef.current.setState(content);
+                        try {
+                          window.pixieRef.current.setState(content);
+                        } catch (_) {
+                          // ignore
+                        }
                       }
                     },
                   };
