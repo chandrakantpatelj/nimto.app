@@ -483,10 +483,7 @@ const PixieEditor = ({
 
       const instance = await Pixie.init({
         selector: `#${containerId}`,
-        image:
-          proxiedImageUrl ||
-          imageUrl ||
-          'https://via.placeholder.com/400x300?text=No+Image+Provided',
+        image: proxiedImageUrl || imageUrl,
         ...config,
         baseUrl: '/pixie-assets',
         allowExternalImages: true,
@@ -502,8 +499,20 @@ const PixieEditor = ({
           quality: 1,
         },
         tools: {
-          crop: { allowExternalImages: true, ignoreExternalImageErrors: true },
+          zoom: {
+            allowUserZoom: false, // disable zoom buttons
+          },
+          crop: {
+            allowExternalImages: true,
+            ignoreExternalImageErrors: true,
+          },
+          openImageDialog: {
+            show: true,
+          },
+
+          ...config?.tools,
         },
+
         ui: { ...config.ui, showExportErrors: false, showCropErrors: false },
 
         onLoad: async (editor) => {
