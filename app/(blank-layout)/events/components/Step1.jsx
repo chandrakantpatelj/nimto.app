@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { DateInput, TimeField } from '@/components/ui/datefield';
-import { Input, InputAddon, InputGroup } from '@/components/ui/input';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   Popover,
@@ -248,16 +248,6 @@ function Step1() {
     }
   };
 
-  // Handle background changes
-  const handleBackgroundChange = (type, value) => {
-    updateEventData({ [type]: value });
-
-    // Apply background changes to Pixie editor if available
-    if (window.pixieEditor && window.pixieEditor.applyBackground) {
-      window.pixieEditor.applyBackground(type, value);
-    }
-  };
-
   // Handle image upload - only load into Pixie, don't save to server yet
   const handleImageUpload = async (event) => {
     const file = event.target.files[0];
@@ -323,48 +313,11 @@ function Step1() {
     }
   };
 
-  // Get CSS background value for styling
-  const getBackgroundStyle = (value) => {
-    if (!value) return {};
-
-    // Check if it's a URL
-    if (value.startsWith('http') || value.startsWith('/')) {
-      return {
-        backgroundImage: `url(${value})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-      };
-    }
-
-    // Check if it's a gradient
-    if (value.includes('gradient')) {
-      return { background: value };
-    }
-
-    // Default to color
-    return { backgroundColor: value };
-  };
-
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Left Side - Full Size Pixie Editor */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-6 py-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-pink-500 to-purple-600 rounded-lg flex items-center justify-center">
-              <span className="text-white text-sm font-bold">1</span>
-            </div>
-            <div>
-              <h1 className="text-lg font-semibold text-gray-900">
-                Design Your Event
-              </h1>
-              <p className="text-sm text-gray-500">
-                Customize your event invitation design
-              </p>
-            </div>
-          </div>
-        </div>
 
         {/* Pixie Editor Container */}
         <div className="flex-1 p-6">
@@ -460,14 +413,6 @@ function Step1() {
       {/* Right Side - Design Tools */}
       <div className="w-80 bg-white border-l border-gray-200 flex flex-col">
         {/* Design Tools Header */}
-        <div className="p-6 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Design Tools
-          </h3>
-          <p className="text-sm text-gray-500">
-            Customize your invitation design
-          </p>
-        </div>
 
         {/* Design Tools Content */}
         <div className="flex-1 overflow-y-auto p-6">
@@ -546,45 +491,6 @@ function Step1() {
                 </p>
               </div>
             )}
-
-            {/* Background Settings */}
-            <div>
-              <Label className="text-sm font-medium text-gray-700 mb-3 block">
-                Canvas Background
-              </Label>
-              <Input
-                type="text"
-                value={eventData.background}
-                onChange={(e) =>
-                  handleBackgroundChange('background', e.target.value)
-                }
-                placeholder="e.g., #ffffff, linear-gradient(...), or image URL"
-                className="w-full"
-              />
-              <div
-                className="w-full h-8 mt-2 rounded border"
-                style={getBackgroundStyle(eventData.background)}
-              />
-            </div>
-
-            <div>
-              <Label className="text-sm font-medium text-gray-700 mb-3 block">
-                Page Background
-              </Label>
-              <Input
-                type="text"
-                value={eventData.pageBackground}
-                onChange={(e) =>
-                  handleBackgroundChange('pageBackground', e.target.value)
-                }
-                placeholder="e.g., #ffffff, linear-gradient(...), or image URL"
-                className="w-full"
-              />
-              <div
-                className="w-full h-8 mt-2 rounded border"
-                style={getBackgroundStyle(eventData.pageBackground)}
-              />
-            </div>
           </div>
         </div>
       </div>

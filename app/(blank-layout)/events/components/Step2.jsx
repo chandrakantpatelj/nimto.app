@@ -30,23 +30,6 @@ function Step2() {
     <div className="flex h-screen bg-gray-50">
       {/* Left Side - Preview */}
       <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-6 py-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-pink-500 to-purple-600 rounded-lg flex items-center justify-center">
-              <span className="text-white text-sm font-bold">2</span>
-            </div>
-            <div>
-              <h1 className="text-lg font-semibold text-gray-900">
-                Event Details
-              </h1>
-              <p className="text-sm text-gray-500">
-                Preview your event invitation
-              </p>
-            </div>
-          </div>
-        </div>
-
         {/* Preview Content */}
         <div className="flex-1 p-6 overflow-auto">
           <div className="max-w-4xl mx-auto">
