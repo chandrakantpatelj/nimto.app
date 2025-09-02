@@ -26,6 +26,7 @@ model User {
   invitedByUserId String?
   isProtected     Boolean     @default(false)
   accounts        Account[]
+  Event           Event[]
   Session         Session[]
   systemLog       SystemLog[]
   role            UserRole    @relation(fields: [roleId], references: [id])
@@ -158,33 +159,95 @@ model SystemSetting {
 }
 
 model Template {
-  id                String   @id @default(cuid())
-  name              String
-  category          String
-  jsonContent       String?  // JSON string for template content
-  backgroundStyle   String?  // JSON string for background styles
-  htmlContent       String?
-  background        String?
-  pageBackground    String?
-  previewImageUrl   String?
-  isPremium         Boolean  @default(false)
-  price             Float    @default(0)
-  isSystemTemplate  Boolean  @default(false)
-  createdByUserId   String?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  isTrashed         Boolean  @default(false)
-  
-  // Store image path in public/template folder
-  imagePath         String?
-  
+  id               String   @id @default(cuid())
+  name             String
+  category         String
+  jsonContent      String?
+  backgroundStyle  String?
+  htmlContent      String?
+  background       String?
+  pageBackground   String?
+  previewImageUrl  String?
+  isPremium        Boolean  @default(false)
+  price            Float    @default(0)
+  isSystemTemplate Boolean  @default(false)
+  createdByUserId  String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  isTrashed        Boolean  @default(false)
+  imagePath        String?
+
   @@index([category])
   @@index([isPremium])
   @@index([createdByUserId])
+}
+
+model Event {
+  id              String      @id @default(cuid())
+  title           String
+  description     String?
+  date            DateTime
+  time            String?
+  location        String?
+  templateId      String?
+  jsonContent     String?
+  backgroundStyle String?
+  htmlContent     String?
+  background      String?
+  pageBackground  String?
+  imagePath       String?
+  status          EventStatus @default(DRAFT)
+  createdByUserId String
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  isTrashed       Boolean     @default(false)
+  User            User        @relation(fields: [createdByUserId], references: [id])
+  guests          Guest[]
+
+  @@index([createdByUserId])
+  @@index([templateId])
+  @@index([status])
+}
+
+model Guest {
+  id          String         @id @default(cuid())
+  name        String
+  email       String?
+  phone       String?
+  status      GuestStatus    @default(PENDING)
+  eventId     String
+  invitedAt   DateTime       @default(now())
+  respondedAt DateTime?
+  response    GuestResponse?
+  event       Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@index([status])
 }
 
 enum UserStatus {
   INACTIVE
   ACTIVE
   BLOCKED
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+  COMPLETED
+}
+
+enum GuestResponse {
+  YES
+  NO
+  MAYBE
+}
+
+enum GuestStatus {
+  PENDING
+  INVITED
+  CONFIRMED
+  DECLINED
+  MAYBE
 }

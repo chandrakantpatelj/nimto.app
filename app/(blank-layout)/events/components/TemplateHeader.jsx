@@ -14,6 +14,11 @@ export function TemplateHeader({
   activeStep,
   handleNext,
   handleBack,
+  onPublishEvent,
+  isCreating = false,
+  hasGuests = false, // Add this prop to check if guests exist
+  title = 'Create Event', // Add title prop for edit mode
+  publishButtonText = 'Publish Event', // Add button text prop for edit mode
 
   // Template editor props
   onSave,
@@ -86,36 +91,27 @@ export function TemplateHeader({
             {/* Event Flow Steps */}
             {!isTemplateEditor && (
               <>
-                {activeStep === 0 && (
-                  <div className="flex flex-col gap-1">
-                    <span className="text-md font-semibold">
-                      Step 1: Design Invitation
-                    </span>
+                <div className="flex flex-col gap-1">
+                  <span className="text-md font-semibold">{title}</span>
+                  {activeStep === 0 && (
                     <span className="text-xs font-medium text-secondary-foreground">
-                      Customize the look and fill in event details.
+                      Step 1: Design Invitation - Customize the look and fill in
+                      event details.
                     </span>
-                  </div>
-                )}
-                {activeStep === 1 && (
-                  <div className="flex flex-col gap-1">
-                    <span className="text-md font-semibold">
-                      Step 2: Preview
-                    </span>
+                  )}
+                  {activeStep === 1 && (
                     <span className="text-xs font-medium text-secondary-foreground">
-                      See how your invitation will look to guests.
+                      Step 2: Preview - See how your invitation will look to
+                      guests.
                     </span>
-                  </div>
-                )}
-                {activeStep === 2 && (
-                  <div className="flex flex-col gap-1">
-                    <span className="text-md font-semibold">
-                      Step 3: Manage Guests
-                    </span>
+                  )}
+                  {activeStep === 2 && (
                     <span className="text-xs font-medium text-secondary-foreground">
-                      Add guests and configure invitation settings.
+                      Step 3: Manage Guests - Add guests and configure
+                      invitation settings.
                     </span>
-                  </div>
-                )}
+                  )}
+                </div>
               </>
             )}
           </div>
@@ -175,7 +171,25 @@ export function TemplateHeader({
                   )}
 
                   {activeStep === 2 ? (
-                    <Button variant="primary">Publish Event</Button>
+                    <div className="relative">
+                      <Button
+                        variant="primary"
+                        onClick={onPublishEvent}
+                        disabled={isCreating || !hasGuests}
+                        className={
+                          !hasGuests ? 'opacity-50 cursor-not-allowed' : ''
+                        }
+                      >
+                        {isCreating ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            Creating...
+                          </>
+                        ) : (
+                          publishButtonText
+                        )}
+                      </Button>
+                    </div>
                   ) : (
                     <Button variant="primary" onClick={() => handleNext()}>
                       Next

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { getServerSession } from 'next-auth';
+import { generateS3Url } from '@/lib/s3-utils';
 import authOptions from '../../auth/[...nextauth]/auth-options';
 
 const prisma = new PrismaClient();
@@ -20,15 +21,26 @@ export async function GET(request, { params }) {
     if (!template) {
       return NextResponse.json(
         { success: false, error: 'Template not found' },
-        { status: 404 }
+        { status: 404 },
       );
+    }
+
+    // Generate S3 URL for template image
+    let s3ImageUrl = null;
+    if (template.imagePath) {
+      const directS3Url = generateS3Url(template.imagePath);
+      // Use proxy URL to avoid CORS issues and access private S3 bucket
+      s3ImageUrl = `/api/image-proxy?url=${directS3Url}`;
     }
 
     // Parse JSON content back to object
     const parsedTemplate = {
       ...template,
+      s3ImageUrl,
       content: template.jsonContent ? JSON.parse(template.jsonContent) : null,
-      backgroundStyle: template.backgroundStyle ? JSON.parse(template.backgroundStyle) : null,
+      backgroundStyle: template.backgroundStyle
+        ? JSON.parse(template.backgroundStyle)
+        : null,
     };
 
     return NextResponse.json({
@@ -39,7 +51,7 @@ export async function GET(request, { params }) {
     console.error('Error fetching template:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch template' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -48,11 +60,11 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   try {
     const session = await getServerSession(authOptions);
-    
+
     if (!session) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -84,13 +96,17 @@ export async function PUT(request, { params }) {
     if (!existingTemplate) {
       return NextResponse.json(
         { success: false, error: 'Template not found' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     // Convert content array to JSON string
-    const jsonContent = content ? JSON.stringify(content) : existingTemplate.jsonContent;
-    const backgroundStyleJson = backgroundStyle ? JSON.stringify(backgroundStyle) : existingTemplate.backgroundStyle;
+    const jsonContent = content
+      ? JSON.stringify(content)
+      : existingTemplate.jsonContent;
+    const backgroundStyleJson = backgroundStyle
+      ? JSON.stringify(backgroundStyle)
+      : existingTemplate.backgroundStyle;
 
     const updatedTemplate = await prisma.template.update({
       where: { id },
@@ -99,14 +115,29 @@ export async function PUT(request, { params }) {
         category: category || existingTemplate.category,
         jsonContent,
         backgroundStyle: backgroundStyleJson,
-        htmlContent: htmlContent !== undefined ? htmlContent : existingTemplate.htmlContent,
-        background: background !== undefined ? background : existingTemplate.background,
-        pageBackground: pageBackground !== undefined ? pageBackground : existingTemplate.pageBackground,
-        previewImageUrl: previewImageUrl !== undefined ? previewImageUrl : existingTemplate.previewImageUrl,
-        isPremium: isPremium !== undefined ? isPremium : existingTemplate.isPremium,
+        htmlContent:
+          htmlContent !== undefined
+            ? htmlContent
+            : existingTemplate.htmlContent,
+        background:
+          background !== undefined ? background : existingTemplate.background,
+        pageBackground:
+          pageBackground !== undefined
+            ? pageBackground
+            : existingTemplate.pageBackground,
+        previewImageUrl:
+          previewImageUrl !== undefined
+            ? previewImageUrl
+            : existingTemplate.previewImageUrl,
+        isPremium:
+          isPremium !== undefined ? isPremium : existingTemplate.isPremium,
         price: price !== undefined ? price : existingTemplate.price,
-        isSystemTemplate: isSystemTemplate !== undefined ? isSystemTemplate : existingTemplate.isSystemTemplate,
-        imagePath: imagePath !== undefined ? imagePath : existingTemplate.imagePath,
+        isSystemTemplate:
+          isSystemTemplate !== undefined
+            ? isSystemTemplate
+            : existingTemplate.isSystemTemplate,
+        imagePath:
+          imagePath !== undefined ? imagePath : existingTemplate.imagePath,
       },
     });
 
@@ -118,7 +149,7 @@ export async function PUT(request, { params }) {
     console.error('Error updating template:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to update template' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -127,11 +158,11 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     const session = await getServerSession(authOptions);
-    
+
     if (!session) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -148,7 +179,7 @@ export async function DELETE(request, { params }) {
     if (!existingTemplate) {
       return NextResponse.json(
         { success: false, error: 'Template not found' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -166,7 +197,7 @@ export async function DELETE(request, { params }) {
     console.error('Error deleting template:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to delete template' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

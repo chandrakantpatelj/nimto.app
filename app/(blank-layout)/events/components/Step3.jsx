@@ -4,59 +4,58 @@ import React, { useState } from 'react';
 import { Search, Settings, UserPlus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useEventCreation } from '../context/EventCreationContext';
 import GuestSettingsDrawer from './GuestSettingsDrawer';
 
 function Step3() {
-  const [guests, setGuests] = useState([
-    {
-      id: 1,
-      name: 'dhruvi',
-      contact: 'dhruvi@jspinfotech.com',
-      status: 'Pending',
-    },
-  ]);
-
+  const { eventData, addGuest, removeGuest, clearGuests } = useEventCreation();
   const [newGuest, setNewGuest] = useState({
     name: '',
-    contact: '',
+    email: '',
+    phone: '',
   });
 
   const [searchTerm, setSearchTerm] = useState('');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const handleAddGuest = () => {
-    if (newGuest.name.trim() && newGuest.contact.trim()) {
-      const guest = {
-        id: Date.now(),
+    if (
+      newGuest.name.trim() &&
+      (newGuest.email.trim() || newGuest.phone.trim())
+    ) {
+      addGuest({
         name: newGuest.name,
-        contact: newGuest.contact,
-        status: 'Pending',
-      };
-      setGuests([...guests, guest]);
-      setNewGuest({ name: '', contact: '' });
+        email: newGuest.email.trim() || null,
+        phone: newGuest.phone.trim() || null,
+        status: 'PENDING',
+      });
+      setNewGuest({ name: '', email: '', phone: '' });
     }
   };
 
   const handleRemoveGuest = (id) => {
-    setGuests(guests.filter((guest) => guest.id !== id));
+    removeGuest(id);
   };
 
   const handleClearAll = () => {
-    setGuests([]);
+    clearGuests();
   };
 
-  const filteredGuests = guests.filter(
+  const filteredGuests = eventData.guests.filter(
     (guest) =>
       guest.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      guest.contact.toLowerCase().includes(searchTerm.toLowerCase()),
+      (guest.email &&
+        guest.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (guest.phone &&
+        guest.phone.toLowerCase().includes(searchTerm.toLowerCase())),
   );
 
   return (
-    <div className="flex flex-1 overflow-hidden bg-gray-50">
+    <div className="flex flex-1 overflow-hidden">
       <main className="flex-1 overflow-auto p-8">
         <div className="max-w-4xl mx-auto">
           {/* Main Card */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-background rounded-xl shadow-sm border border-gray-100 p-6">
             <div className="space-y-8">
               {/* Add a Guest Section */}
               <div>
@@ -79,14 +78,27 @@ function Step3() {
                   </div>
                   <div className="flex-1">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Email or Phone
+                      Email
                     </label>
                     <Input
-                      type="text"
+                      type="email"
                       placeholder="jane.doe@example.com"
-                      value={newGuest.contact}
+                      value={newGuest.email}
                       onChange={(e) =>
-                        setNewGuest({ ...newGuest, contact: e.target.value })
+                        setNewGuest({ ...newGuest, email: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Phone
+                    </label>
+                    <Input
+                      type="tel"
+                      placeholder="+1234567890"
+                      value={newGuest.phone}
+                      onChange={(e) =>
+                        setNewGuest({ ...newGuest, phone: e.target.value })
                       }
                     />
                   </div>
@@ -103,9 +115,39 @@ function Step3() {
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-semibold text-gray-900">
-                    Invited Guests ({guests.length})
+                    Invited Guests ({eventData.guests.length})
                   </h2>
                 </div>
+
+                {/* Guest Requirement Notice */}
+                {eventData.guests.length === 0 && (
+                  <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                    <div className="flex items-start gap-3">
+                      <div className="w-5 h-5 bg-amber-100 rounded-full flex items-center justify-center mt-0.5">
+                        <svg
+                          className="w-3 h-3 text-amber-600"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-amber-900 mb-1">
+                          Guest Required
+                        </p>
+                        <p className="text-xs text-amber-700">
+                          You must add at least one guest to create an event.
+                          Events without guests cannot be published.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Search and Actions Bar */}
                 <div className="flex items-center gap-4 mb-6">
@@ -140,7 +182,10 @@ function Step3() {
                           NAME
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          CONTACT
+                          EMAIL
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          PHONE
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           STATUS
@@ -150,14 +195,20 @@ function Step3() {
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-background divide-y divide-gray-200">
                       {filteredGuests.map((guest) => (
-                        <tr key={guest.id} className="hover:bg-gray-50">
+                        <tr
+                          key={guest.id || guest.tempId}
+                          className="hover:bg-gray-50"
+                        >
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                             {guest.name}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {guest.contact}
+                            {guest.email || '-'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {guest.phone || '-'}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
@@ -168,7 +219,9 @@ function Step3() {
                             <Button
                               variant="destructive"
                               appearance="ghost"
-                              onClick={() => handleRemoveGuest(guest.id)}
+                              onClick={() =>
+                                handleRemoveGuest(guest.id || guest.tempId)
+                              }
                             >
                               <X className="w-4 h-4" />
                             </Button>
