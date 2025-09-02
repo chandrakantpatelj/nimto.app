@@ -14,6 +14,7 @@ import {
   ToolbarDescription,
   ToolbarPageTitle,
 } from '@/app/components/partials/common/toolbar';
+import { RouteGuard } from '@/components/common/route-guard';
 import { PageNavbar } from '../account/page-navbar';
 import CreatewithAIpopup from './components/CreatewithAIpopup';
 import { TemplateManagement } from './content';
@@ -22,36 +23,41 @@ function TemplateManagementPage() {
   const [showAIDialog, setShowAIDialog] = useState(false);
 
   return (
-    <Fragment>
-      <PageNavbar />
-      <Container>
-        <Toolbar>
-          <ToolbarHeading>
-            <ToolbarPageTitle />
-            <ToolbarDescription>Super Admin (Super Admin)</ToolbarDescription>
-          </ToolbarHeading>
-          <ToolbarActions>
-            <Button variant="secondary" onClick={() => setShowAIDialog(true)}>
-              <Sparkles /> Create With AI
-            </Button>
-            {/* <Button variant="outline" asChild>
-              <Link href="/templates/upload">
-                <Upload /> Upload Template
-              </Link>
-            </Button> */}
-            <Button variant="primary" asChild>
-              <Link href="/templates/design">
-                <CirclePlus /> Create New Template
-              </Link>
-            </Button>
-          </ToolbarActions>
-        </Toolbar>
-      </Container>
-      <Container>
-        <TemplateManagement />
-      </Container>
-      <CreatewithAIpopup show={showAIDialog} setShow={setShowAIDialog} />
-    </Fragment>
+    <RouteGuard 
+      requiredRoles={['host', 'super-admin', 'application-admin']}
+      redirectTo="/unauthorized"
+    >
+      <Fragment>
+        <PageNavbar />
+        <Container>
+          <Toolbar>
+            <ToolbarHeading>
+              <ToolbarPageTitle />
+              <ToolbarDescription>Template Management</ToolbarDescription>
+            </ToolbarHeading>
+            <ToolbarActions>
+              <Button variant="secondary" onClick={() => setShowAIDialog(true)}>
+                <Sparkles /> Create With AI
+              </Button>
+              {/* <Button variant="outline" asChild>
+                <Link href="/templates/upload">
+                  <Upload /> Upload Template
+                </Link>
+              </Button> */}
+              <Button variant="primary" asChild>
+                <Link href="/templates/design">
+                  <CirclePlus /> Create New Template
+                </Link>
+              </Button>
+            </ToolbarActions>
+          </Toolbar>
+        </Container>
+        <Container>
+          <TemplateManagement />
+        </Container>
+        <CreatewithAIpopup show={showAIDialog} setShow={setShowAIDialog} />
+      </Fragment>
+    </RouteGuard>
   );
 }
 

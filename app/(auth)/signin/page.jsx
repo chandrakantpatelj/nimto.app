@@ -100,8 +100,9 @@ export default function Page() {
         {/* Header */}
         <div className="space-y-1.5 pb-3">
           <h1 className="text-2xl font-semibold tracking-tight text-center">
-            Sign in to Metronic
+          Sign in to Nimto
           </h1>
+          <p className="mt-2 text-sm text-slate-600 text-center">Manage your events seamlessly.</p>
         </div>
 
         {/* Demo Alert */}
