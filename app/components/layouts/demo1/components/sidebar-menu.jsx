@@ -52,6 +52,11 @@ export function SidebarMenu() {
       // Host sees limited menu items
       return [
         {
+          title: 'Dashboard',
+          icon: MENU_SIDEBAR.find(item => item.title === 'Dashboard')?.icon,
+          path: '/',
+        },
+        {
           title: 'Events',
           icon: MENU_SIDEBAR.find(item => item.title === 'Events')?.icon,
           path: '/events',
@@ -62,9 +67,72 @@ export function SidebarMenu() {
           path: '/templates',
         },
         {
-          title: 'Image Editor',
-          icon: MENU_SIDEBAR.find(item => item.title === 'Image Editor')?.icon,
-          path: '/image-editor/demo',
+          title: 'My Profile',
+          icon: MENU_SIDEBAR.find(item => item.title === 'My Profile')?.icon,
+          path: '/my-profile',
+        },
+      ];
+    } else if (roles.isApplicationAdmin) {
+      // Application Admin sees admin menu items
+      return [
+        {
+          title: 'Dashboard',
+          icon: MENU_SIDEBAR.find(item => item.title === 'Dashboard')?.icon,
+          path: '/',
+        },
+        {
+          title: 'Events',
+          icon: MENU_SIDEBAR.find(item => item.title === 'Events')?.icon,
+          path: '/events',
+        },
+        {
+          title: 'Templates',
+          icon: MENU_SIDEBAR.find(item => item.title === 'Templates')?.icon,
+          path: '/templates',
+        },
+        {
+          title: 'Users',
+          icon: MENU_SIDEBAR.find(item => item.title === 'Users')?.icon,
+          path: '/user-management/users',
+        },
+        {
+          title: 'Roles',
+          icon: MENU_SIDEBAR.find(item => item.title === 'Roles')?.icon,
+          path: '/user-management/roles',
+        },
+        {
+          title: 'App Settings',
+          icon: MENU_SIDEBAR.find(item => item.title === 'App Settings')?.icon,
+          path: '/settings',
+        },
+        {
+          title: 'Reporting',
+          icon: MENU_SIDEBAR.find(item => item.title === 'Reporting')?.icon,
+          path: '/reportings',
+        },
+        {
+          title: 'Messaging',
+          icon: MENU_SIDEBAR.find(item => item.title === 'Messaging')?.icon,
+          path: '/messaging',
+        },
+        {
+          title: 'My Profile',
+          icon: MENU_SIDEBAR.find(item => item.title === 'My Profile')?.icon,
+          path: '/my-profile',
+        },
+      ];
+    } else if (roles.isAttendee) {
+      // Attendee sees basic menu items
+      return [
+        {
+          title: 'Dashboard',
+          icon: MENU_SIDEBAR.find(item => item.title === 'Dashboard')?.icon,
+          path: '/',
+        },
+        {
+          title: 'Events',
+          icon: MENU_SIDEBAR.find(item => item.title === 'Events')?.icon,
+          path: '/events',
         },
         {
           title: 'My Profile',
@@ -73,8 +141,13 @@ export function SidebarMenu() {
         },
       ];
     } else {
-      // Other roles see basic menu items
+      // Default/Unknown roles see basic menu items
       return [
+        {
+          title: 'Dashboard',
+          icon: MENU_SIDEBAR.find(item => item.title === 'Dashboard')?.icon,
+          path: '/',
+        },
         {
           title: 'Events',
           icon: MENU_SIDEBAR.find(item => item.title === 'Events')?.icon,
