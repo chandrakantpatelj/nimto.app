@@ -24,7 +24,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { showCustomToast } from '@/components/common/custom-toast';
-import PixieEditor from '@/components/image-editor/PixieEditor';
+
 import { useEventCreation } from '../context/EventCreationContext';
 
 function Step1() {
@@ -331,80 +331,11 @@ function Step1() {
               </div>
             </div>
           ) : (
-            <div className="h-full rounded-lg overflow-hidden border border-gray-200 bg-white">
-              <PixieEditor
-                key={`pixie-${templateId || eventId}-${hasUploadedNewImage}`} // Use templateId/eventId instead of imageUrl to prevent unnecessary re-renders
-                initialImageUrl={imageUrl || templateImagePath}
-                initialContent={(() => {
-                  const parsed = eventData?.jsonContent
-                    ? parseJsonContent(eventData.jsonContent)
-                    : null;
-                  const valid =
-                    parsed?.canvas &&
-                    Array.isArray(parsed.canvas.objects) &&
-                    parsed.canvas.objects.length > 0;
-                  return valid ? parsed : null;
-                })()}
-                width="100%"
-                height="100%"
-                onEditorReady={(saveFunction) => {
-                  // Store the save function globally for access
-                  window.pixieEditor = {
-                    save: saveFunction,
-                    applyBackground: (type, value) => {
-                      // Apply background changes to Pixie editor
-                      if (window.pixieRef?.current?.canvas) {
-                        const canvas = window.pixieRef.current.canvas;
-                        if (type === 'background') {
-                          canvas.backgroundColor = value;
-                        } else if (type === 'pageBackground') {
-                          // This would be applied to the page container
-                        }
-                        canvas.renderAll();
-                      }
-                    },
-                    loadTemplate: (content) => {
-                      // Load template content into Pixie editor with validation
-                      const hasObjects =
-                        content?.canvas &&
-                        Array.isArray(content.canvas.objects) &&
-                        content.canvas.objects.length > 0;
-                      if (!hasObjects) return;
-                      if (window.pixieRef?.current?.setState) {
-                        try {
-                          window.pixieRef.current.setState(content);
-                        } catch (_) {
-                          // ignore
-                        }
-                      }
-                    },
-                  };
-                }}
-                onSave={(state) => {
-                  console.log('state1234', state);
-                  updateEventData({ jsonContent: state });
-                  // showCustomToast('Template saved successfully', 'success');
-                }}
-                onImageUpload={(file) => {
-                  // Handle image upload in Pixie editor
-                  setUploadedImageFile(file);
-                  const tempUrl = URL.createObjectURL(file);
-                  setImageUrl(tempUrl);
-
-                  // Clear the template image path since we're using a new image
-                  setTemplateImagePath('');
-                  setHasUploadedNewImage(true); // Mark that a new image has been uploaded
-
-                  // Convert file to base64 for later use
-                  const reader = new FileReader();
-                  reader.onload = (e) => {
-                    const base64Data = e.target.result;
-                    setNewImageBase64(base64Data);
-                    updateEventData({ newImageBase64: base64Data });
-                  };
-                  reader.readAsDataURL(file);
-                }}
-              />
+            <div className="h-full rounded-lg overflow-hidden border border-gray-200 bg-white flex items-center justify-center">
+              <div className="text-center text-gray-500">
+                <p className="text-lg font-medium">Image Editor Removed</p>
+                <p className="text-sm">Image editing functionality has been removed from the application.</p>
+              </div>
             </div>
           )}
         </div>

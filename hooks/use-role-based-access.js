@@ -38,18 +38,13 @@ export function useRoleBasedAccess() {
     canViewReports: roles.isSuperAdmin || roles.isApplicationAdmin,
     canAccessSettings: roles.isSuperAdmin || roles.isApplicationAdmin,
     canAccessTemplates: roles.isHost || roles.isSuperAdmin || roles.isApplicationAdmin,
-    canAccessImageEditor: roles.isHost || roles.isSuperAdmin || roles.isApplicationAdmin,
+
     canAccessMessaging: roles.isHost || roles.isSuperAdmin || roles.isApplicationAdmin,
     canAccessStoreAdmin: roles.isSuperAdmin || roles.isApplicationAdmin,
     
     // Route access permissions
     canAccessUserManagement: roles.isSuperAdmin || roles.isApplicationAdmin,
-    canAccessSettings: roles.isSuperAdmin || roles.isApplicationAdmin,
     canAccessReporting: roles.isSuperAdmin || roles.isApplicationAdmin,
-    canAccessTemplates: roles.isHost || roles.isSuperAdmin || roles.isApplicationAdmin,
-    canAccessImageEditor: roles.isHost || roles.isSuperAdmin || roles.isApplicationAdmin,
-    canAccessMessaging: roles.isHost || roles.isSuperAdmin || roles.isApplicationAdmin,
-    canAccessStoreAdmin: roles.isSuperAdmin || roles.isApplicationAdmin,
     
     // General access permissions
     canAccessNetwork: true, // All authenticated users
@@ -66,7 +61,7 @@ export function useRoleBasedAccess() {
     '/settings': permissions.canAccessSettings,
     '/reportings': permissions.canAccessReporting,
     '/templates': permissions.canAccessTemplates,
-    '/image-editor': permissions.canAccessImageEditor,
+
     '/messaging': permissions.canAccessMessaging,
     '/store-admin': permissions.canAccessStoreAdmin,
     '/network': permissions.canAccessNetwork,

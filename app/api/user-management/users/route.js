@@ -172,6 +172,7 @@ export async function POST(request) {
           name,
           email,
           status: UserStatus.ACTIVE,
+
           roleId,
         },
       });

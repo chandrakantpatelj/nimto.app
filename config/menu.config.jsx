@@ -24,7 +24,7 @@ import {
   Grid,
   Heart,
   HelpCircle,
-  Image,
+
   Kanban,
   Key,
   Layout,
@@ -78,11 +78,7 @@ export const MENU_SIDEBAR = [
     icon: FileText,
     path: '/templates',
   },
-  {
-    title: 'Image Editor',
-    icon: Image,
-    path: '/image-editor/demo',
-  },
+
   {
     title: 'App Settings',
     icon: Settings,

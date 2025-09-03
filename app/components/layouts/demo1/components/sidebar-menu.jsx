@@ -61,11 +61,7 @@ export function SidebarMenu() {
           icon: MENU_SIDEBAR.find(item => item.title === 'Templates')?.icon,
           path: '/templates',
         },
-        {
-          title: 'Image Editor',
-          icon: MENU_SIDEBAR.find(item => item.title === 'Image Editor')?.icon,
-          path: '/image-editor/demo',
-        },
+
         {
           title: 'My Profile',
           icon: MENU_SIDEBAR.find(item => item.title === 'My Profile')?.icon,

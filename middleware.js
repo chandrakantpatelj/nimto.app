@@ -28,8 +28,7 @@ export default withAuth(
       // Templates - Host, Super Admin, and Application Admin
       '/templates': ['host', 'super admin', 'application admin'],
       
-      // Image Editor - Host, Super Admin, and Application Admin
-      '/image-editor': ['host', 'super admin', 'application admin'],
+
       
       // Messaging - Host, Super Admin, and Application Admin
       '/messaging': ['host', 'super admin', 'application admin'],
@@ -113,7 +112,7 @@ export const config = {
     '/reportings/:path*',
     '/my-profile/:path*',
     '/templates/:path*',
-    '/image-editor/:path*',
+
     '/messaging/:path*',
     '/store-admin/:path*',
     '/network/:path*',
