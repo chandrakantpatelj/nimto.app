@@ -196,7 +196,7 @@ export default withHostProtection(TemplatePage);
 | `/settings` | ✅ | ✅ | ❌ | ❌ |
 | `/reportings` | ✅ | ✅ | ❌ | ❌ |
 | `/templates` | ✅ | ✅ | ✅ | ❌ |
-
+| `/image-editor` | ✅ | ✅ | ✅ | ❌ |
 | `/messaging` | ✅ | ✅ | ✅ | ❌ |
 | `/store-admin` | ✅ | ✅ | ❌ | ❌ |
 | `/network` | ✅ | ✅ | ✅ | ✅ |

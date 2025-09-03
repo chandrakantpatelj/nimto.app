@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showCustomToast } from '@/components/common/custom-toast';
-
+import PixieEditor from '@/components/image-editor/PixieEditor';
 import { TemplateHeader } from '../../events/components';
 import { useTemplateImage } from '@/hooks/use-template-image';
 
@@ -349,13 +349,15 @@ function Design() {
               </p>
             </div>
 
-            {/* Image Editor Removed */}
-            <div className="h-[700px] flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
-              <div className="text-center text-gray-500">
-                <p className="text-lg font-medium">Image Editor Removed</p>
-                <p className="text-sm">Image editing functionality has been removed from the application.</p>
-              </div>
-            </div>
+            {/* PixieEditor */}
+            <PixieEditor
+              initialImageUrl={imageUrl}
+              initialContent={canvasState}
+              onSave={handleCanvasSave}
+              width="100%"
+              height="700px"
+              onImageUpload={handleImageUpload}
+            />
           </div>
         </main>
         <aside className="w-74 flex-shrink-0 bg-white p-4 border-l border-slate-200 overflow-y-auto min-h-[calc(100vh-var(--header-height))] h-100">

@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showCustomToast } from '@/components/common/custom-toast';
-
+import { PixieEditor } from '@/components/image-editor';
 import { TemplateHeader } from '../../../events/components';
 
 function EditTemplate() {
@@ -27,7 +27,10 @@ function EditTemplate() {
   const [uploadedImageFile, setUploadedImageFile] = useState(null); // Store uploaded file for later saving
   const [uploadedImagePath, setUploadedImagePath] = useState(''); // Store uploaded image path
   const [templateImagePath, setTemplateImagePath] = useState(''); // Store template image path
+  const [pixieDataCaptured, setPixieDataCaptured] = useState(false); // Track if Pixie data has been captured
+  const [pixieEditorReady, setPixieEditorReady] = useState(false); // Track if Pixie editor is ready
   const latestUserEditsRef = useRef(null); // Track the latest user edits for testing
+  const pixieSaveFunctionRef = useRef(null); // Store the Pixie save function
 
   // Template image operations
   const {
@@ -76,7 +79,7 @@ function EditTemplate() {
     }));
   };
 
-  // Extract only user edits from image data
+  // Extract only user edits from Pixie data
   const extractUserEdits = (data) => {
     if (!data) return null;
 
@@ -93,7 +96,8 @@ function EditTemplate() {
     // Return the complete data structure as-is
     // This includes all user modifications: filters, text, drawings, stickers, frames, etc.
     return {
-      // Complete image state
+      // Complete Pixie state
+      // pixieState: parsedData,
 
       // Canvas data with all objects
       canvas: parsedData.canvas || null,
@@ -120,13 +124,13 @@ function EditTemplate() {
     };
   };
 
-  // Image editor handlers
+  // Pixie editor handlers
   const handleSave = async (editedImageData) => {
     try {
       setIsLoading(true);
 
       // Debug: Log the full edited image data to see all modifications
-      console.log('Complete image data:', editedImageData);
+      console.log('Complete Pixie data:', editedImageData);
 
       // Extract all user edits and modifications
       const userEdits = extractUserEdits(editedImageData);
@@ -175,18 +179,27 @@ function EditTemplate() {
       [type]: value,
     }));
 
-    // Background changes would be applied here if image editor was available
+    // Apply background changes to Pixie editor if available
+    if (window.pixieEditor && window.pixieEditor.applyBackground) {
+      window.pixieEditor.applyBackground(type, value);
+    }
   };
 
+  // Handle Pixie editor ready
+  const handlePixieEditorReady = (saveFunction) => {
+    // Store the save function for later use
+  };
 
-
-  // Image loaded effect
+  // Fallback to mark editor as ready after a timeout
   useEffect(() => {
-    if (imageUrl) {
-      // Image loaded successfully
-      console.log('Image loaded:', imageUrl);
+    if (imageUrl && !pixieEditorReady) {
+      const timeout = setTimeout(() => {
+        setPixieEditorReady(true);
+      }, 5000); // 5 seconds timeout
+
+      return () => clearTimeout(timeout);
     }
-  }, [imageUrl]);
+  }, [imageUrl, pixieEditorReady]);
 
   // Handle image upload - store file for later upload on form submit
   const handleImageUpload = async (event) => {
@@ -273,12 +286,12 @@ function EditTemplate() {
           price: template.price || 0,
           background: template.background || '',
           pageBackground: template.pageBackground || '',
-          content: template.content || [], // This contains the saved image user edits
+          content: template.content || [], // This contains the saved Pixie user edits
           backgroundStyle: template.backgroundStyle || {},
           htmlContent: template.htmlContent || '',
         });
 
-        // Log the retrieved image data
+        // Log the retrieved Pixie data
         if (template.content) {
           // Show toast notification about loading saved edits
         }
@@ -339,7 +352,8 @@ function EditTemplate() {
       setLoading(true);
       setError(null);
       let userEdits = {};
-      // Save function would be available if image editor was present
+      const saveFunction =
+        pixieSaveFunctionRef.current || window.pixieSaveFunction;
 
       if (saveFunction) {
         const success = await saveFunction();
@@ -366,7 +380,7 @@ function EditTemplate() {
       //   price: formData.isPremium ? parseFloat(formData.price) || 0 : 0,
       //   background: formData.background || null,
       //   pageBackground: formData.pageBackground || null,
-      //   content: userEdits, // This will store the optimized image JSON data in jsonContent field
+      //   content: userEdits, // This will store the optimized Pixie JSON data in jsonContent field
       //   backgroundStyle: formData.backgroundStyle,
       //   htmlContent: formData.htmlContent || null,
       //   imagePath: templateImagePath,
@@ -384,7 +398,7 @@ function EditTemplate() {
       //   },
       //   body: JSON.stringify(templateData),
       // });
-      // successMessage = 'Template updated successfully with image edits';
+      // successMessage = 'Template updated successfully with Pixie edits';
 
       // else {
       //   // Create new template
@@ -395,7 +409,7 @@ function EditTemplate() {
       //     },
       //     body: JSON.stringify(templateData),
       //   });
-      //   successMessage = 'Template created successfully with image edits';
+      //   successMessage = 'Template created successfully with Pixie edits';
       // }
 
       // if (!response.ok) {
@@ -596,7 +610,7 @@ function EditTemplate() {
                 Image Editor
               </h1>
               <p className="text-gray-600">
-                Image editing functionality has been removed
+                Edit your image using the powerful Pixie editor
               </p>
             </div>
 
@@ -619,12 +633,38 @@ function EditTemplate() {
                   </div>
                 </div>
               ) : (
-                <div className="h-[700px] flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
-                  <div className="text-center text-gray-500">
-                    <p className="text-lg font-medium">Image Editor Removed</p>
-                    <p className="text-sm">Image editing functionality has been removed from the application.</p>
-                  </div>
-                </div>
+                <PixieEditor
+                  initialImageUrl={imageUrl}
+                  initialContent={formData.content} // Pass the saved Pixie user edits
+                  onSave={handleSave}
+                  onEditorReady={handlePixieEditorReady}
+                  height="700px"
+                  config={{
+                    // Additional Pixie configuration options
+                    ui: {
+                      // Customize the UI as needed
+                    },
+                    // Enable external image support
+                    allowExternalImages: true,
+                    cors: {
+                      allowExternalImages: true,
+                      allowCrossOrigin: true,
+                      allowCredentials: true,
+                    },
+                    export: {
+                      allowExternalImages: true,
+                      ignoreExternalImageErrors: true,
+                      format: 'png',
+                      quality: 1,
+                    },
+                    tools: {
+                      crop: {
+                        allowExternalImages: true,
+                        ignoreExternalImageErrors: true,
+                      },
+                    },
+                  }}
+                />
               )}
             </div>
 
