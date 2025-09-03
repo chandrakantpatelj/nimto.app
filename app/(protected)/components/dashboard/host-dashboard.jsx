@@ -35,6 +35,8 @@ export function HostDashboard() {
   const router = useRouter();
 
   useEffect(() => {
+    console.log('Session data:', session);
+    console.log('User ID:', session?.user?.id);
     if (session?.user?.id) {
       fetchHostStats();
     }
@@ -45,8 +47,19 @@ export function HostDashboard() {
       setLoading(true);
       
       // Fetch events created by the current user
-      const eventsResponse = await apiFetch(`/api/events?createdByUserId=${session?.user?.id}`);
-      const events = eventsResponse?.data || [];
+      const apiUrl = `/api/events?createdByUserId=${session?.user?.id}`;
+      console.log('Making API call to:', apiUrl);
+      const eventsResponse = await apiFetch(apiUrl);
+      console.log('Events API Response:', eventsResponse);
+      
+      if (!eventsResponse.ok) {
+        throw new Error(`HTTP error! status: ${eventsResponse.status}`);
+      }
+      
+      const result = await eventsResponse.json();
+      console.log('Events API Result:', result);
+      
+      const events = result?.data || [];
       
       // Calculate statistics
       const totalEvents = events.length;
@@ -65,13 +78,18 @@ export function HostDashboard() {
       let pendingGuests = 0;
       let declinedGuests = 0;
       
+      console.log('Processing events for guest stats:', events);
+      
       for (const event of events) {
         const guests = event.guests || [];
+        console.log(`Event ${event.id} (${event.title}) has ${guests.length} guests:`, guests);
         totalGuests += guests.length;
         confirmedGuests += guests.filter(guest => guest.status === 'CONFIRMED').length;
         pendingGuests += guests.filter(guest => guest.status === 'PENDING').length;
         declinedGuests += guests.filter(guest => guest.status === 'DECLINED').length;
       }
+      
+      console.log('Guest statistics:', { totalGuests, confirmedGuests, pendingGuests, declinedGuests });
       
       // Get recent events (last 5)
       const recentEvents = events
@@ -84,7 +102,7 @@ export function HostDashboard() {
         })
         .slice(0, 5);
       
-      setStats({
+      const finalStats = {
         totalEvents,
         totalGuests,
         confirmedGuests,
@@ -92,7 +110,10 @@ export function HostDashboard() {
         declinedGuests,
         upcomingEvents,
         recentEvents
-      });
+      };
+      
+      console.log('Final stats being set:', finalStats);
+      setStats(finalStats);
     } catch (error) {
       console.error('Error fetching host stats:', error);
     } finally {

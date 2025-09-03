@@ -29,11 +29,15 @@ export function AttendeeEventContent() {
   const fetchEvents = async () => {
     try {
       setLoading(true);
+      // Attendees should only see events they've been invited to
+      // For now, we'll show a limited view or redirect to invitations
       const response = await fetch('/api/events');
       const data = await response.json();
 
       if (data.success) {
-        setEvents(data.data);
+        // Filter to only show published events (attendees can't see drafts)
+        const publishedEvents = data.data.filter(event => event.status === 'PUBLISHED');
+        setEvents(publishedEvents);
       } else {
         setError('Failed to fetch events');
       }
@@ -155,9 +159,9 @@ export function AttendeeEventContent() {
       {/* Events Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">My Event</h2>
+          <h2 className="text-lg font-semibold text-gray-900">Public Events</h2>
           <p className="text-sm text-gray-600">
-            Events you've been invited to or are participating in
+            Browse published events in the system
           </p>
         </div>
       </div>
@@ -224,31 +228,9 @@ export function AttendeeEventContent() {
                 <CardTitle className="text-base font-semibold text-gray-900">
                   {event.category || 'Event'}
                 </CardTitle>
-                <div className="flex gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="bg-blue-100 hover:bg-blue-200"
-                    onClick={() => window.open(`/events/${event.id}`, '_blank')}
-                  >
-                    <Pencil className="h-4 w-4 text-blue-600" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="bg-red-100 hover:bg-red-200"
-                    onClick={() => {
-                      // Handle delete
-                      if (
-                        confirm('Are you sure you want to delete this event?')
-                      ) {
-                        // Delete logic here
-                      }
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4 text-red-600" />
-                  </Button>
-                </div>
+                <Badge className="bg-green-100 text-green-800">
+                  {event.status}
+                </Badge>
               </div>
             </CardHeader>
 
@@ -285,20 +267,13 @@ export function AttendeeEventContent() {
               {/* Action Buttons */}
               <div className="flex gap-2 pt-3">
                 <Button
-                  variant="secondary"
-                  size="sm"
-                  className="flex-1 bg-gray-700 hover:bg-gray-800 text-white"
-                >
-                  <Users className="w-4 h-4 mr-2" />
-                  Manage Guests
-                </Button>
-                <Button
                   variant="outline"
                   size="sm"
                   className="flex-1 border-blue-500 text-blue-600 hover:bg-blue-50"
+                  onClick={() => window.open(`/events/${event.id}`, '_blank')}
                 >
                   <Earth className="w-4 h-4 mr-2" />
-                  Public Page
+                  View Event
                 </Button>
               </div>
             </CardContent>
