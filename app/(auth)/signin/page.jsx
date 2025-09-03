@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Icons } from '@/components/common/icons';
-import { RecaptchaPopover } from '@/components/common/recaptcha-popover';
+
 import { getSigninSchema } from '../forms/signin-schema';
 
 export default function Page() {
@@ -29,7 +29,7 @@ export default function Page() {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState(null);
-  const [showRecaptcha, setShowRecaptcha] = useState(false);
+
 
   const form = useForm({
     resolver: zodResolver(getSigninSchema()),
@@ -45,13 +45,8 @@ export default function Page() {
     const result = await form.trigger();
     if (!result) return;
 
-    setShowRecaptcha(true);
-  };
-
-  const handleVerifiedSubmit = async (token) => {
     setIsProcessing(true);
     setError(null);
-    setShowRecaptcha(false);
 
     try {
       const values = form.getValues();
@@ -106,7 +101,7 @@ export default function Page() {
         </div>
 
         {/* Demo Alert */}
-        <Alert size="sm" close={false}>
+        {/* <Alert size="sm" close={false}>
           <AlertIcon>
             <RiErrorWarningFill className="text-primary" />
           </AlertIcon>
@@ -115,7 +110,7 @@ export default function Page() {
             <span className="font-mono font-semibold">demo123</span> for demo
             access.
           </AlertTitle>
-        </Alert>
+        </Alert> */}
 
         {/* Social Login */}
         <div className="flex flex-col gap-3.5">
@@ -233,23 +228,12 @@ export default function Page() {
 
         {/* Submit */}
         <div className="flex flex-col gap-2.5">
-          <RecaptchaPopover
-            open={showRecaptcha}
-            onOpenChange={(open) => {
-              if (!open) {
-                setShowRecaptcha(false);
-              }
-            }}
-            onVerify={handleVerifiedSubmit}
-            trigger={
-              <Button type="submit" disabled={isProcessing}>
-                {isProcessing && (
-                  <LoaderCircleIcon className="size-4 animate-spin mr-2" />
-                )}
-                Continue
-              </Button>
-            }
-          />
+          <Button type="submit" disabled={isProcessing}>
+            {isProcessing && (
+              <LoaderCircleIcon className="size-4 animate-spin mr-2" />
+            )}
+            Continue
+          </Button>
         </div>
 
         {/* Signup link */}
