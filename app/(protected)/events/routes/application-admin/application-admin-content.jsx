@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   CalendarDays,
   Clock,
@@ -18,6 +19,7 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export function ApplicationAdminEventContent() {
+  const router = useRouter();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -211,7 +213,7 @@ export function ApplicationAdminEventContent() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => window.open(`/events/${event.id}`, '_blank')}
+                    onClick={() => router.push(`/events/${event.id}`)}
                   >
                     <Pencil className="h-4 w-4" />
                   </Button>
@@ -288,4 +290,3 @@ export function ApplicationAdminEventContent() {
     </div>
   );
 }
-

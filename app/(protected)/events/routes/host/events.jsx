@@ -28,7 +28,7 @@ const Events = () => {
 
   // Redux state and actions - SIMPLIFIED
   const { events, isLoading: loading, error } = useEvents(); // All events data from Redux
-  const { fetchAllEvents, deleteEvent } = useEventActions(); // Redux actions
+  const { fetchAllEvents } = useEventActions(); // Redux actions
 
   // Simple local search state
 
@@ -54,10 +54,9 @@ const Events = () => {
   };
 
   const handleEventDeleted = () => {
-    // Delete event (includes optimistic update)
-    if (selectedEvent?.id) {
-      deleteEvent(selectedEvent.id);
-    }
+    // Event is already deleted by DeleteEvent component
+    // Just refresh the events list
+    fetchAllEvents();
     setShowDeleteDialog(false);
     setSelectedEvent(null);
   };
