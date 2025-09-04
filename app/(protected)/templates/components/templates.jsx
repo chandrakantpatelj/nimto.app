@@ -19,7 +19,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { showCustomToast } from '@/components/common/custom-toast';
+import {   } from '@/components/common/custom-toast';
 import TemplateImageDisplay from '@/components/template-image-display';
 
 const Templates = () => {

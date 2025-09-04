@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { MENU_SIDEBAR } from '@/config/menu.config';
 import { cn } from '@/lib/utils';
+import { useRoleBasedAccess } from '@/hooks/use-role-based-access';
 import {
   AccordionMenu,
   AccordionMenuGroup,
@@ -18,6 +19,7 @@ import { Badge } from '@/components/ui/badge';
 
 export function SidebarMenu() {
   const pathname = usePathname();
+  const { roles } = useRoleBasedAccess();
 
   // Memoize matchPath to prevent unnecessary re-renders
   const matchPath = useCallback(
@@ -39,6 +41,125 @@ export function SidebarMenu() {
       'h-8 hover:bg-transparent text-accent-foreground hover:text-primary data-[selected=true]:text-primary data-[selected=true]:bg-muted data-[selected=true]:font-medium',
     subContent: 'py-0',
     indicator: '',
+  };
+
+  // Role-based menu configuration
+  const getMenuItems = () => {
+    if (roles.isSuperAdmin) {
+      // Super Admin sees all menu items
+      return MENU_SIDEBAR;
+    } else if (roles.isHost) {
+      // Host sees limited menu items
+      return [
+        {
+          title: 'Dashboard',
+          icon: MENU_SIDEBAR.find(item => item.title === 'Dashboard')?.icon,
+          path: '/',
+        },
+        {
+          title: 'Events',
+          icon: MENU_SIDEBAR.find(item => item.title === 'Events')?.icon,
+          path: '/events',
+        },
+        {
+          title: 'Templates',
+          icon: MENU_SIDEBAR.find(item => item.title === 'Templates')?.icon,
+          path: '/templates',
+        },
+        {
+          title: 'My Profile',
+          icon: MENU_SIDEBAR.find(item => item.title === 'My Profile')?.icon,
+          path: '/my-profile',
+        },
+      ];
+    } else if (roles.isApplicationAdmin) {
+      // Application Admin sees admin menu items
+      return [
+        {
+          title: 'Dashboard',
+          icon: MENU_SIDEBAR.find(item => item.title === 'Dashboard')?.icon,
+          path: '/',
+        },
+        {
+          title: 'Events',
+          icon: MENU_SIDEBAR.find(item => item.title === 'Events')?.icon,
+          path: '/events',
+        },
+        {
+          title: 'Templates',
+          icon: MENU_SIDEBAR.find(item => item.title === 'Templates')?.icon,
+          path: '/templates',
+        },
+        {
+          title: 'Users',
+          icon: MENU_SIDEBAR.find(item => item.title === 'Users')?.icon,
+          path: '/user-management/users',
+        },
+        {
+          title: 'Roles',
+          icon: MENU_SIDEBAR.find(item => item.title === 'Roles')?.icon,
+          path: '/user-management/roles',
+        },
+        {
+          title: 'App Settings',
+          icon: MENU_SIDEBAR.find(item => item.title === 'App Settings')?.icon,
+          path: '/settings',
+        },
+        {
+          title: 'Reporting',
+          icon: MENU_SIDEBAR.find(item => item.title === 'Reporting')?.icon,
+          path: '/reportings',
+        },
+        {
+          title: 'Messaging',
+          icon: MENU_SIDEBAR.find(item => item.title === 'Messaging')?.icon,
+          path: '/messaging',
+        },
+        {
+          title: 'My Profile',
+          icon: MENU_SIDEBAR.find(item => item.title === 'My Profile')?.icon,
+          path: '/my-profile',
+        },
+      ];
+    } else if (roles.isAttendee) {
+      // Attendee sees basic menu items
+      return [
+        {
+          title: 'Dashboard',
+          icon: MENU_SIDEBAR.find(item => item.title === 'Dashboard')?.icon,
+          path: '/',
+        },
+        {
+          title: 'Events',
+          icon: MENU_SIDEBAR.find(item => item.title === 'Events')?.icon,
+          path: '/events',
+        },
+        {
+          title: 'My Profile',
+          icon: MENU_SIDEBAR.find(item => item.title === 'My Profile')?.icon,
+          path: '/my-profile',
+        },
+      ];
+    } else {
+      // Default/Unknown roles see basic menu items
+      return [
+        {
+          title: 'Dashboard',
+          icon: MENU_SIDEBAR.find(item => item.title === 'Dashboard')?.icon,
+          path: '/',
+        },
+        {
+          title: 'Events',
+          icon: MENU_SIDEBAR.find(item => item.title === 'Events')?.icon,
+          path: '/events',
+        },
+        {
+          title: 'My Profile',
+          icon: MENU_SIDEBAR.find(item => item.title === 'My Profile')?.icon,
+          path: '/my-profile',
+        },
+      ];
+    }
   };
 
   const buildMenu = (items) => {
@@ -203,7 +324,7 @@ export function SidebarMenu() {
         collapsible
         classNames={classNames}
       >
-        {buildMenu(MENU_SIDEBAR)}
+        {buildMenu(getMenuItems())}
       </AccordionMenu>
     </div>
   );

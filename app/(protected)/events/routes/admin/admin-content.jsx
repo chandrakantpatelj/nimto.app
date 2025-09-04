@@ -30,6 +30,7 @@ export function AdminEventContent() {
   const fetchEvents = async () => {
     try {
       setLoading(true);
+      // Super Admin can see all events - no filtering needed
       const response = await fetch('/api/events');
       const data = await response.json();
 
@@ -160,11 +161,23 @@ export function AdminEventContent() {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900">
+            All Events ({filteredEvents.length})
+          </h2>
+          <p className="text-sm text-gray-600">
+            Manage and monitor all events in the system
+          </p>
+        </div>
+      </div>
+
       {/* Search Bar */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
         <Input
-          placeholder="Search by name, email, or role..."
+          placeholder="Search events by title, description, or location..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="pl-10"

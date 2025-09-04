@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAllEvents, useEventActions, useEvents } from '@/store/hooks';
+import { useSession } from 'next-auth/react';
 import {
   CalendarCheck,
   Earth,
@@ -20,6 +21,9 @@ import DeleteEvent from '../../components/delete-event';
 
 const Events = () => {
   const router = useRouter();
+  const { data: session } = useSession();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [events, setEvents] = useState([]);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
 
@@ -28,14 +32,13 @@ const Events = () => {
   const { fetchAllEvents, deleteEvent } = useEventActions(); // Redux actions
 
   // Simple local search state
-  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    // Load events from Redux store
-    fetchAllEvents();
-  }, [fetchAllEvents]);
+    if (session?.user?.id) {
+      fetchAllEvents();
+    }
+  }, [session?.user?.id]);
 
-  // Simple local filtering
   const filteredEvents = events.filter((event) => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
@@ -190,11 +193,19 @@ const Events = () => {
             </div>
           ) : filteredEvents.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-gray-600">
-                {searchQuery
-                  ? 'No events match your search'
-                  : 'No events found'}
-              </p>
+              {searchQuery ? (
+                <>
+                  {' '}
+                  <p className="text-gray-600">
+                    You haven't created any events yet
+                  </p>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Create your first event to get started
+                  </p>
+                </>
+              ) : (
+                <p className="text-gray-600">No events found </p>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 lg:gap-4.5">

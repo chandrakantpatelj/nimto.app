@@ -1,3 +1,5 @@
+'use client';
+
 import { Container } from '@/components/common/container';
 import {
   Toolbar,
@@ -5,26 +7,27 @@ import {
   ToolbarHeading,
   ToolbarTitle,
 } from '@/components/common/toolbar';
+import { RouteGuard } from '@/components/common/route-guard';
 import UserList from './components/user-list';
 
-export const metadata = {
-  title: 'Users',
-  description: 'Manage users.',
-};
-
-export default async function Page() {
+export default function Page() {
   return (
-    <>
-      <Container>
-        <Toolbar>
-          <ToolbarHeading>
-            <ToolbarTitle>User Management</ToolbarTitle>
-          </ToolbarHeading>
-        </Toolbar>
-      </Container>
-      <Container>
-        <UserList />
-      </Container>
-    </>
+    <RouteGuard 
+      requiredRoles={['super-admin', 'application-admin']}
+      redirectTo="/unauthorized"
+    >
+      <>
+        <Container>
+          <Toolbar>
+            <ToolbarHeading>
+              <ToolbarTitle>User Management</ToolbarTitle>
+            </ToolbarHeading>
+          </Toolbar>
+        </Container>
+        <Container>
+          <UserList />
+        </Container>
+      </>
+    </RouteGuard>
   );
 }
