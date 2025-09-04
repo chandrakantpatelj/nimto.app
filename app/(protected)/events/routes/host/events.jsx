@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { useAllEvents, useEventActions, useEvents } from '@/store/hooks';
 import {
   CalendarCheck,
   Earth,
@@ -12,6 +12,7 @@ import {
   Trash2,
   Users,
 } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 import { toAbsoluteUrl } from '@/lib/helpers';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -22,38 +23,30 @@ const Events = () => {
   const router = useRouter();
   const { data: session } = useSession();
   const [searchQuery, setSearchQuery] = useState('');
-  const [events, setEvents] = useState([]);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // Redux state and actions - SIMPLIFIED
+  const { events, isLoading: loading, error } = useEvents(); // All events data from Redux
+  const { fetchAllEvents, deleteEvent } = useEventActions(); // Redux actions
+
+  // Simple local search state
 
   useEffect(() => {
     if (session?.user?.id) {
-      fetchEvents();
+      fetchAllEvents();
     }
   }, [session?.user?.id]);
 
-  const fetchEvents = async () => {
-    try {
-      setLoading(true);
-      // Only fetch events created by the current user
-      const response = await fetch(`/api/events?createdByUserId=${session?.user?.id}`);
-      const data = await response.json();
-
-      if (data.success) {
-        setEvents(data.data);
-      } else {
-        setError('Failed to fetch events');
-      }
-    } catch (err) {
-      setError('Error loading events');
-      console.error('Error fetching events:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const filteredEvents = events.filter((event) => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      event.title?.toLowerCase().includes(query) ||
+      event.description?.toLowerCase().includes(query) ||
+      event.location?.toLowerCase().includes(query)
+    );
+  });
 
   const handleDeleteClick = (event) => {
     setSelectedEvent(event);
@@ -61,8 +54,12 @@ const Events = () => {
   };
 
   const handleEventDeleted = () => {
-    // Refresh the events list after deletion
-    fetchEvents();
+    // Delete event (includes optimistic update)
+    if (selectedEvent?.id) {
+      deleteEvent(selectedEvent.id);
+    }
+    setShowDeleteDialog(false);
+    setSelectedEvent(null);
   };
 
   const formatDate = (dateString) => {
@@ -73,6 +70,8 @@ const Events = () => {
       year: 'numeric',
     });
   };
+
+  // Events are now filtered by Redux useFilteredEvents hook
 
   const renderData = (event, index) => {
     return (
@@ -183,18 +182,33 @@ const Events = () => {
           ) : error ? (
             <div className="text-center py-8">
               <p className="text-red-600">{error}</p>
-              <Button onClick={fetchEvents} variant="outline" className="mt-4">
+              <Button
+                onClick={fetchAllEvents}
+                variant="outline"
+                className="mt-4"
+              >
                 Try Again
               </Button>
             </div>
-          ) : events.length === 0 ? (
+          ) : filteredEvents.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-gray-600">You haven't created any events yet</p>
-              <p className="text-sm text-gray-500 mt-2">Create your first event to get started</p>
+              {searchQuery ? (
+                <>
+                  {' '}
+                  <p className="text-gray-600">
+                    You haven't created any events yet
+                  </p>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Create your first event to get started
+                  </p>
+                </>
+              ) : (
+                <p className="text-gray-600">No events found </p>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 lg:gap-4.5">
-              {events.map((event, index) => renderData(event, index))}
+              {filteredEvents.map((event, index) => renderData(event, index))}
             </div>
           )}
           <div className="flex grow justify-center pt-5 lg:pt-7.5">

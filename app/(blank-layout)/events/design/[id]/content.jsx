@@ -1,7 +1,15 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import {
+  useAppDispatch,
+  useEventActions,
+  useEvents,
+  useTemplateActions,
+  useTemplateLoading,
+} from '@/store/hooks';
+import { fetchTemplateById as fetchTemplateByIdThunk } from '@/store/slices/templatesSlice';
 import { useSession } from 'next-auth/react';
 import { showCustomToast } from '@/components/common/custom-toast';
 import { TemplateHeader } from '../../components';
@@ -9,34 +17,126 @@ import InvitationConfirmationPopup from '../../components/InvitationConfirmation
 import Step1 from '../../components/Step1';
 import Step2 from '../../components/Step2';
 import Step3 from '../../components/Step3';
-import {
-  EventCreationProvider,
-  useEventCreation,
-} from '../../context/EventCreationContext';
 
 function EditEventContentInner() {
   const router = useRouter();
+  const params = useParams();
+  const templateId = params.id;
   const { data: session } = useSession();
-  const { currentStep, nextStep, prevStep, eventData } = useEventCreation();
+  const { selectedEvent: eventData } = useEvents();
+  const {
+    addEventToStore,
+    setSelectedEvent,
+    updateSelectedEvent,
+    resetEventCreation,
+  } = useEventActions();
+  const { fetchTemplateById } = useTemplateActions();
+  const isTemplateLoading = useTemplateLoading();
+  const dispatch = useAppDispatch();
+
+  const [activeStep, setActiveStep] = useState(0);
   const [showInvitationPopup, setShowInvitationPopup] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  // Check if event data is initialized
+  useEffect(() => {
+    const loadTemplate = async () => {
+      // Don't load template if we're redirecting
+      if (isRedirecting) return;
+
+      if (!eventData && templateId) {
+        // If no event data but we have a templateId, fetch the template
+
+        try {
+          let template;
+
+          // Try using the hook function first, fallback to direct dispatch
+          if (fetchTemplateById) {
+            template = await fetchTemplateById(templateId).unwrap();
+          } else {
+            template = await dispatch(
+              fetchTemplateByIdThunk(templateId),
+            ).unwrap();
+          }
+
+          // Extract the actual template data from the API response
+          const templateData = template.data || template;
+
+          // Store the template data as selectedEvent with only necessary fields
+          setSelectedEvent({
+            // Core event fields
+            title: templateData.name, // Template 'name' becomes Event 'title'
+            templateId: templateData.id, // Store template ID for reference
+            description: '',
+            date: '',
+            time: '',
+            location: '',
+            status: 'DRAFT',
+            guests: [],
+            // Design fields from template
+            jsonContent: templateData.jsonContent,
+            backgroundStyle: null,
+            htmlContent: null,
+            background: null,
+            pageBackground: templateData.pageBackground,
+            imagePath: templateData.imagePath,
+            s3ImageUrl: templateData.s3ImageUrl,
+            // Image handling fields
+            newImageBase64: null,
+          });
+        } catch (error) {
+          console.error('Failed to fetch template:', error);
+          showCustomToast(
+            'Failed to load template. Please try again.',
+            'error',
+          );
+          // router.push('/events/select-template');
+        }
+      } else if (!eventData && !templateId) {
+        // If no event data and no templateId, redirect back to template selection
+
+        showCustomToast('Please select a template first', 'error');
+        // router.push('/events/select-template');
+      }
+    };
+
+    loadTemplate();
+  }, [
+    eventData,
+    templateId,
+    fetchTemplateById,
+    setSelectedEvent,
+    router,
+    dispatch,
+    isRedirecting,
+  ]);
 
   const handleNext = async () => {
-    const saveFunction = window.pixieSaveFunction;
-
-    if (saveFunction) {
-      try {
-        await saveFunction();
-      } catch (error) {
-        console.error('Failed to save Pixie content:', error);
-        // Optionally show user feedback
+    // Try to save Pixie content before moving to next step
+    try {
+      // Use the robust force save function
+      if (window.pixieForceSave) {
+        const saved = await window.pixieForceSave();
+        if (!saved) {
+          console.warn('Failed to save Pixie content, proceeding anyway');
+        }
       }
+      // Fallback to direct state access
+      else if (window.pixieRef?.current?.getState) {
+        const currentState = window.pixieRef.current.getState();
+        if (currentState) {
+          updateSelectedEvent({ jsonContent: currentState });
+        }
+      }
+    } catch (error) {
+      console.error('Failed to save Pixie content:', error);
+      // Optionally show user feedback
     }
-    nextStep();
+    setActiveStep(activeStep + 1);
   };
 
   const handleBack = () => {
-    prevStep();
+    setActiveStep(activeStep - 1);
   };
 
   const handlePublishEvent = () => {
@@ -56,7 +156,7 @@ function EditEventContentInner() {
     }
 
     // Validate that at least one guest is selected
-    if (eventData.guests.length === 0) {
+    if (!eventData.guests || eventData.guests.length === 0) {
       showCustomToast(
         'Please add at least one guest to create an event',
         'error',
@@ -65,7 +165,7 @@ function EditEventContentInner() {
     }
 
     // Show invitation confirmation popup if there are guests
-    if (eventData.guests.length > 0) {
+    if (eventData.guests && eventData.guests.length > 0) {
       setShowInvitationPopup(true);
     } else {
       // Create event without invitations
@@ -75,7 +175,6 @@ function EditEventContentInner() {
 
   const createEvent = async (sendInvitations = false) => {
     setIsCreating(true);
-    console.log('eventData', eventData);
     try {
       // Determine if user changed the image in Pixie
       const hasChangedImage = eventData.newImageBase64;
@@ -96,9 +195,9 @@ function EditEventContentInner() {
         ...eventData,
         createdByUserId: session.user.id,
         sendInvitations,
-        guests: eventData.guests.map((guest) => ({
+        guests: (eventData.guests || []).map((guest) => ({
           name: guest.name,
-          contact: guest.contact,
+          contact: guest.email || guest.phone || guest.contact, // Use email/phone as contact
         })),
         templateImagePath, // Original template imagePath to copy
         newImageData, // Base64 data if user changed image in Pixie
@@ -123,6 +222,15 @@ function EditEventContentInner() {
           'success',
         );
 
+        // Add the new event to Redux store
+        addEventToStore(result.data.event);
+
+        // Clear selectedEvent from store after successful creation
+        resetEventCreation();
+
+        // Set redirecting flag to prevent useEffect from running
+        setIsRedirecting(true);
+
         // Redirect to events page
         router.push('/events');
       } else {
@@ -145,29 +253,43 @@ function EditEventContentInner() {
     createEvent(false);
   };
 
+  // Safety check - ensure eventData is initialized
+  if (!eventData || isTemplateLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">
+            {isTemplateLoading ? 'Loading template...' : 'Loading...'}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <TemplateHeader
-        activeStep={currentStep}
+        activeStep={activeStep}
         handleNext={handleNext}
         handleBack={handleBack}
         onPublishEvent={handlePublishEvent}
         isCreating={isCreating}
-        hasGuests={eventData.guests.length > 0}
+        hasGuests={eventData.guests?.length > 0}
         title="Create Event"
         publishButtonText="Create Event"
       />
 
-      {currentStep === 0 && <Step1 />}
-      {currentStep === 1 && <Step2 />}
-      {currentStep === 2 && <Step3 />}
+      {activeStep === 0 && <Step1 mode="create" />}
+      {activeStep === 1 && <Step2 mode="create" />}
+      {activeStep === 2 && <Step3 mode="create" />}
 
       <InvitationConfirmationPopup
         isOpen={showInvitationPopup}
         onClose={() => setShowInvitationPopup(false)}
         onConfirm={handleInvitationConfirm}
         onCancel={handleInvitationCancel}
-        guests={eventData.guests}
+        guests={eventData.guests || []}
         loading={isCreating}
       />
     </>
@@ -175,11 +297,7 @@ function EditEventContentInner() {
 }
 
 function EditEventContent() {
-  return (
-    <EventCreationProvider>
-      <EditEventContentInner />
-    </EventCreationProvider>
-  );
+  return <EditEventContentInner />;
 }
 
 export default EditEventContent;
