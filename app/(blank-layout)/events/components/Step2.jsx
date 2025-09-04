@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useEventActions, useEvents } from '@/store/hooks';
 import { format } from 'date-fns';
 import { CalendarDays, Info, MapPin, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -15,15 +16,15 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
-import { useEventCreation } from '../context/EventCreationContext';
 
 function Step2() {
-  const { eventData, updateEventData } = useEventCreation();
+  const { selectedEvent: eventData } = useEvents();
+  const { updateSelectedEvent: updateEventData } = useEventActions();
   const [datePickerOpen, setDatePickerOpen] = useState(false);
 
   // Format the date for display
   const formattedDate = eventData.date
-    ? format(eventData.date, 'EEEE, MMMM d, yyyy')
+    ? format(new Date(eventData.date), 'EEEE, MMMM d, yyyy')
     : 'TBD';
 
   return (
@@ -102,7 +103,7 @@ function Step2() {
                       <p className="text-sm font-medium text-gray-700">WHEN</p>
                       <p className="text-sm text-gray-600">
                         {eventData.date
-                          ? format(eventData.date, 'PPP')
+                          ? format(new Date(eventData.date), 'PPP')
                           : 'Pick a date & time'}
                       </p>
                       {eventData.time && (
@@ -216,7 +217,7 @@ function Step2() {
                     >
                       <CalendarDays className="mr-2 h-4 w-4" />
                       {eventData.date ? (
-                        format(eventData.date, 'PPP')
+                        format(new Date(eventData.date), 'PPP')
                       ) : (
                         <span>Pick a date</span>
                       )}
@@ -225,9 +226,13 @@ function Step2() {
                   <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
-                      selected={eventData.date}
+                      selected={
+                        eventData.date ? new Date(eventData.date) : undefined
+                      }
                       onSelect={(date) => {
-                        updateEventData({ date });
+                        updateEventData({
+                          date: date ? date.toISOString() : null,
+                        });
                         setDatePickerOpen(false);
                       }}
                       initialFocus

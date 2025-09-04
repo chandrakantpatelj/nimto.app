@@ -1,14 +1,37 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useEventActions, useEvents } from '@/store/hooks';
 import { Search, Settings, UserPlus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useEventCreation } from '../context/EventCreationContext';
 import GuestSettingsDrawer from './GuestSettingsDrawer';
 
 function Step3() {
-  const { eventData, addGuest, removeGuest, clearGuests } = useEventCreation();
+  const { selectedEvent: eventData } = useEvents();
+  const { updateSelectedEvent } = useEventActions();
+
+  // Guest management functions
+  const addGuest = (guest) => {
+    const guestWithTempId = {
+      ...guest,
+      tempId: `temp-${Date.now()}-${Math.random()}`,
+      isNew: true,
+    };
+    updateSelectedEvent({
+      guests: [...(eventData?.guests || []), guestWithTempId],
+    });
+  };
+
+  const removeGuest = (guestId) => {
+    updateSelectedEvent({
+      guests: (eventData?.guests || []).filter((guest) => guest.id !== guestId),
+    });
+  };
+
+  const clearGuests = () => {
+    updateSelectedEvent({ guests: [] });
+  };
   const [newGuest, setNewGuest] = useState({
     name: '',
     email: '',

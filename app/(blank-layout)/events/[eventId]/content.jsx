@@ -2,19 +2,24 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useEventActions, useEvents } from '@/store/hooks';
 import { showCustomToast } from '@/components/common/custom-toast';
 import { TemplateHeader } from '../components';
 import InvitationPopup from '../components/InvitationPopup';
 import Step1 from '../components/Step1';
 import Step2 from '../components/Step2';
 import Step3 from '../components/Step3';
-import { useEventCreation } from '../context/EventCreationContext';
 
 function EditEventContent() {
   const params = useParams();
   const router = useRouter();
   const eventId = params.eventId;
-  const { eventData, updateEventData, resetEventData } = useEventCreation();
+  const { selectedEvent: eventData } = useEvents();
+  const {
+    updateSelectedEvent: updateEventData,
+    resetEventCreation: resetEventData,
+    updateEventInStore,
+  } = useEventActions();
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -53,15 +58,25 @@ function EditEventContent() {
   };
 
   const handleNext = async () => {
-    const saveFunction = window.pixieSaveFunction;
-
-    if (saveFunction) {
-      try {
-        await saveFunction();
-      } catch (error) {
-        console.error('Failed to save Pixie content:', error);
-        // Optionally show user feedback
+    // Try to save Pixie content before moving to next step
+    try {
+      // Use the robust force save function
+      if (window.pixieForceSave) {
+        const saved = await window.pixieForceSave();
+        if (!saved) {
+          console.warn('Failed to save Pixie content, proceeding anyway');
+        }
       }
+      // Fallback to direct state access
+      else if (window.pixieRef?.current?.getState) {
+        const currentState = window.pixieRef.current.getState();
+        if (currentState) {
+          updateEventData({ jsonContent: currentState });
+        }
+      }
+    } catch (error) {
+      console.error('Failed to save Pixie content:', error);
+      // Optionally show user feedback
     }
     setActiveStep(activeStep + 1);
   };
@@ -74,11 +89,11 @@ function EditEventContent() {
   const getNewGuestsCount = () => {
     if (!eventData.originalGuests || eventData.originalGuests.length === 0) {
       // If no original guests, all current guests are considered new
-      return eventData.guests.length;
+      return eventData.guests?.length || 0;
     }
 
     const originalGuestIds = new Set(eventData.originalGuests.map((g) => g.id));
-    const newGuests = eventData.guests.filter(
+    const newGuests = (eventData.guests || []).filter(
       (guest) => !originalGuestIds.has(guest.id),
     );
     return newGuests.length;
@@ -88,7 +103,7 @@ function EditEventContent() {
     const newGuestsCount = getNewGuestsCount();
 
     // Always show the popup if there are any guests
-    if (eventData.guests.length > 0) {
+    if (eventData.guests && eventData.guests.length > 0) {
       setShowInvitationPopup(true);
       return;
     }
@@ -117,7 +132,7 @@ function EditEventContent() {
         newImageData: eventData.newImageBase64,
         status: eventData.status,
         invitationType, // 'all', 'new', or null
-        guests: eventData.guests, // Include guests data
+        guests: eventData.guests || [], // Include guests data
       };
 
       console.log('Frontend Debug - Request Body:', {
@@ -143,11 +158,18 @@ function EditEventContent() {
       if (data.success) {
         let message = 'Event updated successfully';
         if (invitationType === 'all') {
-          message = `Event updated successfully and invitations sent to all ${eventData.guests.length} guests`;
+          message = `Event updated successfully and invitations sent to all ${eventData.guests?.length || 0} guests`;
         } else if (invitationType === 'new') {
           const newGuestsCount = getNewGuestsCount();
           message = `Event updated successfully and invitations sent to ${newGuestsCount} new guests`;
         }
+
+        // Update Redux store with the updated event data
+        updateEventInStore(data.data);
+
+        // Clear selectedEvent from store after successful update
+        resetEventData();
+
         showCustomToast(message, 'success');
         router.push('/events');
       } else {
@@ -207,6 +229,18 @@ function EditEventContent() {
     );
   }
 
+  // Safety check - ensure eventData is loaded
+  if (!eventData) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading event data...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <TemplateHeader
@@ -215,15 +249,15 @@ function EditEventContent() {
         handleBack={handleBack}
         onPublishEvent={handleUpdateEvent}
         isCreating={isUpdating}
-        hasGuests={eventData.guests.length > 0}
+        hasGuests={eventData.guests?.length > 0}
         title="Edit Event"
         publishButtonText="Update Event"
         isEditMode={true}
       />
 
-      {activeStep === 0 && <Step1 />}
-      {activeStep === 1 && <Step2 />}
-      {activeStep === 2 && <Step3 />}
+      {activeStep === 0 && <Step1 mode="edit" />}
+      {activeStep === 1 && <Step2 mode="edit" />}
+      {activeStep === 2 && <Step3 mode="edit" />}
 
       <InvitationPopup
         isOpen={showInvitationPopup}
@@ -232,7 +266,7 @@ function EditEventContent() {
         onSendToNew={handleSendToNew}
         onUpdateOnly={handleUpdateOnly}
         newGuestsCount={getNewGuestsCount()}
-        totalGuestsCount={eventData.guests.length}
+        totalGuestsCount={eventData.guests?.length || 0}
         isLoading={isUpdating}
       />
     </>

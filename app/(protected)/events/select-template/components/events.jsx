@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useEventActions } from '@/store/hooks';
 import { Loader2, Search } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -12,10 +12,39 @@ import TemplateImageDisplay from '@/components/template-image-display';
 
 const SelectEvents = () => {
   const router = useRouter();
+  const { setSelectedEvent } = useEventActions();
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Handle template selection
+  const handleTemplateSelect = (template) => {
+    // Initialize selectedEvent with template data
+    setSelectedEvent({
+      // Template fields (for design)
+      templateId: template.id,
+      jsonContent: template.jsonContent || '',
+      backgroundStyle: template.backgroundStyle || '',
+      htmlContent: template.htmlContent || '',
+      background: template.background || '',
+      pageBackground: template.pageBackground || '',
+      imagePath: template.imagePath || '',
+      s3ImageUrl: template.s3ImageUrl || '', // Use template's s3ImageUrl directly
+
+      // Event fields (empty for create mode)
+      title: '',
+      description: '',
+      date: '',
+      time: '',
+      location: '',
+      status: 'draft',
+      guests: [],
+    });
+
+    // Navigate to design page
+    router.push(`/events/design/${template.id}`);
+  };
 
   // Fetch templates from API
   const fetchTemplates = async () => {
@@ -74,10 +103,11 @@ const SelectEvents = () => {
             />
 
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <Button variant="primary" asChild>
-                <Link href={`/events/design/${template.id}`}>
-                  Select Template
-                </Link>
+              <Button
+                variant="primary"
+                onClick={() => handleTemplateSelect(template)}
+              >
+                Select Template
               </Button>
             </div>
           </div>
@@ -152,7 +182,7 @@ const SelectEvents = () => {
               </div>
               <div className="flex grow justify-center pt-5 lg:pt-7.5">
                 <Button mode="link" underlined="dashed" asChild>
-                  <Link href="#">Show more templates</Link>
+                  <a href="#">Show more templates</a>
                 </Button>
               </div>
             </>

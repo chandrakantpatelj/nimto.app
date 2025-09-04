@@ -43,21 +43,6 @@ export function TemplateHeader({
     }
   };
 
-  const handleNextStep = async () => {
-    if (activeStep === 0 && window.pixieSaveFunction) {
-      // Handle next - save pixie content and proceed to next step
-      try {
-        await window.pixieSaveFunction();
-        handleNext();
-      } catch (error) {
-        console.error('Failed to save Pixie content:', error);
-        // You might want to add a toast notification here
-      }
-    } else {
-      handleNext();
-    }
-  };
-
   return (
     <>
       <header
