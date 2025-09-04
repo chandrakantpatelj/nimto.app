@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Calendar,
   CalendarDays,
@@ -18,6 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export function AttendeeEventContent() {
+  const router = useRouter();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -36,7 +38,9 @@ export function AttendeeEventContent() {
 
       if (data.success) {
         // Filter to only show published events (attendees can't see drafts)
-        const publishedEvents = data.data.filter(event => event.status === 'PUBLISHED');
+        const publishedEvents = data.data.filter(
+          (event) => event.status === 'PUBLISHED',
+        );
         setEvents(publishedEvents);
       } else {
         setError('Failed to fetch events');
@@ -270,7 +274,7 @@ export function AttendeeEventContent() {
                   variant="outline"
                   size="sm"
                   className="flex-1 border-blue-500 text-blue-600 hover:bg-blue-50"
-                  onClick={() => window.open(`/events/${event.id}`, '_blank')}
+                  onClick={() => router.push(`/events/${event.id}`)}
                 >
                   <Earth className="w-4 h-4 mr-2" />
                   View Event

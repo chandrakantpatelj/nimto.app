@@ -532,7 +532,7 @@ const PixieEditorRedux = ({
         },
         tools: {
           zoom: {
-            allowUserZoom: false,
+            allowUserZoom: true,
           },
           crop: {
             allowExternalImages: true,

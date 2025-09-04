@@ -254,7 +254,7 @@ function Step1({ mode = 'create' }) {
               </div>
             </div>
           ) : (
-            <div className="h-full w-[800] rounded-lg overflow-hidden border border-gray-200 bg-white">
+            <div className="h-full rounded-lg overflow-hidden border border-gray-200 bg-white">
               <PixieEditorRedux
                 key={`pixie-${templateId || eventId}-${hasUploadedNewImage}`} // Use templateId/eventId instead of imageUrl to prevent unnecessary re-renders
                 initialImageUrl={imageUrl}

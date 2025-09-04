@@ -122,11 +122,8 @@ export const updateEvent = createAsyncThunk(
 
 export const deleteEvent = createAsyncThunk(
   'events/deleteEvent',
-  async (eventId, { rejectWithValue, dispatch }) => {
+  async (eventId, { rejectWithValue }) => {
     try {
-      // Optimistic update - remove from store immediately
-      dispatch({ type: 'events/removeEventFromStore', payload: eventId });
-
       const response = await fetch(`/api/events/${eventId}`, {
         method: 'DELETE',
       });
@@ -310,7 +307,14 @@ const eventsSlice = createSlice({
       })
       .addCase(deleteEvent.fulfilled, (state, action) => {
         state.isLoading = false;
-        // Event already removed by optimistic update
+        const eventId = action.payload;
+
+        // Remove from events array
+        state.events = state.events.filter((event) => event.id !== eventId);
+
+        // Remove from normalized data
+        delete state.eventsById[eventId];
+
         state.error = null;
       })
       .addCase(deleteEvent.rejected, (state, action) => {
