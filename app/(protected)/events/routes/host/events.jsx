@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAllEvents, useEventActions, useEvents } from '@/store/hooks';
-import { useSession } from 'next-auth/react';
 import {
   CalendarCheck,
   Earth,
@@ -13,6 +12,7 @@ import {
   Trash2,
   Users,
 } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 import { toAbsoluteUrl } from '@/lib/helpers';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -23,7 +23,6 @@ const Events = () => {
   const router = useRouter();
   const { data: session } = useSession();
   const [searchQuery, setSearchQuery] = useState('');
-  const [events, setEvents] = useState([]);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
 
