@@ -21,7 +21,17 @@ function EditEventContentInner() {
   const [showInvitationPopup, setShowInvitationPopup] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    const saveFunction = window.pixieSaveFunction;
+
+    if (saveFunction) {
+      try {
+        await saveFunction();
+      } catch (error) {
+        console.error('Failed to save Pixie content:', error);
+        // Optionally show user feedback
+      }
+    }
     nextStep();
   };
 
@@ -144,7 +154,10 @@ function EditEventContentInner() {
         onPublishEvent={handlePublishEvent}
         isCreating={isCreating}
         hasGuests={eventData.guests.length > 0}
+        title="Create Event"
+        publishButtonText="Create Event"
       />
+
       {currentStep === 0 && <Step1 />}
       {currentStep === 1 && <Step2 />}
       {currentStep === 2 && <Step3 />}

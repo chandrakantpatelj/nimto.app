@@ -214,11 +214,13 @@ function EditEventContent() {
         handleNext={handleNext}
         handleBack={handleBack}
         onPublishEvent={handleUpdateEvent}
-        isCreating={false}
-        hasGuests={eventData.guests && eventData.guests.length > 0}
-        title="Update Event"
+        isCreating={isUpdating}
+        hasGuests={eventData.guests.length > 0}
+        title="Edit Event"
         publishButtonText="Update Event"
+        isEditMode={true}
       />
+
       {activeStep === 0 && <Step1 />}
       {activeStep === 1 && <Step2 />}
       {activeStep === 2 && <Step3 />}

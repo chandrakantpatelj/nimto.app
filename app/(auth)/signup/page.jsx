@@ -137,8 +137,9 @@ export default function Page() {
         <form onSubmit={handleSubmit} className="block w-full space-y-5">
           <div className="space-y-1.5 pb-3">
             <h1 className="text-2xl font-semibold tracking-tight text-center">
-              Sign Up to Metronic
+            Create an Account with Nimto
             </h1>
+            <p className="mt-2 text-sm text-slate-600 text-center">Join us to start planning and attending amazing events!</p>
           </div>
 
           <div className="flex flex-col gap-3.5">
@@ -290,7 +291,7 @@ export default function Page() {
                       onCheckedChange={(checked) => field.onChange(!!checked)}
                     />
                     <div className="flex flex-col gap-1">
-                      <label htmlFor="isHost" className="text-sm text-black">
+                      <label htmlFor="isHost" className="text-sm">
                         I'm interested in hosting events.
                       </label>
                       <label

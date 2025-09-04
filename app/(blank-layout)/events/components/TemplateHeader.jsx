@@ -19,6 +19,7 @@ export function TemplateHeader({
   hasGuests = false, // Add this prop to check if guests exist
   title = 'Create Event', // Add title prop for edit mode
   publishButtonText = 'Publish Event', // Add button text prop for edit mode
+  isEditMode = false, // Add this prop to distinguish edit mode
 
   // Template editor props
   onSave,
@@ -34,11 +35,26 @@ export function TemplateHeader({
   // Check if this is template editor mode
   const isTemplateEditor = onSave !== undefined;
 
-  const handleBackClick = () => {
-    if (isTemplateEditor) {
-      router.back();
+  const handleCancel = () => {
+    if (isEditMode) {
+      router.push('/events');
     } else {
       setShowExitPopup(true);
+    }
+  };
+
+  const handleNextStep = async () => {
+    if (activeStep === 0 && window.pixieSaveFunction) {
+      // Handle next - save pixie content and proceed to next step
+      try {
+        await window.pixieSaveFunction();
+        handleNext();
+      } catch (error) {
+        console.error('Failed to save Pixie content:', error);
+        // You might want to add a toast notification here
+      }
+    } else {
+      handleNext();
     }
   };
 
@@ -53,27 +69,6 @@ export function TemplateHeader({
         <Container className="flex justify-between items-stretch lg:gap-4">
           <div className="flex items-center gap-4">
             {/* Back Button */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleBackClick}
-              className="flex items-center gap-2"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 19l-7-7 7-7"
-                />
-              </svg>
-              Back
-            </Button>
 
             {/* Template Name Input (for template editor) */}
             {isTemplateEditor && (
@@ -88,29 +83,29 @@ export function TemplateHeader({
               </div>
             )}
 
-            {/* Event Flow Steps */}
+            {/* Event Flow Steps with Step Indicator */}
             {!isTemplateEditor && (
               <>
-                <div className="flex flex-col gap-1">
-                  <span className="text-md font-semibold">{title}</span>
-                  {activeStep === 0 && (
-                    <span className="text-xs font-medium text-secondary-foreground">
-                      Step 1: Design Invitation - Customize the look and fill in
-                      event details.
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-gradient-to-br from-pink-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <span className="text-white text-sm font-bold">
+                      {activeStep + 1}
                     </span>
-                  )}
-                  {activeStep === 1 && (
-                    <span className="text-xs font-medium text-secondary-foreground">
-                      Step 2: Preview - See how your invitation will look to
-                      guests.
-                    </span>
-                  )}
-                  {activeStep === 2 && (
-                    <span className="text-xs font-medium text-secondary-foreground">
-                      Step 3: Manage Guests - Add guests and configure
-                      invitation settings.
-                    </span>
-                  )}
+                  </div>
+                  <div>
+                    <h1 className="text-lg font-semibold text-gray-900">
+                      {activeStep === 0 && 'Design Your Event'}
+                      {activeStep === 1 && 'Event Details'}
+                      {activeStep === 2 && 'Manage Guests'}
+                    </h1>
+                    <p className="text-sm text-gray-500">
+                      {activeStep === 0 &&
+                        'Customize your event invitation design'}
+                      {activeStep === 1 && 'Preview your event invitation'}
+                      {activeStep === 2 &&
+                        'Add guests and configure invitation settings'}
+                    </p>
+                  </div>
                 </div>
               </>
             )}
@@ -151,52 +146,52 @@ export function TemplateHeader({
               </Button>
             ) : (
               /* Event Flow Actions */
-              <>
-                <Button
-                  variant="outline"
+              <div className="flex space-x-2">
+                <button
                   onClick={() => setShowExitPopup(true)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
                 >
                   Cancel
-                </Button>
-                <span className="bg-gray-200 w-[1px] h-full mx-1"></span>
-                <div className="flex gap-1">
-                  {activeStep > 0 && (
-                    <Button
-                      variant="outline"
-                      mode="primary"
-                      onClick={() => handleBack()}
-                    >
-                      Previous
-                    </Button>
-                  )}
+                </button>
 
-                  {activeStep === 2 ? (
-                    <div className="relative">
-                      <Button
-                        variant="primary"
-                        onClick={onPublishEvent}
-                        disabled={isCreating || !hasGuests}
-                        className={
-                          !hasGuests ? 'opacity-50 cursor-not-allowed' : ''
-                        }
-                      >
-                        {isCreating ? (
-                          <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                            Creating...
-                          </>
-                        ) : (
-                          publishButtonText
-                        )}
-                      </Button>
-                    </div>
-                  ) : (
-                    <Button variant="primary" onClick={() => handleNext()}>
-                      Next
-                    </Button>
-                  )}
-                </div>
-              </>
+                {/* Show Previous button only on step 2 and 3 */}
+                {activeStep > 0 && (
+                  <button
+                    onClick={() => {
+                      handleBack();
+                    }}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                  >
+                    Previous
+                  </button>
+                )}
+
+                {activeStep === 2 ? (
+                  <div className="relative">
+                    <button
+                      onClick={onPublishEvent}
+                      disabled={isCreating || !hasGuests}
+                      className="px-4 py-2 text-sm font-medium text-white bg-purple-600 border border-transparent rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isCreating ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Creating...
+                        </>
+                      ) : (
+                        publishButtonText
+                      )}
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    className="px-4 py-2 text-sm font-medium text-white bg-purple-600 border border-transparent rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => handleNext()}
+                  >
+                    Next
+                  </button>
+                )}
+              </div>
             )}
           </div>
         </Container>
