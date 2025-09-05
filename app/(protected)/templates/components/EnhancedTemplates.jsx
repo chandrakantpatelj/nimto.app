@@ -21,6 +21,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { showCustomToast } from '@/components/common/custom-toast';
 import TemplateImageDisplay from '@/components/template-image-display';
+import LazyImage from './LazyImage';
 
 const EnhancedTemplates = ({ searchQuery = '', selectedCategory = null, filters = {} }) => {
   const router = useRouter();
@@ -194,28 +195,34 @@ const EnhancedTemplates = ({ searchQuery = '', selectedCategory = null, filters 
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 md:gap-8 px-4 sm:px-0">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 md:gap-5 px-4 sm:px-0">
             {templates.map((template) => (
               <Card 
                 key={template.id}
-                className="group cursor-pointer transition-all duration-300 hover:shadow-2xl hover:scale-105 border-0 shadow-lg bg-white rounded-xl sm:rounded-2xl overflow-hidden"
+                className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 border-0 shadow-md bg-white rounded-lg sm:rounded-xl overflow-hidden"
                 onClick={() => handleTemplateSelect(template)}
               >
                 <CardContent className="p-0">
                   {/* Template Image */}
                   <div className="relative aspect-[3/4] overflow-hidden">
                     {template.thumbnailUrl || template.previewImageUrl ? (
-                      <img
+                      <LazyImage
                         src={getProxiedImageUrl(template.thumbnailUrl || template.previewImageUrl)}
                         alt={template.name}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                          e.target.nextSibling.style.display = 'flex';
-                        }}
+                        className="w-full h-full group-hover:scale-110 transition-transform duration-300"
+                        placeholder={
+                          <div className="flex flex-col items-center gap-2">
+                            <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
+                              <span className="text-sm font-bold text-purple-600 dark:text-purple-400">
+                                {template.name.charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">Loading...</span>
+                          </div>
+                        }
                       />
                     ) : (
-                      <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                      <div className="w-full h-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
                         <TemplateImageDisplay 
                           template={template}
                           className="w-full h-full object-cover"
@@ -224,44 +231,44 @@ const EnhancedTemplates = ({ searchQuery = '', selectedCategory = null, filters 
                     )}
                     
                     {/* Badges */}
-                    <div className="absolute top-2 left-2 flex flex-col gap-1">
+                    <div className="absolute top-1 left-1 flex flex-col gap-1">
                       {template.badge && (
                         <Badge 
                           variant={getBadgeVariant(template.badge)}
-                          className="text-xs font-medium"
+                          className="text-xs font-medium px-1 py-0"
                         >
                           {getBadgeIcon(template.badge)}
                           {template.badge}
                         </Badge>
                       )}
                       {template.isTrending && (
-                        <Badge variant="default" className="text-xs font-medium">
-                          <Zap className="h-3 w-3 mr-1" />
+                        <Badge variant="default" className="text-xs font-medium px-1 py-0">
+                          <Zap className="h-2 w-2 mr-1" />
                           Trending
                         </Badge>
                       )}
                       {template.isFeatured && (
-                        <Badge variant="outline" className="text-xs font-medium">
-                          <Star className="h-3 w-3 mr-1" />
+                        <Badge variant="outline" className="text-xs font-medium px-1 py-0">
+                          <Star className="h-2 w-2 mr-1" />
                           Featured
                         </Badge>
                       )}
                       {template.isNew && (
-                        <Badge variant="secondary" className="text-xs font-medium">
-                          <Sparkles className="h-3 w-3 mr-1" />
+                        <Badge variant="secondary" className="text-xs font-medium px-1 py-0">
+                          <Sparkles className="h-2 w-2 mr-1" />
                           New
                         </Badge>
                       )}
                     </div>
 
                     {/* Price Badge */}
-                    <div className="absolute top-2 right-2">
+                    <div className="absolute top-1 right-1">
                       {template.isPremium ? (
-                        <Badge variant="destructive" className="text-xs font-medium">
+                        <Badge variant="destructive" className="text-xs font-medium px-1 py-0">
                           ${template.price}
                         </Badge>
                       ) : (
-                        <Badge variant="secondary" className="text-xs font-medium">
+                        <Badge variant="secondary" className="text-xs font-medium px-1 py-0">
                           Free
                         </Badge>
                       )}
@@ -269,10 +276,10 @@ const EnhancedTemplates = ({ searchQuery = '', selectedCategory = null, filters 
 
                     {/* Orientation Badge */}
                     {template.orientation && (
-                      <div className="absolute bottom-2 right-2">
+                      <div className="absolute bottom-1 right-1">
                         <Badge 
                           variant="outline" 
-                          className={`text-xs ${getOrientationColor(template.orientation)}`}
+                          className={`text-xs px-1 py-0 ${getOrientationColor(template.orientation)}`}
                         >
                           {template.orientation.toUpperCase()}
                         </Badge>
@@ -281,9 +288,9 @@ const EnhancedTemplates = ({ searchQuery = '', selectedCategory = null, filters 
 
                     {/* Popularity Indicator */}
                     {template.popularity > 0 && (
-                      <div className="absolute bottom-2 left-2">
-                        <div className="flex items-center bg-black/70 text-white px-2 py-1 rounded text-xs">
-                          <Star className="h-3 w-3 mr-1 fill-yellow-400 text-yellow-400" />
+                      <div className="absolute bottom-1 left-1">
+                        <div className="flex items-center bg-black/70 text-white px-1 py-0 rounded text-xs">
+                          <Star className="h-2 w-2 mr-1 fill-yellow-400 text-yellow-400" />
                           {Math.round(template.popularity * 100)}%
                         </div>
                       </div>
@@ -291,52 +298,36 @@ const EnhancedTemplates = ({ searchQuery = '', selectedCategory = null, filters 
                   </div>
 
                   {/* Template Info */}
-                  <div className="p-4 sm:p-6">
-                    <h3 className="font-bold text-gray-900 mb-2 line-clamp-2 text-base sm:text-lg">
+                  <div className="p-2 sm:p-3">
+                    <h3 className="font-bold text-gray-900 mb-1 line-clamp-1 text-xs sm:text-sm">
                       {template.name}
                     </h3>
-                    <p className="text-xs sm:text-sm text-gray-600 mb-3 font-medium">
+                    <p className="text-xs text-gray-600 mb-2 font-medium">
                       {template.category}
                     </p>
                     
                     {/* Colors */}
                     {template.colors && template.colors.length > 0 && (
                       <div className="flex gap-1 mb-2">
-                        {template.colors.slice(0, 4).map((color, index) => (
+                        {template.colors.slice(0, 3).map((color, index) => (
                           <div
                             key={`${color}-${index}`}
-                            className="w-4 h-4 rounded-full border border-gray-200"
+                            className="w-3 h-3 rounded-full border border-gray-200"
                             style={{ backgroundColor: color.toLowerCase() }}
                             title={color}
                           />
                         ))}
-                        {template.colors.length > 4 && (
+                        {template.colors.length > 3 && (
                           <span className="text-xs text-gray-500">
-                            +{template.colors.length - 4}
+                            +{template.colors.length - 3}
                           </span>
                         )}
                       </div>
                     )}
 
-                    {/* Keywords */}
-                    {template.keywords && template.keywords.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mb-2">
-                        {template.keywords.slice(0, 2).map((keyword, index) => (
-                          <Badge key={`${keyword}-${index}`} variant="outline" className="text-xs">
-                            {keyword}
-                          </Badge>
-                        ))}
-                        {template.keywords.length > 2 && (
-                          <span className="text-xs text-gray-500">
-                            +{template.keywords.length - 2} more
-                          </span>
-                        )}
-                      </div>
-                    )}
-
-                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-3 sm:mt-4">
+                    <div className="flex flex-col gap-1 mt-2">
                       <Button 
-                        className="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 sm:py-2 rounded-lg transition-all duration-300 text-sm sm:text-base"
+                        className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 rounded-md transition-all duration-300 text-xs"
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -345,11 +336,11 @@ const EnhancedTemplates = ({ searchQuery = '', selectedCategory = null, filters 
                       >
                         Use Template
                       </Button>
-                      <div className="flex gap-2 sm:gap-3">
+                      <div className="flex gap-1">
                         <Button 
                           variant="outline"
                           size="sm"
-                          className="flex-1 sm:flex-none border-2 border-gray-200 hover:border-purple-500 hover:text-purple-600 font-semibold py-2 rounded-lg transition-all duration-300 text-sm sm:text-base"
+                          className="flex-1 border border-gray-200 hover:border-purple-500 hover:text-purple-600 font-semibold py-1 rounded-md transition-all duration-300 text-xs"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleEdit(template);
@@ -360,7 +351,7 @@ const EnhancedTemplates = ({ searchQuery = '', selectedCategory = null, filters 
                         <Button
                           variant="outline"
                           size="sm"
-                          className="flex-1 sm:flex-none border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 font-semibold py-2 rounded-lg transition-all duration-300 text-sm sm:text-base"
+                          className="flex-1 border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 font-semibold py-1 rounded-md transition-all duration-300 text-xs"
                           onClick={(e) => {
                             e.stopPropagation();
                             confirmDelete(template);
@@ -368,9 +359,9 @@ const EnhancedTemplates = ({ searchQuery = '', selectedCategory = null, filters 
                           disabled={deletingTemplateId === template.id}
                         >
                           {deletingTemplateId === template.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <Loader2 className="h-3 w-3 animate-spin" />
                           ) : (
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-3 w-3" />
                           )}
                         </Button>
                       </div>
