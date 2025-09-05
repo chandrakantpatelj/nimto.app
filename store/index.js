@@ -3,7 +3,6 @@ import { persistReducer, persistStore } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 // Import slices
 import authSlice from './slices/authSlice';
-import designSlice from './slices/designSlice';
 import eventsSlice from './slices/eventsSlice';
 import guestsSlice from './slices/guestsSlice';
 import storeClientSlice from './slices/storeClientSlice';
@@ -24,7 +23,6 @@ const rootReducer = combineReducers({
   templates: templatesSlice,
   ui: uiSlice,
   guests: guestsSlice,
-  design: designSlice,
   storeClient: storeClientSlice,
 });
 
