@@ -11,6 +11,12 @@ export async function GET(request) {
     const category = searchParams.get('category');
     const isPremium = searchParams.get('isPremium');
     const search = searchParams.get('search');
+    const orientation = searchParams.get('orientation');
+    const trending = searchParams.get('trending');
+    const featured = searchParams.get('featured');
+    const newTemplates = searchParams.get('new');
+    const limit = parseInt(searchParams.get('limit')) || 50;
+    const offset = parseInt(searchParams.get('offset')) || 0;
 
     const where = {
       isTrashed: false,
@@ -24,16 +30,41 @@ export async function GET(request) {
       where.isPremium = isPremium === 'true';
     }
 
+    if (orientation) {
+      where.orientation = orientation;
+    }
+
+    if (trending === 'true') {
+      where.isTrending = true;
+    }
+
+    if (featured === 'true') {
+      where.isFeatured = true;
+    }
+
+    if (newTemplates === 'true') {
+      where.isNew = true;
+    }
+
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
         { category: { contains: search, mode: 'insensitive' } },
+        { keywords: { has: search } },
       ];
     }
 
     const templates = await prisma.template.findMany({
       where,
-      orderBy: { createdAt: 'desc' },
+      orderBy: [
+        { isFeatured: 'desc' },
+        { isTrending: 'desc' },
+        { isNew: 'desc' },
+        { popularity: 'desc' },
+        { createdAt: 'desc' },
+      ],
+      take: limit,
+      skip: offset,
     });
 
     // Generate S3 URLs for templates with imagePath
