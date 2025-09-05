@@ -176,10 +176,40 @@ model Template {
   updatedAt        DateTime @updatedAt
   isTrashed        Boolean  @default(false)
   imagePath        String?
+  badge            String?
+  colors           String[]
+  isFeatured       Boolean  @default(false)
+  isNew            Boolean  @default(false)
+  isTrending       Boolean  @default(false)
+  keywords         String[]
+  orientation      String   @default("portrait")
+  popularity       Float    @default(0)
+  thumbnailUrl     String?
 
   @@index([category])
   @@index([isPremium])
   @@index([createdByUserId])
+  @@index([orientation])
+  @@index([isTrending])
+  @@index([isFeatured])
+  @@index([isNew])
+  @@index([popularity])
+}
+
+model TemplateCategory {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  icon        String?
+  thumbnailUrl String?
+  color       String?
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive])
 }
 
 model Event {
