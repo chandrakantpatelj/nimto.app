@@ -71,16 +71,6 @@ export const useGuests = () => {
   };
 };
 
-export const useDesign = () => {
-  const dispatch = useAppDispatch();
-  const design = useAppSelector((state) => state.design);
-
-  return {
-    ...design,
-    dispatch,
-  };
-};
-
 export const useStoreClient = () => {
   const dispatch = useAppDispatch();
   const storeClient = useAppSelector((state) => state.storeClient);
@@ -389,45 +379,6 @@ export const useGuestActions = () => {
       },
       [dispatch],
     ),
-  };
-};
-
-export const useDesignActions = () => {
-  const dispatch = useAppDispatch();
-
-  return {
-    addElement: useCallback(
-      (element) => {
-        dispatch({ type: 'design/addElement', payload: element });
-      },
-      [dispatch],
-    ),
-
-    updateElement: useCallback(
-      (id, updates) => {
-        dispatch({ type: 'design/updateElement', payload: { id, updates } });
-      },
-      [dispatch],
-    ),
-
-    selectElement: useCallback(
-      (elementId) => {
-        dispatch({ type: 'design/selectElement', payload: elementId });
-      },
-      [dispatch],
-    ),
-
-    saveToHistory: useCallback(() => {
-      dispatch({ type: 'design/saveToHistory' });
-    }, [dispatch]),
-
-    undo: useCallback(() => {
-      dispatch({ type: 'design/undo' });
-    }, [dispatch]),
-
-    redo: useCallback(() => {
-      dispatch({ type: 'design/redo' });
-    }, [dispatch]),
   };
 };
 

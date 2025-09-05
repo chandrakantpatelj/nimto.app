@@ -14,12 +14,14 @@ const PixieEditor = ({
   height = '500px',
   config = {},
   onEditorReady,
-  initialCanvasState = null, // ✅ support full JSON restore override
-  onImageUpload, // Callback for when user uploads a new image
+  initialCanvasState = null,
+  onImageUpload,
 }) => {
   const containerRef = useRef(null);
   const pixieRef = useRef(null);
   const activeInitId = useRef(0);
+
+  // Local state
   const [imageUrl, setImageUrl] = useState(initialImageUrl || '');
   const [proxiedImageUrl, setProxiedImageUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -30,7 +32,7 @@ const PixieEditor = ({
   const [imageLoadError, setImageLoadError] = useState(false);
   const canvasCheckTimeoutRef = useRef(null);
   const imageLoadTimeoutRef = useRef(null);
-  const contentAppliedRef = useRef(false); // Use ref to track application status
+  const contentAppliedRef = useRef(false);
   const router = useRouter();
 
   // Track prop changes and create proxied URL for external images
@@ -41,7 +43,7 @@ const PixieEditor = ({
     );
     const newImageUrl = initialImageUrl || '';
     setImageUrl(newImageUrl);
-    setImageLoadError(false); // Reset error state when image URL changes
+    setImageLoadError(false);
 
     // Create proxied URL for external images
     if (newImageUrl && isExternalImageUrl(newImageUrl)) {
@@ -59,7 +61,7 @@ const PixieEditor = ({
     const timer = setTimeout(() => {
       console.log('PixieEditor: Page ready set to true');
       setPageReady(true);
-    }, 500); // Wait 500ms for page to be fully loaded
+    }, 500);
 
     return () => clearTimeout(timer);
   }, []);
@@ -108,7 +110,6 @@ const PixieEditor = ({
       'PixieEditor: waitForCanvasAndApplyContent called with content:',
       content,
     );
-    // Don't start if content is already applied
     if (contentAppliedRef.current) {
       console.log('PixieEditor: Content already applied, skipping');
       return;
@@ -124,7 +125,6 @@ const PixieEditor = ({
         'isApplying:',
         isApplying,
       );
-      // Stop if content is already being applied or has been applied
       if (isApplying || contentAppliedRef.current) {
         console.log(
           'PixieEditor: Content already being applied or applied, stopping',
@@ -147,10 +147,8 @@ const PixieEditor = ({
         const state = pixieRef.current.getState();
         console.log('PixieEditor: Current state:', state);
 
-        // Check if canvas is properly initialized
         if (state && state.canvas && state.canvas.objects) {
           console.log('PixieEditor: Canvas is ready, applying content');
-          // Canvas is ready, apply content
           isApplying = true;
           applyContentDirectly(content);
           return;
@@ -165,7 +163,6 @@ const PixieEditor = ({
             canvasCheckTimeoutRef.current = setTimeout(checkCanvas, 1500);
           } else {
             console.log('PixieEditor: Max attempts reached, trying fallback');
-            // Try fallback method
             if (!contentAppliedRef.current && !isApplying) {
               isApplying = true;
               applyContentDirectly(content);
@@ -184,7 +181,6 @@ const PixieEditor = ({
       }
     };
 
-    // Start checking
     console.log('PixieEditor: Starting checkCanvas in 1000ms');
     setTimeout(checkCanvas, 1000);
   };
@@ -208,7 +204,6 @@ const PixieEditor = ({
       let fabricCanvas = null;
       let fabric = null;
 
-      // Get global fabric object
       if (window.fabric) {
         fabric = window.fabric;
         console.log('PixieEditor: Found window.fabric');
@@ -216,7 +211,6 @@ const PixieEditor = ({
         console.log('PixieEditor: No window.fabric found');
       }
 
-      // Find the canvas - try multiple approaches
       console.log('PixieEditor: Finding canvas...');
       if (pixieRef.current.fabric && pixieRef.current.fabric.canvas) {
         fabricCanvas = pixieRef.current.fabric.canvas;
@@ -233,7 +227,6 @@ const PixieEditor = ({
         console.log(
           'PixieEditor: Trying to find canvas from container element',
         );
-        // Try to get canvas from the container element
         const container = document.getElementById(containerId);
         if (container && container.querySelector('canvas')) {
           const canvasElement = container.querySelector('canvas');
@@ -249,6 +242,7 @@ const PixieEditor = ({
           'PixieEditor: Found valid fabricCanvas, adding objects. Object count:',
           content.canvas.objects.length,
         );
+
         for (const obj of content.canvas.objects) {
           try {
             console.log('PixieEditor: Adding object:', obj.type, obj);
@@ -270,7 +264,6 @@ const PixieEditor = ({
               fabricCanvas.add(fabricText);
               console.log('PixieEditor: Added text object');
             } else if (obj.type === 'path') {
-              // Handle path objects (drawings)
               const fabricPath = new fabric.Path(obj.path, {
                 left: obj.left,
                 top: obj.top,
@@ -290,20 +283,16 @@ const PixieEditor = ({
             }
           } catch (addError) {
             console.log('PixieEditor: Error adding object:', addError);
-            // Silent fail for individual objects
           }
         }
 
-        // Render the canvas to show changes
         console.log('PixieEditor: Rendering canvas');
         fabricCanvas.renderAll();
 
-        // Mark as applied
         console.log('PixieEditor: Marking content as applied');
         setContentApplied(true);
         contentAppliedRef.current = true;
 
-        // Clear any ongoing canvas checks
         if (canvasCheckTimeoutRef.current) {
           console.log('PixieEditor: Clearing canvas check timeout');
           clearTimeout(canvasCheckTimeoutRef.current);
@@ -313,7 +302,6 @@ const PixieEditor = ({
         console.log(
           'PixieEditor: No valid fabricCanvas found, trying Pixie API as last resort',
         );
-        // Try using Pixie's own API as last resort
         try {
           for (const obj of content.canvas.objects) {
             console.log(
@@ -339,7 +327,6 @@ const PixieEditor = ({
                 });
               }
             } else if (obj.type === 'path') {
-              // Try to add path using Pixie's API if available
               if (pixieRef.current.addPath) {
                 console.log(
                   'PixieEditor: Adding path via pixieRef.current.addPath',
@@ -360,20 +347,17 @@ const PixieEditor = ({
                 console.log(
                   'PixieEditor: Adding object via pixieRef.current.addObject',
                 );
-                // Try generic addObject method
                 pixieRef.current.addObject(obj);
               }
             }
           }
 
-          // Mark as applied
           console.log(
             'PixieEditor: Marking content as applied (Pixie API method)',
           );
           setContentApplied(true);
           contentAppliedRef.current = true;
 
-          // Clear any ongoing canvas checks
           if (canvasCheckTimeoutRef.current) {
             console.log(
               'PixieEditor: Clearing canvas check timeout (Pixie API method)',
@@ -383,18 +367,16 @@ const PixieEditor = ({
           }
         } catch (pixieError) {
           console.log('PixieEditor: Error using Pixie API:', pixieError);
-          // Silent fail for Pixie API
         }
       }
     } catch (error) {
       console.log('PixieEditor: Error in applyContentDirectly:', error);
-      // Silent fail for overall function
     }
   };
 
+  // Load Pixie script
   const loadPixieScript = async () => {
     console.log('PixieEditor: loadPixieScript called');
-    // if (window.Pixie) return;
     await new Promise((resolve, reject) => {
       const script = document.createElement('script');
       script.src = '/pixie-assets/pixie.umd.js';
@@ -409,8 +391,6 @@ const PixieEditor = ({
       };
       document.head.appendChild(script);
     });
-
-    // Add global error handler to suppress external image alerts
     window.addEventListener('error', (event) => {
       if (
         event.message &&
@@ -421,33 +401,21 @@ const PixieEditor = ({
         return false;
       }
     });
-
-    // Also suppress console errors related to external images
-    // const originalConsoleError = console.error;
-    // console.error = function (...args) {
-    //   const message = args.join(' ');
-    //   if (message.includes('Could not export canvas with external image')) {
-    //     console.warn('External image export error suppressed:', ...args);
-    //     return;
-    //   }
-    //   originalConsoleError.apply(console, args);
-    // };
   };
 
+  // Initialize Pixie
   const initPixie = async (initId) => {
     try {
       setError(null);
       setImageLoadError(false);
 
-      // Set a timeout to detect image load failures
       imageLoadTimeoutRef.current = setTimeout(() => {
         if (activeInitId.current === initId && isLoading) {
           setImageLoadError(true);
           setIsLoading(false);
         }
-      }, 15000); // 15 seconds timeout
+      }, 15000);
 
-      // Suppress Pixie export alerts
       const suppressAlerts = () => {
         document
           .querySelectorAll('.pixie-alert, [data-pixie-alert]')
@@ -490,7 +458,7 @@ const PixieEditor = ({
         },
         tools: {
           zoom: {
-            allowUserZoom: false, // disable zoom buttons
+            allowUserZoom: true,
           },
           crop: {
             allowExternalImages: true,
@@ -499,10 +467,8 @@ const PixieEditor = ({
           openImageDialog: {
             show: true,
           },
-
           ...config?.tools,
         },
-
         ui: {
           nav: {
             replaceDefault: true,
@@ -510,22 +476,21 @@ const PixieEditor = ({
               {
                 name: 'text',
                 action: 'text',
-                icon: 'text',
+                icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXR5cGUtaWNvbiBsdWNpZGUtdHlwZSI+PHBhdGggZD0iTTEyIDR2MTYiLz48cGF0aCBkPSJNNCA3VjVhMSAxIDAgMCAxIDEtMWgxNGExIDEgMCAwIDEgMSAxdjIiLz48cGF0aCBkPSJNOSAyMGg2Ii8+PC9zdmc+',
               },
               {
                 name: 'shapes',
                 action: 'shapes',
-                icon: 'shapes',
+                icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXB1enpsZS1pY29uIGx1Y2lkZS1wdXp6bGUiPjxwYXRoIGQ9Ik0xNS4zOSA0LjM5YTEgMSAwIDAgMCAxLjY4LS40NzQgMi41IDIuNSAwIDEgMSAzLjAxNCAzLjAxNSAxIDEgMCAwIDAtLjQ3NCAxLjY4bDEuNjgzIDEuNjgyYTIuNDE0IDIuNDE0IDAgMCAxIDAgMy40MTRMMTkuNjEgMTUuMzlhMSAxIDAgMCAxLTEuNjgtLjQ3NCAyLjUgMi41IDAgMSAwLTMuMDE0IDMuMDE1IDEgMSAwIDAgMSAuNDc0IDEuNjhsLTEuNjgzIDEuNjgyYTIuNDE0IDIuNDE0IDAgMCAxLTMuNDE0IDBMOC42MSAxOS42MWExIDEgMCAwIDAtMS42OC40NzQgMi41IDIuNSAwIDEgMS0zLjAxNC0zLjAxNSAxIDEgMCAwIDAgLjQ3NC0xLjY4bC0xLjY4My0xLjY4MmEyLjQxNCAyLjQxNCAwIDAgMSAwLTMuNDE0TDQuMzkgOC42MWExIDEgMCAwIDEgMS42OC40NzQgMi41IDIuNSAwIDEgMCAzLjAxNC0zLjAxNSAxIDEgMCAwIDEtLjQ3NC0xLjY4bDEuNjgzLTEuNjgyYTIuNDE0IDIuNDE0IDAgMCAxIDMuNDE0IDB6Ii8+PC9zdmc+',
               },
               {
                 name: 'stickers',
                 action: 'stickers',
-                icon: 'stickers',
+                icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXNtaWxlLXBsdXMtaWNvbiBsdWNpZGUtc21pbGUtcGx1cyI+PHBhdGggZD0iTTIyIDExdjFhMTAgMTAgMCAxIDEtOS0xMCIvPjxwYXRoIGQ9Ik04IDE0czEuNSAyIDQgMiA0LTIgNC0yIi8+PGxpbmUgeDE9IjkiIHgyPSI5LjAxIiB5MT0iOSIgeTI9IjkiLz48bGluZSB4MT0iMTUiIHgyPSIxNS4wMSIgeTE9IjkiIHkyPSI5Ii8+PHBhdGggZD0iTTE2IDVoNiIvPjxwYXRoIGQ9Ik0xOSAydjYiLz48L3N2Zz4=',
               },
             ],
           },
         },
-
         onLoad: async (editor) => {
           console.log('PixieEditor: onLoad callback triggered');
           if (activeInitId.current !== initId) {
@@ -535,7 +500,6 @@ const PixieEditor = ({
           console.log('PixieEditor: Setting loading to false');
           setIsLoading(false);
 
-          // Clear the image load timeout since loading succeeded
           if (imageLoadTimeoutRef.current) {
             console.log('PixieEditor: Clearing image load timeout');
             clearTimeout(imageLoadTimeoutRef.current);
@@ -545,7 +509,6 @@ const PixieEditor = ({
           try {
             const savedState = initialCanvasState || initialContent;
             console.log('PixieEditor: savedState:', savedState);
-            console.log('PixieEditor: savedState.canvas:', savedState?.canvas);
             if (savedState?.canvas && savedState?.canvas?.objects?.length > 0) {
               console.log('PixieEditor: Setting state with savedState');
               try {
@@ -576,11 +539,12 @@ const PixieEditor = ({
             pixieRef.current.on('stateChange', () => {
               console.log('PixieEditor: stateChange event triggered');
               try {
-                const state = pixieRef.current.getState();
+                const state = pixieRef?.current?.getState();
                 console.log(
                   'PixieEditor: Current state from stateChange:',
                   state,
                 );
+
                 localStorage.setItem('pixieCanvasState', JSON.stringify(state));
               } catch (error) {
                 console.log(
@@ -622,7 +586,6 @@ const PixieEditor = ({
             }
           }
         },
-
         onError: (err) => {
           console.log('PixieEditor: onError callback triggered:', err);
           if (activeInitId.current === initId) {
@@ -631,7 +594,6 @@ const PixieEditor = ({
               err.message || 'Unknown Pixie error',
             );
 
-            // Clear the image load timeout since we got an error
             if (imageLoadTimeoutRef.current) {
               console.log(
                 'PixieEditor: Clearing image load timeout due to error',
@@ -640,7 +602,6 @@ const PixieEditor = ({
               imageLoadTimeoutRef.current = null;
             }
 
-            // Check if error is related to image loading
             const errorMessage = err.message || 'Unknown Pixie error';
             console.log('PixieEditor: Error message:', errorMessage);
             if (
@@ -668,12 +629,10 @@ const PixieEditor = ({
         pixieRef.current = instance;
         clearInterval(alertInterval);
 
-        // Safety net in case loading never finishes
         setTimeout(() => {
           if (activeInitId.current === initId) {
             console.log('PixieEditor: Safety net timeout triggered');
             setIsLoading(false);
-            // If still loading after 10 seconds, mark as image load error
             if (isLoading) {
               console.log(
                 'PixieEditor: Setting image load error due to timeout',
@@ -693,7 +652,6 @@ const PixieEditor = ({
         const errorMessage = err.message || 'Unknown error';
         console.log('PixieEditor: Error message:', errorMessage);
 
-        // Clear the image load timeout since we got an error
         if (imageLoadTimeoutRef.current) {
           console.log(
             'PixieEditor: Clearing image load timeout due to main error',
@@ -702,7 +660,6 @@ const PixieEditor = ({
           imageLoadTimeoutRef.current = null;
         }
 
-        // Check if error is related to image loading
         if (
           errorMessage.includes('image') ||
           errorMessage.includes('load') ||
@@ -730,14 +687,12 @@ const PixieEditor = ({
   // Generate containerId when component mounts or imageUrl changes
   useEffect(() => {
     console.log('PixieEditor: useEffect - imageUrl/proxiedImageUrl changed:', {
-      imageUrl,
-      proxiedImageUrl,
+      imageUrl: imageUrl,
+      proxiedImageUrl: proxiedImageUrl,
     });
-    // Only generate container ID if we have an image URL
     if (imageUrl || proxiedImageUrl) {
       console.log('PixieEditor: Cleaning up and generating new container ID');
       cleanupPixie();
-      // Reset loading and error states
       setIsLoading(false);
       setError(null);
       setContentApplied(false);
@@ -750,7 +705,6 @@ const PixieEditor = ({
       setContainerId(newContainerId);
     } else {
       console.log('PixieEditor: No image URL, clearing container ID');
-      // Clear container ID if no image URL
       setContainerId('');
     }
   }, [imageUrl, proxiedImageUrl]);
@@ -759,8 +713,8 @@ const PixieEditor = ({
   useEffect(() => {
     console.log('PixieEditor: useEffect - Init Pixie check:', {
       containerId,
-      imageUrl,
-      proxiedImageUrl,
+      imageUrl: imageUrl,
+      proxiedImageUrl: proxiedImageUrl,
       pageReady,
     });
     if (!containerId) {
@@ -779,7 +733,6 @@ const PixieEditor = ({
     const currentInitId = activeInitId.current;
     console.log('PixieEditor: Current init ID:', currentInitId);
 
-    // Add a small delay to ensure everything is ready
     const initTimeout = setTimeout(() => {
       console.log('PixieEditor: Init timeout triggered, checking init ID');
       if (activeInitId.current === currentInitId) {
@@ -788,7 +741,7 @@ const PixieEditor = ({
       } else {
         console.log('PixieEditor: Init ID mismatch, skipping initPixie');
       }
-    }, 200); // 200ms delay
+    }, 200);
 
     return () => {
       console.log('PixieEditor: Cleaning up init timeout');
@@ -806,6 +759,7 @@ const PixieEditor = ({
           try {
             const state = pixieRef.current.getState();
             console.log('PixieEditor: saveFunction - Current state:', state);
+
             try {
               const exportedImage = await pixieRef.current.export({
                 format: 'png',
@@ -900,20 +854,17 @@ const PixieEditor = ({
     const file = event.target.files[0];
     if (file) {
       console.log('PixieEditor: File selected:', file.name, file.size);
-      // Call parent callback if provided
       if (onImageUpload) {
         console.log('PixieEditor: Calling onImageUpload callback');
         onImageUpload(file);
       } else {
         console.log('PixieEditor: Creating temporary URL for uploaded image');
-        // Create a temporary URL for the uploaded image
         const tempUrl = URL.createObjectURL(file);
         setImageUrl(tempUrl);
         setProxiedImageUrl(tempUrl);
         setImageLoadError(false);
         setError(null);
 
-        // Clean up the temporary URL after a delay
         setTimeout(() => {
           console.log('PixieEditor: Revoking temporary URL');
           URL.revokeObjectURL(tempUrl);
@@ -937,7 +888,6 @@ const PixieEditor = ({
         console.log('PixieEditor: Clearing image load timeout on unmount');
         clearTimeout(imageLoadTimeoutRef.current);
       }
-      // Reset all states on unmount
       console.log('PixieEditor: Resetting all states on unmount');
       setIsLoading(false);
       setError(null);
@@ -953,7 +903,6 @@ const PixieEditor = ({
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-white/90 backdrop-blur-sm z-20 rounded-lg">
           <div className="text-center space-y-4">
-            {/* Animated Logo/Icon */}
             <div className="relative">
               <div className="w-16 h-16 mx-auto bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
                 <svg
@@ -964,11 +913,8 @@ const PixieEditor = ({
                   <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                 </svg>
               </div>
-              {/* Spinning Ring */}
               <div className="absolute inset-0 border-4 border-purple-200 border-t-purple-600 rounded-xl animate-spin"></div>
             </div>
-
-            {/* Loading Text */}
             <div className="space-y-2">
               <h3 className="text-lg font-semibold text-gray-800">
                 Loading Image Editor
@@ -977,8 +923,6 @@ const PixieEditor = ({
                 Initializing Pixie editor...
               </p>
             </div>
-
-            {/* Progress Dots */}
             <div className="flex justify-center space-x-1">
               <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce"></div>
               <div
@@ -1029,7 +973,7 @@ const PixieEditor = ({
         </div>
       )}
 
-      {/* No Image State - Simple Display */}
+      {/* No Image State */}
       {!error && !isLoading && (!imageUrl || imageLoadError) && (
         <div
           style={{ width, height }}
@@ -1059,7 +1003,6 @@ const PixieEditor = ({
                 No image available for editing
               </p>
             </div>
-
             <div className="text-xs text-gray-400">
               Canvas Size: {width} × {height}
             </div>

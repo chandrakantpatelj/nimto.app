@@ -24,7 +24,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { showCustomToast } from '@/components/common/custom-toast';
-import PixieEditorRedux from '@/components/image-editor/PixieEditorRedux';
+import PixieEditor from '@/components/image-editor/PixieEditor';
 
 function Step1({ mode = 'create' }) {
   const params = useParams();
@@ -67,13 +67,13 @@ function Step1({ mode = 'create' }) {
         // Skipping eventData image setup - new image uploaded
       }
 
-      // Note: PixieEditorRedux handles content initialization via initialContent prop
+      // Note: PixieEditor handles content initialization via initialContent prop
       // No need to manually set state here as it's handled by the Pixie component
     }
     // Handle create mode - template data should already be in Redux from template selection
     else if (mode === 'create') {
       setTemplateLoading(false);
-      // PixieEditorRedux will handle content loading via initialContent prop
+      // PixieEditor will handle content loading via initialContent prop
     }
   }, [mode, templateId, hasUploadedNewImage, eventDataLoaded]);
   // Reset flags when templateId changes
@@ -158,7 +158,7 @@ function Step1({ mode = 'create' }) {
         if (autosaveData) {
           console.log(`Found autosave data for key: ${uniqueKey}`);
           // You could show a recovery dialog here if needed
-          // For now, just log it - PixieEditorRedux will handle loading
+          // For now, just log it - PixieEditor will handle loading
         }
       } catch (error) {
         console.error('Failed to check for autosave data:', error);
@@ -168,8 +168,8 @@ function Step1({ mode = 'create' }) {
     checkForAutosaveData();
   }, [templateId, eventId]);
 
-  // Note: Content loading is now handled by PixieEditorRedux via initialContent prop
-  // This follows the single responsibility principle - PixieEditorRedux manages its own state
+  // Note: Content loading is now handled by PixieEditor via initialContent prop
+  // This follows the single responsibility principle - PixieEditor manages its own state
 
   // Handle image upload - only load into Pixie, don't save to server yet
   const handleImageUpload = async (event) => {
@@ -255,7 +255,7 @@ function Step1({ mode = 'create' }) {
             </div>
           ) : (
             <div className="h-full rounded-lg overflow-hidden border border-gray-200 bg-white">
-              <PixieEditorRedux
+              <PixieEditor
                 key={`pixie-${templateId || eventId}-${hasUploadedNewImage}`} // Use templateId/eventId instead of imageUrl to prevent unnecessary re-renders
                 initialImageUrl={imageUrl}
                 initialContent={(() => {
