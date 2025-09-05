@@ -31,7 +31,7 @@ function Step1({ mode = 'create', pixieEditorRef: externalPixieRef }) {
         {/* Header */}
 
         {/* Pixie Editor Container */}
-        <div className="flex-1 p-6">
+        <div className="flex-1 p-4">
           {templateLoading ? (
             <div className="h-full flex items-center justify-center">
               <div className="text-center space-y-4">
@@ -42,14 +42,14 @@ function Step1({ mode = 'create', pixieEditorRef: externalPixieRef }) {
               </div>
             </div>
           ) : (
-            <div className="h-full rounded-lg overflow-hidden border border-gray-200 bg-white">
+            <div className="h-[830px] w-[96.5vw] rounded-lg overflow-hidden border border-gray-200 bg-white">
               <PixieEditor
                 key={`pixie-${eventId || templateId}`}
                 ref={pixieEditorRef}
                 initialContent={eventData?.jsonContent}
                 initialImageUrl={imageUrl}
                 width="100%"
-                height="600px"
+                height="830px"
               />
             </div>
           )}
