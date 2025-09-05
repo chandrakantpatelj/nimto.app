@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useEventActions } from '@/store/hooks';
 import {
   Calendar,
   CalendarDays,
@@ -23,6 +24,7 @@ export function AttendeeEventContent() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { setSelectedEvent } = useEventActions();
 
   useEffect(() => {
     fetchEvents();
@@ -51,6 +53,30 @@ export function AttendeeEventContent() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleTemplateSelect = (event) => {
+    // Initialize selectedEvent with template data
+    setSelectedEvent({
+      templateId: event.id,
+      jsonContent: event.jsonContent || '',
+      backgroundStyle: event.backgroundStyle || '',
+      htmlContent: event.htmlContent || '',
+      background: event.background || '',
+      pageBackground: event.pageBackground || '',
+      imagePath: event.imagePath || '',
+      s3ImageUrl: event.s3ImageUrl || '',
+      title: event.title,
+      description: event.description,
+      date: event.date,
+      time: event.time,
+      location: event.location,
+      status: event.status,
+      guests: event.guests,
+    });
+
+    // Navigate to design page
+    router.push(`/events/${event.id}`);
   };
 
   const formatDate = (dateString) => {
@@ -274,7 +300,7 @@ export function AttendeeEventContent() {
                   variant="outline"
                   size="sm"
                   className="flex-1 border-blue-500 text-blue-600 hover:bg-blue-50"
-                  onClick={() => router.push(`/events/${event.id}`)}
+                  onClick={() => handleTemplateSelect(event)}
                 >
                   <Earth className="w-4 h-4 mr-2" />
                   View Event

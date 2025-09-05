@@ -19,6 +19,8 @@ function EditEventContent() {
     updateSelectedEvent: updateEventData,
     resetEventCreation: resetEventData,
     updateEventInStore,
+    fetchEventById,
+    setSelectedEvent,
   } = useEventActions();
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -28,30 +30,26 @@ function EditEventContent() {
 
   // Load existing event data
   useEffect(() => {
-    if (eventId) {
+    if (eventId && !eventData) {
       fetchEventData();
+    } else if (eventData) {
+      setLoading(false);
     }
-  }, [eventId]);
+  }, [eventId, eventData]);
 
   const fetchEventData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/events/${eventId}`);
-      const data = await response.json();
+      setError(null);
 
-      if (data.success) {
-        const event = data.data;
+      const event = await fetchEventById(eventId).unwrap();
 
-        // Update context with existing event data
-        updateEventData(event);
-      } else {
-        setError('Failed to load event data');
-        showCustomToast('Failed to load event data', 'error');
-      }
+      setSelectedEvent(event);
     } catch (err) {
       console.error('Error fetching event:', err);
-      setError('Error loading event data');
-      showCustomToast('Error loading event data', 'error');
+      const errorMessage = err.message || 'Error loading event data';
+      setError(errorMessage);
+      showCustomToast(errorMessage, 'error');
     } finally {
       setLoading(false);
     }

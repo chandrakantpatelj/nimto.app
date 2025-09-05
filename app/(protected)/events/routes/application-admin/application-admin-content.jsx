@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useEventActions } from '@/store/hooks';
 import {
   CalendarDays,
   Clock,
@@ -17,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
+import DeleteEvent from '../../components/delete-event';
 
 export function ApplicationAdminEventContent() {
   const router = useRouter();
@@ -24,6 +26,10 @@ export function ApplicationAdminEventContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [deletingEventId, setDeletingEventId] = useState(null);
+  const { setSelectedEvent: setEventForEdit } = useEventActions();
 
   useEffect(() => {
     fetchEvents();
@@ -47,6 +53,53 @@ export function ApplicationAdminEventContent() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleTemplateSelect = (event) => {
+    // Initialize selectedEvent with template data
+    setEventForEdit({
+      templateId: event.id,
+      jsonContent: event.jsonContent || '',
+      backgroundStyle: event.backgroundStyle || '',
+      htmlContent: event.htmlContent || '',
+      background: event.background || '',
+      pageBackground: event.pageBackground || '',
+      imagePath: event.imagePath || '',
+      s3ImageUrl: event.s3ImageUrl || '',
+      title: event.title,
+      description: event.description,
+      date: event.date,
+      time: event.time,
+      location: event.location,
+      status: event.status,
+      guests: event.guests,
+    });
+
+    // Navigate to design page
+    router.push(`/events/${event.id}`);
+  };
+
+  const handleDeleteClick = (event) => {
+    setSelectedEvent(event);
+    setShowDeleteDialog(true);
+  };
+
+  const handleDeleteStart = (eventId) => {
+    setDeletingEventId(eventId);
+  };
+
+  const handleEventDeleted = () => {
+    // Event is already deleted by DeleteEvent component
+    // Just refresh the events list
+    fetchEvents();
+    setShowDeleteDialog(false);
+    setSelectedEvent(null);
+    setDeletingEventId(null);
+  };
+
+  const handleDeleteFailed = (eventId) => {
+    // Stop the loading state for the failed event
+    setDeletingEventId(null);
   };
 
   const formatDate = (dateString) => {
@@ -188,105 +241,173 @@ export function ApplicationAdminEventContent() {
 
       {/* Events Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredEvents.map((event) => (
-          <Card
-            key={event.id}
-            className="overflow-hidden hover:shadow-lg transition-shadow duration-200"
-          >
-            {/* Event Image */}
-            {event.s3ImageUrl && (
-              <div className="aspect-video bg-gray-100 overflow-hidden">
-                <img
-                  src={event.s3ImageUrl}
-                  alt={event.title}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
-
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
-                <CardTitle className="text-lg font-semibold line-clamp-2">
-                  {event.title}
-                </CardTitle>
-                <div className="flex gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => router.push(`/events/${event.id}`)}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      // Handle delete
-                      if (
-                        confirm('Are you sure you want to delete this event?')
-                      ) {
-                        // Delete logic here
-                      }
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4 text-red-500" />
-                  </Button>
+        {filteredEvents.map((event) => {
+          // Show skeleton loader if this event is being deleted
+          if (deletingEventId === event.id) {
+            return (
+              <Card key={event.id} className="overflow-hidden">
+                <div className="animate-pulse">
+                  <div className="aspect-video bg-gray-200"></div>
+                  <CardHeader className="pb-3">
+                    <div className="h-6 bg-gray-200 rounded mb-2"></div>
+                    <div className="flex gap-2">
+                      <div className="h-5 bg-gray-200 rounded w-20"></div>
+                      <div className="h-5 bg-gray-200 rounded w-16"></div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="h-4 bg-gray-200 rounded"></div>
+                    <div className="h-4 bg-gray-200 rounded"></div>
+                    <div className="h-4 bg-gray-200 rounded"></div>
+                    <div className="h-4 bg-gray-200 rounded"></div>
+                  </CardContent>
                 </div>
-              </div>
+              </Card>
+            );
+          }
 
-              {/* Category Badge */}
-              <div className="flex items-center gap-2">
-                <Badge className={getCategoryColor(event.category || 'EVENT')}>
-                  {event.category || 'EVENT'}
-                </Badge>
-                <Badge className={getStatusColor(event.status)}>
-                  {event.status}
-                </Badge>
-              </div>
-            </CardHeader>
-
-            <CardContent className="space-y-3">
-              {/* Event Details */}
-              <div className="space-y-2">
-                <div className="flex items-center text-sm text-gray-600">
-                  <CalendarDays className="w-4 h-4 mr-2 flex-shrink-0" />
-                  <span>{formatDate(event.date)}</span>
-                </div>
-
-                {event.time && (
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Clock className="w-4 h-4 mr-2 flex-shrink-0" />
-                    <span>{formatTime(event.time)}</span>
+          return (
+            <Card
+              key={event.id}
+              className="overflow-hidden hover:shadow-lg transition-all duration-200 group"
+            >
+              {/* Event Image with Overlay Actions */}
+              {event.s3ImageUrl && (
+                <div className="relative aspect-video bg-gray-100 overflow-hidden">
+                  <img
+                    src={event.s3ImageUrl}
+                    alt={event.title}
+                    className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
+                  />
+                  {/* Action Buttons Overlay */}
+                  <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => handleTemplateSelect(event)}
+                      className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md"
+                    >
+                      <Pencil className="h-4 w-4 text-gray-700" />
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => handleDeleteClick(event)}
+                      className="h-8 w-8 p-0 bg-white/90 hover:bg-red-50 shadow-md"
+                    >
+                      <Trash2 className="h-4 w-4 text-red-600" />
+                    </Button>
                   </div>
-                )}
-
-                {event.location && (
-                  <div className="flex items-center text-sm text-gray-600">
-                    <MapPin className="w-4 h-4 mr-2 flex-shrink-0" />
-                    <span className="line-clamp-1">{event.location}</span>
-                  </div>
-                )}
-
-                {event.guests && event.guests.length > 0 && (
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Users className="w-4 h-4 mr-2 flex-shrink-0" />
-                    <span>{event.guests.length} guests</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Event Organizer */}
-              {event.User && (
-                <div className="pt-2 border-t border-gray-100">
-                  <p className="text-xs text-gray-500">
-                    Organized by {event.User.name}
-                  </p>
                 </div>
               )}
-            </CardContent>
-          </Card>
-        ))}
+
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <CardTitle className="text-lg font-semibold line-clamp-2 flex-1 pr-2">
+                    {event.title}
+                  </CardTitle>
+                  {/* Fallback action buttons if no image */}
+                  {!event.s3ImageUrl && (
+                    <div className="flex gap-1 ml-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleTemplateSelect(event)}
+                        className="h-8 w-8 p-0 hover:bg-gray-100"
+                      >
+                        <Pencil className="h-4 w-4 text-gray-600" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteClick(event)}
+                        className="h-8 w-8 p-0 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Category and Status Badges */}
+                <div className="flex items-center gap-2 mt-2">
+                  <Badge
+                    variant="secondary"
+                    className={`${getCategoryColor(event.category || 'EVENT')} text-xs font-medium`}
+                  >
+                    {event.category || 'EVENT'}
+                  </Badge>
+                  <Badge
+                    variant="secondary"
+                    className={`${getStatusColor(event.status)} text-xs font-medium`}
+                  >
+                    {event.status}
+                  </Badge>
+                </div>
+              </CardHeader>
+
+              <CardContent className="space-y-3">
+                {/* Event Details */}
+                <div className="space-y-2.5">
+                  <div className="flex items-center text-sm text-gray-600">
+                    <CalendarDays className="w-4 h-4 mr-2 flex-shrink-0 text-gray-500" />
+                    <span className="font-medium">
+                      {formatDate(event.date)}
+                    </span>
+                  </div>
+
+                  {event.time && (
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Clock className="w-4 h-4 mr-2 flex-shrink-0 text-gray-500" />
+                      <span className="font-medium">
+                        {formatTime(event.time)}
+                      </span>
+                    </div>
+                  )}
+
+                  {event.location && (
+                    <div className="flex items-center text-sm text-gray-600">
+                      <MapPin className="w-4 h-4 mr-2 flex-shrink-0 text-gray-500" />
+                      <span className="line-clamp-1 font-medium">
+                        {event.location}
+                      </span>
+                    </div>
+                  )}
+
+                  {event.guests && event.guests.length > 0 && (
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Users className="w-4 h-4 mr-2 flex-shrink-0 text-gray-500" />
+                      <span className="font-medium">
+                        {event.guests.length} guest
+                        {event.guests.length !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Event Organizer */}
+                {event.User && (
+                  <div className="pt-3 border-t border-gray-100">
+                    <p className="text-xs text-gray-500 font-medium">
+                      Organized by {event.User.name}
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
+
+      <DeleteEvent
+        show={showDeleteDialog}
+        setShow={setShowDeleteDialog}
+        eventId={selectedEvent?.id}
+        eventTitle={selectedEvent?.title}
+        onEventDeleted={handleEventDeleted}
+        onDeleteStart={handleDeleteStart}
+        onDeleteFailed={handleDeleteFailed}
+      />
     </div>
   );
 }
