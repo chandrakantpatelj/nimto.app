@@ -364,73 +364,79 @@ function EditTemplate() {
         }
       }
 
-      // // Validate required fields
-      // if (!formData.name.trim()) {
-      //   throw new Error('Template name is required');
-      // }
-      // if (!formData.category.trim()) {
-      //   throw new Error('Category is required');
-      // }
+      // Validate required fields
+      if (!formData.name.trim()) {
+        throw new Error('Template name is required');
+      }
+      if (!formData.category.trim()) {
+        throw new Error('Category is required');
+      }
 
-      // // Prepare the data for API
-      // const templateData = {
-      //   name: formData.name.trim(),
-      //   category: formData.category.trim(),
-      //   isPremium: formData.isPremium,
-      //   price: formData.isPremium ? parseFloat(formData.price) || 0 : 0,
-      //   background: formData.background || null,
-      //   pageBackground: formData.pageBackground || null,
-      //   content: userEdits, // This will store the optimized Pixie JSON data in jsonContent field
-      //   backgroundStyle: formData.backgroundStyle,
-      //   htmlContent: formData.htmlContent || null,
-      //   imagePath: templateImagePath,
-      // };
+      // Prepare the data for API
+      const templateData = {
+        name: formData.name.trim(),
+        category: formData.category.trim(),
+        isPremium: formData.isPremium,
+        price: formData.isPremium ? parseFloat(formData.price) || 0 : 0,
+        background: formData.background || null,
+        pageBackground: formData.pageBackground || null,
+        content: userEdits, // This will store the optimized Pixie JSON data in jsonContent field
+        backgroundStyle: formData.backgroundStyle,
+        htmlContent: formData.htmlContent || null,
+        imagePath: templateImagePath,
+      };
 
-      // // SAVE TO DATABASE: Actual save functionality
-      // let response;
-      // let successMessage;
+      // SAVE TO DATABASE: Actual save functionality
+      let response;
+      let successMessage;
 
-      // // Update existing template
-      // response = await apiFetch(`/api/template/${templateId}`, {
-      //   method: 'PUT',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify(templateData),
-      // });
-      // successMessage = 'Template updated successfully with Pixie edits';
+      if (templateId && templateId !== 'new') {
+        // Update existing template
+        response = await apiFetch(`/api/template/${templateId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(templateData),
+        });
+        successMessage = 'Template updated successfully with Pixie edits';
+      } else {
+        // Create new template
+        response = await apiFetch('/api/template/create-template', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(templateData),
+        });
+        successMessage = 'Template created successfully with Pixie edits';
+      }
 
-      // else {
-      //   // Create new template
-      //   response = await apiFetch('/api/template/create-template', {
-      //     method: 'POST',
-      //     headers: {
-      //       'Content-Type': 'application/json',
-      //     },
-      //     body: JSON.stringify(templateData),
-      //   });
-      //   successMessage = 'Template created successfully with Pixie edits';
-      // }
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save template');
+      }
 
-      // if (!response.ok) {
-      //   const errorData = await response.json();
+      const result = await response.json();
 
-      //   throw new Error(errorData.error || 'Failed to save template');
-      // }
+      if (result.success) {
+        // Upload image if there's a new uploaded file
+        if (uploadedImageFile) {
+          const savedTemplateId = result.data?.id || templateId;
+          await uploadTemplateImage(savedTemplateId, uploadedImageFile);
+        }
 
-      // const result = await response.json();
+        showCustomToast(successMessage, 'success');
 
-      // if (result.success) {
-      //   uploadedImageFile &&
-      //     (await uploadTemplateImage(templateId, uploadedImageFile));
-
-      //   router.push('/templates');
-      // } else {
-      //   throw new Error(result.error || 'Failed to save template');
-      // }
+        // Navigate back to templates list
+        router.push('/templates');
+      } else {
+        throw new Error(result.error || 'Failed to save template');
+      }
     } catch (err) {
       console.error('Error in save template function:', err);
       setError(err.message);
+      showCustomToast(err.message || 'Failed to save template', 'error');
     } finally {
       setLoading(false);
     }

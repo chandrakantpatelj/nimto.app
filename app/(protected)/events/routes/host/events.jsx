@@ -25,6 +25,7 @@ const Events = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [deletingEventId, setDeletingEventId] = useState(null);
 
   // Redux state and actions - SIMPLIFIED
   const { events, isLoading: loading, error } = useEvents(); // All events data from Redux
@@ -53,12 +54,22 @@ const Events = () => {
     setShowDeleteDialog(true);
   };
 
+  const handleDeleteStart = (eventId) => {
+    setDeletingEventId(eventId);
+  };
+
   const handleEventDeleted = () => {
     // Event is already deleted by DeleteEvent component
     // Just refresh the events list
     fetchAllEvents();
     setShowDeleteDialog(false);
     setSelectedEvent(null);
+    setDeletingEventId(null);
+  };
+
+  const handleDeleteFailed = (eventId) => {
+    // Stop the loading state for the failed event
+    setDeletingEventId(null);
   };
 
   const formatDate = (dateString) => {
@@ -73,14 +84,38 @@ const Events = () => {
   // Events are now filtered by Redux useFilteredEvents hook
 
   const renderData = (event, index) => {
+    // Show skeleton loader if this event is being deleted
+    if (deletingEventId === event.id) {
+      return (
+        <Card key={event.id || index} className="rounded-xl relative">
+          <div className="animate-pulse">
+            <div className="min-h-32 h-100 bg-gray-200 rounded-tr-xl rounded-tl-xl"></div>
+            <div className="p-4">
+              <div className="h-6 bg-gray-200 rounded mb-2"></div>
+              <div className="h-4 bg-gray-200 rounded mb-2"></div>
+              <div className="h-4 bg-gray-200 rounded mb-2"></div>
+              <div className="h-4 bg-gray-200 rounded mb-2"></div>
+              <div className="flex gap-2 mt-3">
+                <div className="h-8 bg-gray-200 rounded flex-1"></div>
+                <div className="h-8 bg-gray-200 rounded flex-1"></div>
+              </div>
+            </div>
+          </div>
+        </Card>
+      );
+    }
+
     return (
-      <Card key={event.id || index} className={`rounded-xl relative `}>
+      <Card
+        key={event.id || index}
+        className="rounded-xl relative group hover:shadow-lg transition-all duration-200"
+      >
         <div className="flex flex-col gap-2 justify-between h-100">
-          <div className=" min-h-32 h-100 overflow-hidden rounded-tr-xl rounded-tl-xl">
+          <div className="relative min-h-32 h-100 overflow-hidden rounded-tr-xl rounded-tl-xl">
             {event.s3ImageUrl ? (
               <img
                 src={event.s3ImageUrl}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
                 alt={event.title}
               />
             ) : (
@@ -90,28 +125,49 @@ const Events = () => {
                 </span>
               </div>
             )}
-          </div>
-          <div className="p-4 relative">
-            <span className="text-lg text-dark font-media/brand text-mono hover:text-primary-active mb-px">
-              {event.title}
-            </span>
-            <div className="absolute top-4 right-4 flex gap-1">
+            {/* Action Buttons Overlay */}
+            <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
               <Button
-                variant="softPrimary"
-                mode="icon"
+                variant="secondary"
+                size="sm"
                 onClick={() => router.push(`/events/${event.id}`)}
+                className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md"
               >
-                <Pencil className="text-primary" />
+                <Pencil className="h-4 w-4 text-gray-700" />
               </Button>
-
               <Button
-                variant="softDanger"
-                mode="icon"
+                variant="secondary"
+                size="sm"
                 onClick={() => handleDeleteClick(event)}
+                className="h-8 w-8 p-0 bg-white/90 hover:bg-red-50 shadow-md"
               >
-                <Trash2 className="text-red-500" />
+                <Trash2 className="h-4 w-4 text-red-600" />
               </Button>
             </div>
+          </div>
+          <div className="p-4 relative">
+            <span className="text-lg text-dark font-media/brand text-mono hover:text-primary-active mb-px block pr-16">
+              {event.title}
+            </span>
+            {/* Fallback action buttons if no image */}
+            {!event.s3ImageUrl && (
+              <div className="absolute top-4 right-4 flex gap-1">
+                <Button
+                  variant="softPrimary"
+                  mode="icon"
+                  onClick={() => router.push(`/events/${event.id}`)}
+                >
+                  <Pencil className="text-primary" />
+                </Button>
+                <Button
+                  variant="softDanger"
+                  mode="icon"
+                  onClick={() => handleDeleteClick(event)}
+                >
+                  <Trash2 className="text-red-500" />
+                </Button>
+              </div>
+            )}
 
             <div className="flex items-center  mt-3">
               <CalendarCheck className="w-5 h-5 mr-2 " />
@@ -224,6 +280,8 @@ const Events = () => {
         eventId={selectedEvent?.id}
         eventTitle={selectedEvent?.title}
         onEventDeleted={handleEventDeleted}
+        onDeleteStart={handleDeleteStart}
+        onDeleteFailed={handleDeleteFailed}
       />
     </>
   );

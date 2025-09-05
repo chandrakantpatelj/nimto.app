@@ -214,39 +214,39 @@ export const useEventActions = () => {
     // Async thunks - API calls
     createEvent: useCallback(
       (eventData) => {
-        dispatch(createEvent(eventData));
+        return dispatch(createEvent(eventData));
       },
       [dispatch],
     ),
 
     fetchEvents: useCallback(
       (params) => {
-        dispatch(fetchEvents(params));
+        return dispatch(fetchEvents(params));
       },
       [dispatch],
     ),
 
     fetchAllEvents: useCallback(() => {
-      dispatch(fetchAllEvents());
+      return dispatch(fetchAllEvents());
     }, [dispatch]),
 
     fetchEventById: useCallback(
       (eventId) => {
-        dispatch(fetchEventById(eventId));
+        return dispatch(fetchEventById(eventId));
       },
       [dispatch],
     ),
 
     updateEvent: useCallback(
       (eventData) => {
-        dispatch(updateEvent(eventData));
+        return dispatch(updateEvent(eventData));
       },
       [dispatch],
     ),
 
     deleteEvent: useCallback(
       (eventId) => {
-        dispatch(deleteEvent(eventId));
+        return dispatch(deleteEvent(eventId));
       },
       [dispatch],
     ),

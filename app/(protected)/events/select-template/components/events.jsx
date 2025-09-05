@@ -30,9 +30,7 @@ const SelectEvents = () => {
       background: template.background || '',
       pageBackground: template.pageBackground || '',
       imagePath: template.imagePath || '',
-      s3ImageUrl: template.s3ImageUrl || '', // Use template's s3ImageUrl directly
-
-      // Event fields (empty for create mode)
+      s3ImageUrl: template.s3ImageUrl || '',
       title: '',
       description: '',
       date: '',

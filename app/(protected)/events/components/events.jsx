@@ -244,10 +244,10 @@ const Events = () => {
               </Button>
             )}
             <Button variant="primary" asChild>
-              <a href="/events/select-template">
+              <Link href="/events/select-template">
                 <Plus className="w-4 h-4 mr-2" />
                 Create Event
-              </a>
+              </Link>
             </Button>
           </div>
 
@@ -287,10 +287,10 @@ const Events = () => {
             </p>
           </div>
           <Button variant="primary" asChild>
-            <a href="/events/select-template">
+            <Link href="/events/select-template">
               <Plus className="w-4 h-4 mr-2" />
               Create Event
-            </a>
+            </Link>
           </Button>
         </div>
 

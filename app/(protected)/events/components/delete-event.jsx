@@ -16,7 +16,15 @@ import DialogContent, {
 } from '@/components/ui/dialog';
 import { showCustomToast } from '@/components/common/custom-toast';
 
-function DeleteEvent({ show, setShow, eventId, eventTitle, onEventDeleted }) {
+function DeleteEvent({
+  show,
+  setShow,
+  eventId,
+  eventTitle,
+  onEventDeleted,
+  onDeleteStart,
+  onDeleteFailed,
+}) {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
@@ -27,7 +35,15 @@ function DeleteEvent({ show, setShow, eventId, eventTitle, onEventDeleted }) {
 
     try {
       setIsDeleting(true);
-      
+
+      // Close popup immediately
+      setShow(false);
+
+      // Notify parent that delete has started
+      if (onDeleteStart) {
+        onDeleteStart(eventId);
+      }
+
       const response = await fetch(`/api/events/${eventId}`, {
         method: 'DELETE',
       });
@@ -36,18 +52,27 @@ function DeleteEvent({ show, setShow, eventId, eventTitle, onEventDeleted }) {
 
       if (data.success) {
         showCustomToast('Event deleted successfully', 'success');
-        setShow(false);
-        
+
         // Call the callback to refresh the events list
         if (onEventDeleted) {
           onEventDeleted();
         }
       } else {
         showCustomToast(data.error || 'Failed to delete event', 'error');
+
+        // Notify parent that delete failed so it can stop the loading state
+        if (onDeleteFailed) {
+          onDeleteFailed(eventId);
+        }
       }
     } catch (error) {
       console.error('Error deleting event:', error);
       showCustomToast('An error occurred while deleting the event', 'error');
+
+      // Notify parent that delete failed so it can stop the loading state
+      if (onDeleteFailed) {
+        onDeleteFailed(eventId);
+      }
     } finally {
       setIsDeleting(false);
     }
@@ -79,7 +104,8 @@ function DeleteEvent({ show, setShow, eventId, eventTitle, onEventDeleted }) {
               </p>
             )}
             <p className="text-sm text-gray-600 mt-2">
-              This action cannot be undone. All associated guests will also be deleted.
+              This action cannot be undone. All associated guests will also be
+              deleted.
             </p>
           </AlertContent>
         </Alert>
@@ -90,8 +116,8 @@ function DeleteEvent({ show, setShow, eventId, eventTitle, onEventDeleted }) {
               Cancel
             </Button>
           </DialogClose>
-          <Button 
-            variant="destructive" 
+          <Button
+            variant="destructive"
             onClick={handleDelete}
             disabled={isDeleting}
           >

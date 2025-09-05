@@ -143,7 +143,7 @@ export async function POST(request) {
         background,
         pageBackground,
         imagePath: templateImagePath, // Initially use template imagePath
-        status: status || 'DRAFT',
+        status: status.toUpperCase() || 'DRAFT',
         createdByUserId: session.user.id,
         isTrashed: false,
       },
@@ -208,11 +208,7 @@ export async function POST(request) {
             templateImagePath,
           );
           if (oldImageExists) {
-            await deleteImageFromS3(
-              s3Client,
-              bucket,
-              templateImagePath,
-            );
+            await deleteImageFromS3(s3Client, bucket, templateImagePath);
           }
         }
 
