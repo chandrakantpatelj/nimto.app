@@ -72,9 +72,9 @@ This project uses Redux Toolkit for state management, providing a centralized st
 
 **Purpose**: Manages guest-related state
 
-#### 7. Design Slice (`store/slices/designSlice.js`)
+#### 7. Design Slice (Removed - Not Used)
 
-**Purpose**: Manages design-related state
+**Purpose**: Was intended to manage design-related state but was never actually used in the application. Removed to reduce complexity.
 
 ## Custom Hooks
 
@@ -325,7 +325,7 @@ store/
     ├── uiSlice.js           # UI state
     ├── storeClientSlice.js  # Store client
     ├── guestsSlice.js       # Guests
-    └── designSlice.js       # Design
+    └── (designSlice.js removed - not used)
 ```
 
 ## Dependencies
