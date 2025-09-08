@@ -1,24 +1,24 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { 
-  CalendarDays, 
-  Users, 
-  UserCheck, 
-  UserX, 
-  Clock, 
+import { useRouter } from 'next/navigation';
+import {
+  Activity,
+  CalendarDays,
+  Clock,
+  Eye,
   MapPin,
   Plus,
-  Eye,
   TrendingUp,
-  Activity
+  UserCheck,
+  Users,
+  UserX,
 } from 'lucide-react';
-import { apiFetch } from '@/lib/api';
-import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import { apiFetch } from '@/lib/api';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export function HostDashboard() {
   const [stats, setStats] = useState({
@@ -28,7 +28,7 @@ export function HostDashboard() {
     pendingGuests: 0,
     declinedGuests: 0,
     upcomingEvents: 0,
-    recentEvents: []
+    recentEvents: [],
   });
   const [loading, setLoading] = useState(true);
   const { data: session } = useSession();
@@ -45,25 +45,25 @@ export function HostDashboard() {
   const fetchHostStats = async () => {
     try {
       setLoading(true);
-      
-      // Fetch events created by the current user
-      const apiUrl = `/api/events?createdByUserId=${session?.user?.id}`;
+
+      // Fetch events created by the current user (API now automatically filters by user)
+      const apiUrl = `/api/events`;
       console.log('Making API call to:', apiUrl);
       const eventsResponse = await apiFetch(apiUrl);
       console.log('Events API Response:', eventsResponse);
-      
+
       if (!eventsResponse.ok) {
         throw new Error(`HTTP error! status: ${eventsResponse.status}`);
       }
-      
+
       const result = await eventsResponse.json();
       console.log('Events API Result:', result);
-      
+
       const events = result?.data || [];
-      
+
       // Calculate statistics
       const totalEvents = events.length;
-      const upcomingEvents = events.filter(event => {
+      const upcomingEvents = events.filter((event) => {
         try {
           return event.date && new Date(event.date) > new Date();
         } catch (error) {
@@ -71,26 +71,40 @@ export function HostDashboard() {
           return false;
         }
       }).length;
-      
+
       // Get guest statistics
       let totalGuests = 0;
       let confirmedGuests = 0;
       let pendingGuests = 0;
       let declinedGuests = 0;
-      
+
       console.log('Processing events for guest stats:', events);
-      
+
       for (const event of events) {
         const guests = event.guests || [];
-        console.log(`Event ${event.id} (${event.title}) has ${guests.length} guests:`, guests);
+        console.log(
+          `Event ${event.id} (${event.title}) has ${guests.length} guests:`,
+          guests,
+        );
         totalGuests += guests.length;
-        confirmedGuests += guests.filter(guest => guest.status === 'CONFIRMED').length;
-        pendingGuests += guests.filter(guest => guest.status === 'PENDING').length;
-        declinedGuests += guests.filter(guest => guest.status === 'DECLINED').length;
+        confirmedGuests += guests.filter(
+          (guest) => guest.status === 'CONFIRMED',
+        ).length;
+        pendingGuests += guests.filter(
+          (guest) => guest.status === 'PENDING',
+        ).length;
+        declinedGuests += guests.filter(
+          (guest) => guest.status === 'DECLINED',
+        ).length;
       }
-      
-      console.log('Guest statistics:', { totalGuests, confirmedGuests, pendingGuests, declinedGuests });
-      
+
+      console.log('Guest statistics:', {
+        totalGuests,
+        confirmedGuests,
+        pendingGuests,
+        declinedGuests,
+      });
+
       // Get recent events (last 5)
       const recentEvents = events
         .sort((a, b) => {
@@ -101,7 +115,7 @@ export function HostDashboard() {
           }
         })
         .slice(0, 5);
-      
+
       const finalStats = {
         totalEvents,
         totalGuests,
@@ -109,9 +123,9 @@ export function HostDashboard() {
         pendingGuests,
         declinedGuests,
         upcomingEvents,
-        recentEvents
+        recentEvents,
       };
-      
+
       console.log('Final stats being set:', finalStats);
       setStats(finalStats);
     } catch (error) {
@@ -123,10 +137,14 @@ export function HostDashboard() {
 
   const getEventStatusColor = (status) => {
     switch (status) {
-      case 'PUBLISHED': return 'bg-green-100 text-green-800';
-      case 'DRAFT': return 'bg-yellow-100 text-yellow-800';
-      case 'CANCELLED': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'PUBLISHED':
+        return 'bg-green-100 text-green-800';
+      case 'DRAFT':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'CANCELLED':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -136,7 +154,7 @@ export function HostDashboard() {
       return new Date(dateString).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
-        day: 'numeric'
+        day: 'numeric',
       });
     } catch (error) {
       console.warn('Invalid date format:', dateString);
@@ -156,8 +174,12 @@ export function HostDashboard() {
     <div className="space-y-4 sm:space-y-6 p-4 sm:p-0">
       {/* Welcome Header */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-4 sm:p-6 text-white">
-        <h1 className="text-xl sm:text-2xl font-bold mb-2">Welcome back, {session?.user?.name}!</h1>
-        <p className="text-blue-100 text-sm sm:text-base">Here's an overview of your events and guest activity</p>
+        <h1 className="text-xl sm:text-2xl font-bold mb-2">
+          Welcome back, {session?.user?.name}!
+        </h1>
+        <p className="text-blue-100 text-sm sm:text-base">
+          Here's an overview of your events and guest activity
+        </p>
       </div>
 
       {/* Statistics Cards */}
@@ -182,9 +204,7 @@ export function HostDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalGuests}</div>
-            <p className="text-xs text-muted-foreground">
-              Across all events
-            </p>
+            <p className="text-xs text-muted-foreground">Across all events</p>
           </CardContent>
         </Card>
 
@@ -194,9 +214,14 @@ export function HostDashboard() {
             <UserCheck className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.confirmedGuests}</div>
+            <div className="text-2xl font-bold text-green-600">
+              {stats.confirmedGuests}
+            </div>
             <p className="text-xs text-muted-foreground">
-              {stats.totalGuests > 0 ? Math.round((stats.confirmedGuests / stats.totalGuests) * 100) : 0}% response rate
+              {stats.totalGuests > 0
+                ? Math.round((stats.confirmedGuests / stats.totalGuests) * 100)
+                : 0}
+              % response rate
             </p>
           </CardContent>
         </Card>
@@ -207,10 +232,10 @@ export function HostDashboard() {
             <Clock className="h-4 w-4 text-yellow-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{stats.pendingGuests}</div>
-            <p className="text-xs text-muted-foreground">
-              Awaiting response
-            </p>
+            <div className="text-2xl font-bold text-yellow-600">
+              {stats.pendingGuests}
+            </div>
+            <p className="text-xs text-muted-foreground">Awaiting response</p>
           </CardContent>
         </Card>
       </div>
@@ -225,15 +250,15 @@ export function HostDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <Button 
-              className="w-full justify-start" 
+            <Button
+              className="w-full justify-start"
               onClick={() => router.push('/events')}
             >
               <Plus className="h-4 w-4 mr-2" />
               Create New Event
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="w-full justify-start"
               onClick={() => router.push('/templates')}
             >
@@ -286,8 +311,8 @@ export function HostDashboard() {
               <TrendingUp className="h-5 w-5" />
               Recent Events
             </span>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="sm"
               onClick={() => router.push('/events')}
             >
@@ -300,20 +325,22 @@ export function HostDashboard() {
             <div className="text-center py-8 text-muted-foreground">
               <CalendarDays className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p>No events created yet</p>
-              <Button 
-                className="mt-4" 
-                onClick={() => router.push('/events')}
-              >
+              <Button className="mt-4" onClick={() => router.push('/events')}>
                 Create Your First Event
               </Button>
             </div>
           ) : (
             <div className="space-y-4">
               {stats.recentEvents.map((event) => (
-                <div key={event.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg hover:bg-gray-50 gap-3">
+                <div
+                  key={event.id}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg hover:bg-gray-50 gap-3"
+                >
                   <div className="flex-1">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
-                      <h3 className="font-medium text-sm sm:text-base">{event.title}</h3>
+                      <h3 className="font-medium text-sm sm:text-base">
+                        {event.title}
+                      </h3>
                       <Badge className={getEventStatusColor(event.status)}>
                         {event.status}
                       </Badge>
@@ -335,8 +362,8 @@ export function HostDashboard() {
                       </div>
                     </div>
                   </div>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     className="w-full sm:w-auto"
                     onClick={() => router.push(`/events/${event.id}`)}

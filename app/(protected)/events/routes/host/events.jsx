@@ -35,9 +35,15 @@ const Events = () => {
 
   useEffect(() => {
     if (session?.user?.id) {
-      fetchAllEvents();
+      fetchAllEvents().catch((err) => {
+        console.error('Failed to fetch events:', err);
+        // Handle 401 errors by redirecting to signin
+        if (err.message?.includes('Unauthorized')) {
+          router.push('/signin');
+        }
+      });
     }
-  }, [session?.user?.id]);
+  }, [session?.user?.id, fetchAllEvents, router]);
 
   const filteredEvents = events.filter((event) => {
     if (!searchQuery) return true;

@@ -33,13 +33,15 @@ function EventManagementPage() {
             </ToolbarDescription>
           </ToolbarHeading>
           <ToolbarActions>
-            {/* {(roles.isHost || roles.isApplicationAdmin) && ( */}
-            <Button variant="primary" asChild>
-              <Link href="/events/select-template">
-                <CirclePlus /> Create New Event
-              </Link>
-            </Button>
-            {/* )} */}
+            {(roles.isHost ||
+              roles.isApplicationAdmin ||
+              roles.isSuperAdmin) && (
+              <Button variant="primary" asChild>
+                <Link href="/events/select-template">
+                  <CirclePlus /> Create New Event
+                </Link>
+              </Button>
+            )}
           </ToolbarActions>
         </Toolbar>
       </Container>

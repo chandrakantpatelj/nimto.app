@@ -1,11 +1,22 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { getServerSession } from 'next-auth';
+import { checkGuestManagementAccess } from '@/lib/auth-utils';
+import authOptions from '@/app/api/auth/[...nextauth]/auth-options';
 
 const prisma = new PrismaClient();
 
 // GET /api/events/guests - Get all guests (with optional filtering)
 export async function GET(request) {
   try {
+    // Check role-based access
+    const accessCheck = await checkGuestManagementAccess('view guests');
+    if (accessCheck.error) {
+      return accessCheck.error;
+    }
+
+    const { session } = accessCheck;
+
     const { searchParams } = new URL(request.url);
     const eventId = searchParams.get('eventId');
     const status = searchParams.get('status');
@@ -74,6 +85,14 @@ export async function GET(request) {
 // POST /api/events/guests - Create a new guest
 export async function POST(request) {
   try {
+    // Check role-based access
+    const accessCheck = await checkGuestManagementAccess('create guests');
+    if (accessCheck.error) {
+      return accessCheck.error;
+    }
+
+    const { session } = accessCheck;
+
     const body = await request.json();
 
     const { eventId, name, email, phone, status, response } = body;

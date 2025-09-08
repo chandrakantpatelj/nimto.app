@@ -158,7 +158,6 @@ function EditEventContent() {
 
       const requestData = {
         ...eventData,
-        createdByUserId: session.user.id,
         sendInvitations,
         guests: (eventData.guests || []).map((guest) => ({
           name: guest.name,

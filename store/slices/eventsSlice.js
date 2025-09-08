@@ -30,6 +30,14 @@ export const createEvent = createAsyncThunk(
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Unauthorized - Please log in');
+        }
+        if (response.status === 403) {
+          throw new Error(
+            'Forbidden - Only hosts and administrators can create events',
+          );
+        }
         throw new Error('Failed to create event');
       }
 
@@ -67,6 +75,9 @@ export const fetchAllEvents = createAsyncThunk(
       const response = await fetch('/api/events');
 
       if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Unauthorized - Please log in');
+        }
         throw new Error('Failed to fetch all events');
       }
 
@@ -85,6 +96,12 @@ export const fetchEventById = createAsyncThunk(
       const response = await fetch(`/api/events/${eventId}`);
 
       if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Unauthorized - Please log in');
+        }
+        if (response.status === 403) {
+          throw new Error('Forbidden - Access denied');
+        }
         throw new Error('Failed to fetch event');
       }
 
@@ -109,6 +126,14 @@ export const updateEvent = createAsyncThunk(
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Unauthorized - Please log in');
+        }
+        if (response.status === 403) {
+          throw new Error(
+            'Forbidden - Only hosts and administrators can update events',
+          );
+        }
         throw new Error('Failed to update event');
       }
 
@@ -129,6 +154,14 @@ export const deleteEvent = createAsyncThunk(
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Unauthorized - Please log in');
+        }
+        if (response.status === 403) {
+          throw new Error(
+            'Forbidden - Only hosts and administrators can delete events',
+          );
+        }
         throw new Error('Failed to delete event');
       }
 

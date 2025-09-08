@@ -7,6 +7,7 @@ import {
 } from '@aws-sdk/client-s3';
 import { PrismaClient } from '@prisma/client';
 import { getServerSession } from 'next-auth';
+import { checkEventManagementAccess } from '@/lib/auth-utils';
 import { uid } from '@/lib/helpers';
 import { sendEmail } from '@/services/send-email';
 import authOptions from '../../auth/[...nextauth]/auth-options';
@@ -82,14 +83,13 @@ function generateUniqueImagePath(
 // POST /api/events/create-event - Create event with optional invitations
 export async function POST(request) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 },
-      );
+    // Check role-based access
+    const accessCheck = await checkEventManagementAccess('create events');
+    if (accessCheck.error) {
+      return accessCheck.error;
     }
+
+    const { session } = accessCheck;
 
     const body = await request.json();
 
@@ -144,7 +144,7 @@ export async function POST(request) {
         pageBackground,
         imagePath: templateImagePath, // Initially use template imagePath
         status: status.toUpperCase() || 'DRAFT',
-        createdByUserId: session.user.id,
+        createdByUserId: session.user.id, // This is correct - it's setting from session
         isTrashed: false,
       },
       include: {
