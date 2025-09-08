@@ -14,56 +14,86 @@ export default withAuth(
     // Role-based route protection
     const userRole = token.roleName?.toLowerCase();
 
+    // Debug logging (remove in production)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Middleware Debug:', {
+        pathname,
+        userRole,
+        tokenRoleName: token.roleName,
+        tokenId: token.id,
+      });
+    }
+
+    // If no role is found, redirect to unauthorized (this shouldn't happen)
+    if (!userRole) {
+      console.error('No user role found in token:', token);
+      return NextResponse.redirect(new URL('/unauthorized', req.url));
+    }
+
     // Define route permissions
     const routePermissions = {
       // User Management - Super Admin and Application Admin only
-      '/user-management': ['super admin', 'application admin'],
-      
+      '/user-management': ['super-admin', 'application-admin'],
+
       // Settings - Super Admin and Application Admin only
-      '/settings': ['super admin', 'application admin'],
-      
+      '/settings': ['super-admin', 'application-admin'],
+
       // Reporting - Super Admin and Application Admin only
-      '/reportings': ['super admin', 'application admin'],
-      
+      '/reportings': ['super-admin', 'application-admin'],
+
       // Templates - Host, Super Admin, and Application Admin
-      '/templates': ['host', 'super admin', 'application admin'],
-      
+      '/templates': ['host', 'super-admin', 'application-admin'],
+
       // Image Editor - Host, Super Admin, and Application Admin
-      '/image-editor': ['host', 'super admin', 'application admin'],
-      
+      '/image-editor': ['host', 'super-admin', 'application-admin'],
+
       // Messaging - Host, Super Admin, and Application Admin
-      '/messaging': ['host', 'super admin', 'application admin'],
-      
+      '/messaging': ['host', 'super-admin', 'application-admin'],
+
       // Store Admin - Super Admin and Application Admin only
-      '/store-admin': ['super admin', 'application admin'],
-      
+      '/store-admin': ['super-admin', 'application-admin'],
+
       // Network - All authenticated users
-      '/network': ['host', 'super admin', 'application admin', 'attendee'],
-      
+      '/network': ['host', 'super-admin', 'application-admin', 'attendee'],
+
       // Public Profile - All authenticated users
-      '/public-profile': ['host', 'super admin', 'application admin', 'attendee'],
-      
+      '/public-profile': [
+        'host',
+        'super-admin',
+        'application-admin',
+        'attendee',
+      ],
+
       // Account - All authenticated users
-      '/account': ['host', 'super admin', 'application admin', 'attendee'],
-      
+      '/account': ['host', 'super-admin', 'application-admin', 'attendee'],
+
       // My Profile - All authenticated users
-      '/my-profile': ['host', 'super admin', 'application admin', 'attendee'],
-      
+      '/my-profile': ['host', 'super-admin', 'application-admin', 'attendee'],
+
       // Events - All authenticated users (content varies by role)
-      '/events': ['host', 'super admin', 'application admin', 'attendee'],
-      
+      '/events': ['host', 'super-admin', 'application-admin', 'attendee'],
+
       // Dashboard - All authenticated users (content varies by role)
-      '/': ['host', 'super admin', 'application admin', 'attendee'],
+      '/': ['host', 'super-admin', 'application-admin', 'attendee'],
     };
 
     // Check if the current path requires specific permissions
     for (const [route, allowedRoles] of Object.entries(routePermissions)) {
       if (pathname.startsWith(route)) {
-        const hasPermission = allowedRoles.some(role => 
-          userRole === role.toLowerCase()
+        const hasPermission = allowedRoles.some(
+          (role) => userRole === role.toLowerCase(),
         );
-        
+
         if (!hasPermission) {
+          // Debug logging for unauthorized access
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Unauthorized access attempt:', {
+              pathname,
+              userRole,
+              allowedRoles,
+              route,
+            });
+          }
           // Redirect to unauthorized page
           return NextResponse.redirect(new URL('/unauthorized', req.url));
         }
@@ -76,8 +106,8 @@ export default withAuth(
     if (pathname.startsWith('/host/')) {
       const isHost =
         userRole === 'host' ||
-        userRole === 'super admin' ||
-        userRole === 'application admin';
+        userRole === 'super-admin' ||
+        userRole === 'application-admin';
       if (!isHost) {
         return NextResponse.redirect(new URL('/unauthorized', req.url));
       }
@@ -86,7 +116,7 @@ export default withAuth(
     // Admin-specific routes - only accessible by admins
     if (pathname.startsWith('/admin/')) {
       const isAdmin =
-        userRole === 'super admin' || userRole === 'application admin';
+        userRole === 'super-admin' || userRole === 'application-admin';
       if (!isAdmin) {
         return NextResponse.redirect(new URL('/unauthorized', req.url));
       }
