@@ -1,11 +1,22 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { getServerSession } from 'next-auth';
+import { checkGuestManagementAccess } from '@/lib/auth-utils';
+import authOptions from '@/app/api/auth/[...nextauth]/auth-options';
 
 const prisma = new PrismaClient();
 
 // GET /api/events/guests/[id] - Get a specific guest
 export async function GET(request, { params }) {
   try {
+    // Check role-based access
+    const accessCheck = await checkGuestManagementAccess('view guests');
+    if (accessCheck.error) {
+      return accessCheck.error;
+    }
+
+    const { session } = accessCheck;
+
     const { id } = params;
 
     const guest = await prisma.guest.findUnique({
@@ -59,6 +70,14 @@ export async function GET(request, { params }) {
 // PUT /api/events/guests/[id] - Update a guest
 export async function PUT(request, { params }) {
   try {
+    // Check role-based access
+    const accessCheck = await checkGuestManagementAccess('update guests');
+    if (accessCheck.error) {
+      return accessCheck.error;
+    }
+
+    const { session } = accessCheck;
+
     const { id } = params;
     const body = await request.json();
 
@@ -102,6 +121,14 @@ export async function PUT(request, { params }) {
 // DELETE /api/events/guests/[id] - Delete a guest (hard delete)
 export async function DELETE(request, { params }) {
   try {
+    // Check role-based access
+    const accessCheck = await checkGuestManagementAccess('delete guests');
+    if (accessCheck.error) {
+      return accessCheck.error;
+    }
+
+    const { session } = accessCheck;
+
     const { id } = params;
 
     const guest = await prisma.guest.delete({

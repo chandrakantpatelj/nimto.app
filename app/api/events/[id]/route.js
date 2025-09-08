@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { PrismaClient } from '@prisma/client';
 import { getServerSession } from 'next-auth';
+import { checkEventManagementAccess } from '@/lib/auth-utils';
 import { uid } from '@/lib/helpers';
 import { deleteImageFromS3, generateS3Url, getS3Config } from '@/lib/s3-utils';
 import { sendBulkEventInvitations } from '@/services/send-event-invitation.js';
@@ -37,8 +38,20 @@ export async function GET(request, { params }) {
   try {
     const { id } = params;
 
+    // Get user session for role-based access
+    const session = await getServerSession(authOptions);
+    const userRole = session?.user?.roleName;
+
+    // Define where clause based on user role
+    let whereClause = { id };
+
+    // If user is not authenticated or is an attendee, only show published events
+    if (!session || userRole === 'attendee') {
+      whereClause.status = 'PUBLISHED';
+    }
+
     const event = await prisma.event.findUnique({
-      where: { id },
+      where: whereClause,
       include: {
         guests: {
           select: {
@@ -108,14 +121,13 @@ export async function PUT(request, { params }) {
     const { id } = params;
     const body = await request.json();
 
-    // Get user session for authentication
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 },
-      );
+    // Check role-based access
+    const accessCheck = await checkEventManagementAccess('update events');
+    if (accessCheck.error) {
+      return accessCheck.error;
     }
+
+    const { session } = accessCheck;
 
     // Get the existing event to check ownership and prepare for image handling
     const existingEvent = await prisma.event.findUnique({
@@ -464,14 +476,13 @@ export async function DELETE(request, { params }) {
   try {
     const { id } = params;
 
-    // Get user session for authentication
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 },
-      );
+    // Check role-based access
+    const accessCheck = await checkEventManagementAccess('delete events');
+    if (accessCheck.error) {
+      return accessCheck.error;
     }
+
+    const { session } = accessCheck;
 
     // Get the event with guests to check ownership and prepare for deletion
     const event = await prisma.event.findUnique({

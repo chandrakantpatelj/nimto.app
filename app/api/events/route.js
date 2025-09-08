@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { getServerSession } from 'next-auth';
+import { checkEventManagementAccess } from '@/lib/auth-utils';
 import { generateS3Url } from '@/lib/s3-utils';
+import authOptions from '../auth/[...nextauth]/auth-options';
 
 // Create a singleton Prisma client
 const globalForPrisma = global;
@@ -11,25 +14,31 @@ if (!globalForPrisma.prisma) {
 
 const prisma = globalForPrisma.prisma;
 
-// GET /api/events - Get all events
+// GET /api/events - Get events created by the logged-in user
 export async function GET(request) {
+  const session = await getServerSession(authOptions);
+
+  // Check if user is authenticated
+  if (!session?.user?.id) {
+    return NextResponse.json(
+      { success: false, error: 'Unauthorized' },
+      { status: 401 },
+    );
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     const search = searchParams.get('search');
-    const createdByUserId = searchParams.get('createdByUserId');
     const date = searchParams.get('date');
 
     const where = {
-      isTrashed: false, // Add back the isTrashed filter
+      isTrashed: false,
+      createdByUserId: session.user.id, // Only return events created by the logged-in user
     };
 
     if (status) {
       where.status = status;
-    }
-
-    if (createdByUserId) {
-      where.createdByUserId = createdByUserId;
     }
 
     if (date) {
@@ -113,6 +122,14 @@ export async function GET(request) {
 
 // POST /api/events - Create a new event
 export async function POST(request) {
+  // Check role-based access
+  const accessCheck = await checkEventManagementAccess('create events');
+  if (accessCheck.error) {
+    return accessCheck.error;
+  }
+
+  const { session } = accessCheck;
+
   try {
     const body = await request.json();
 
@@ -130,7 +147,6 @@ export async function POST(request) {
       pageBackground,
       imagePath,
       status,
-      createdByUserId,
     } = body;
 
     const event = await prisma.event.create({
@@ -148,8 +164,8 @@ export async function POST(request) {
         pageBackground,
         imagePath,
         status: status || 'DRAFT',
-        createdByUserId,
-        isTrashed: false, // Add the isTrashed field
+        createdByUserId: session.user.id, // Automatically set from session
+        isTrashed: false,
       },
       include: {
         creator: {
