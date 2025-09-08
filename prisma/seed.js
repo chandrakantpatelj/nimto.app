@@ -18,50 +18,37 @@ try {
 async function main() {
   console.log('Running database seeding...');
 
-  // Create owner role and users
-  const ownerRole = await prisma.userRole.upsert({
-    where: { slug: 'owner' },
-    update: {}, // No updates needed, ensures idempotency
-    create: {
-      slug: 'owner',
-      name: 'Owner',
-      description: 'The default system role with full access.',
-      isProtected: true,
-      isDefault: false, // Optional: set to false if it's not the default role
-    },
+  // Delete demo users and owner role if they exist
+  // First, delete related records to avoid foreign key constraints
+  const demoUsers = await prisma.user.findMany({
+    where: { email: { in: ['demo@kt.com', 'owner@kt.com'] } },
+    select: { id: true }
   });
 
-  // Create the owner user
-  const hashedPassword = await bcrypt.hash('12345', 10);
-  const demoPassword = await bcrypt.hash('demo123', 10);
+  if (demoUsers.length > 0) {
+    const userIds = demoUsers.map(user => user.id);
+    
+    // Delete system logs first
+    await prisma.systemLog.deleteMany({
+      where: { userId: { in: userIds } }
+    });
+    
+    // Delete users
+    await prisma.user.deleteMany({
+      where: { email: { in: ['demo@kt.com', 'owner@kt.com'] } }
+    });
+    
+    console.log('✅ Deleted demo users and related records');
+  }
 
-  await prisma.user.upsert({
-    where: { email: 'demo@kt.com' },
-    update: {}, // No updates needed, ensures idempotency
-    create: {
-      email: 'demo@kt.com',
-      name: 'Demo',
-      password: demoPassword,
-      roleId: ownerRole.id,
-      avatar: null, // Optional: Add avatar URL if available
-      emailVerifiedAt: new Date(), // Optional: Mark email as verified
-      status: 'ACTIVE',
-    },
+  // Delete owner role
+  const deletedRole = await prisma.userRole.deleteMany({
+    where: { slug: 'owner' }
   });
-
-  const ownerUser = await prisma.user.upsert({
-    where: { email: 'owner@kt.com' },
-    update: {}, // No updates needed, ensures idempotency
-    create: {
-      email: 'owner@kt.com',
-      name: 'System Owner',
-      password: hashedPassword,
-      roleId: ownerRole.id,
-      avatar: null, // Optional: Add avatar URL if available
-      emailVerifiedAt: new Date(), // Optional: Mark email as verified
-      status: 'ACTIVE',
-    },
-  });
+  
+  if (deletedRole.count > 0) {
+    console.log('✅ Deleted owner role');
+  }
 
   // Seed Roles
   for (const role of rolesData) {
@@ -75,7 +62,7 @@ async function main() {
         isDefault: role.isDefault || false,
         isProtected: role.isProtected || false,
         createdAt: new Date(),
-        createdByUserId: ownerUser.id,
+        createdByUserId: null,
       },
     });
   }
@@ -91,7 +78,7 @@ async function main() {
         name: permission.name,
         description: permission.description,
         createdAt: new Date(),
-        createdByUserId: ownerUser.id,
+        createdByUserId: null,
       },
     });
   }

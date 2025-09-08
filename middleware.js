@@ -1,139 +1,108 @@
 import { NextResponse } from 'next/server';
 import { withAuth } from 'next-auth/middleware';
 
+function getRoleSlug(roleName) {
+  if (!roleName) return null;
+  return roleName.toLowerCase();
+}
+
+function redirect(path, req) {
+  return NextResponse.redirect(new URL(path, req.url));
+}
+
 export default withAuth(
   function middleware(req) {
     const token = req.nextauth.token;
     const { pathname } = req.nextUrl;
 
-    // If no token, redirect to signin
-    if (!token) {
-      return NextResponse.redirect(new URL('/signin', req.url));
+    if (pathname === '/unauthorized') return NextResponse.next();
+    if (!token) return redirect('/signin', req);
+
+    const userRole = getRoleSlug(token.roleName);
+    if (!userRole) return redirect('/unauthorized', req);
+    if (token.status !== 'ACTIVE') return redirect('/unauthorized', req);
+
+    // Super-admin and application-admin have access to all routes
+    if (userRole === 'super-admin' || userRole === 'application-admin') {
+      return NextResponse.next();
     }
 
-    // Role-based route protection
-    const userRole = token.roleName?.toLowerCase();
-
-    // Debug logging (remove in production)
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Middleware Debug:', {
-        pathname,
-        userRole,
-        tokenRoleName: token.roleName,
-        tokenId: token.id,
-      });
-    }
-
-    // If no role is found, redirect to unauthorized (this shouldn't happen)
-    if (!userRole) {
-      console.error('No user role found in token:', token);
-      return NextResponse.redirect(new URL('/unauthorized', req.url));
-    }
-
-    // Define route permissions
     const routePermissions = {
-      // User Management - Super Admin and Application Admin only
-      '/user-management': ['super-admin', 'application-admin'],
-
-      // Settings - Super Admin and Application Admin only
-      '/settings': ['super-admin', 'application-admin'],
-
-      // Reporting - Super Admin and Application Admin only
-      '/reportings': ['super-admin', 'application-admin'],
-
-      // Templates - Host, Super Admin, and Application Admin
-      '/templates': ['host', 'super-admin', 'application-admin'],
-
-      // Image Editor - Host, Super Admin, and Application Admin
-      '/image-editor': ['host', 'super-admin', 'application-admin'],
-
-      // Messaging - Host, Super Admin, and Application Admin
-      '/messaging': ['host', 'super-admin', 'application-admin'],
-
-      // Store Admin - Super Admin and Application Admin only
-      '/store-admin': ['super-admin', 'application-admin'],
-
-      // Network - All authenticated users
-      '/network': ['host', 'super-admin', 'application-admin', 'attendee'],
-
-      // Public Profile - All authenticated users
-      '/public-profile': [
+      '/user-management': new Set(['super-admin', 'application-admin']),
+      '/settings': new Set(['super-admin', 'application-admin']),
+      '/reportings': new Set(['super-admin', 'application-admin']),
+      '/templates': new Set(['host', 'super-admin', 'application-admin']),
+      '/messaging': new Set(['host', 'super-admin', 'application-admin']),
+      '/store-admin': new Set(['super-admin', 'application-admin']),
+      '/network': new Set([
         'host',
+        'attendee',
         'super-admin',
         'application-admin',
+      ]),
+      '/public-profile': new Set([
+        'host',
         'attendee',
-      ],
-
-      // Account - All authenticated users
-      '/account': ['host', 'super-admin', 'application-admin', 'attendee'],
-
-      // My Profile - All authenticated users
-      '/my-profile': ['host', 'super-admin', 'application-admin', 'attendee'],
-
-      // Events - All authenticated users (content varies by role)
-      '/events': ['host', 'super-admin', 'application-admin', 'attendee'],
-
-      // Dashboard - All authenticated users (content varies by role)
-      '/': ['host', 'super-admin', 'application-admin', 'attendee'],
+        'super-admin',
+        'application-admin',
+      ]),
+      '/account': new Set([
+        'host',
+        'attendee',
+        'super-admin',
+        'application-admin',
+      ]),
+      '/my-profile': new Set([
+        'host',
+        'attendee',
+        'super-admin',
+        'application-admin',
+      ]),
+      '/events': new Set([
+        'host',
+        'attendee',
+        'super-admin',
+        'application-admin',
+      ]),
+      '/': new Set(['host', 'attendee', 'super-admin', 'application-admin']),
     };
 
-    // Check if the current path requires specific permissions
-    for (const [route, allowedRoles] of Object.entries(routePermissions)) {
+    const sortedRoutes = Object.keys(routePermissions).sort(
+      (a, b) => b.length - a.length,
+    );
+    for (const route of sortedRoutes) {
       if (pathname.startsWith(route)) {
-        const hasPermission = allowedRoles.some(
-          (role) => userRole === role.toLowerCase(),
-        );
-
-        if (!hasPermission) {
-          // Debug logging for unauthorized access
-          if (process.env.NODE_ENV === 'development') {
-            console.log('Unauthorized access attempt:', {
-              pathname,
-              userRole,
-              allowedRoles,
-              route,
-            });
-          }
-          // Redirect to unauthorized page
-          return NextResponse.redirect(new URL('/unauthorized', req.url));
+        if (!routePermissions[route].has(userRole)) {
+          return redirect('/unauthorized', req);
         }
         break;
       }
     }
 
-    // Legacy route protection (keeping for backward compatibility)
-    // Host-specific routes - only accessible by hosts and admins
-    if (pathname.startsWith('/host/')) {
-      const isHost =
-        userRole === 'host' ||
-        userRole === 'super-admin' ||
-        userRole === 'application-admin';
-      if (!isHost) {
-        return NextResponse.redirect(new URL('/unauthorized', req.url));
-      }
+    if (
+      pathname.startsWith('/host/') &&
+      !['host', 'super-admin', 'application-admin'].includes(userRole)
+    ) {
+      return redirect('/unauthorized', req);
     }
 
-    // Admin-specific routes - only accessible by admins
-    if (pathname.startsWith('/admin/')) {
-      const isAdmin =
-        userRole === 'super-admin' || userRole === 'application-admin';
-      if (!isAdmin) {
-        return NextResponse.redirect(new URL('/unauthorized', req.url));
-      }
+    if (
+      pathname.startsWith('/admin/') &&
+      !['super-admin', 'application-admin'].includes(userRole)
+    ) {
+      return redirect('/unauthorized', req);
     }
 
     return NextResponse.next();
   },
   {
-    callbacks: {
-      authorized: ({ token }) => !!token,
-    },
+    callbacks: { authorized: ({ token }) => !!token },
   },
 );
 
 export const config = {
   matcher: [
-    // Protected routes that require authentication
+    '/',
     '/events/:path*',
     '/host/:path*',
     '/admin/:path*',
@@ -149,8 +118,6 @@ export const config = {
     '/network/:path*',
     '/public-profile/:path*',
     '/account/:path*',
-    '/unauthorized',
-    // Exclude auth routes and public assets
-    '/((?!api|_next/static|_next/image|favicon.ico|signin|signup|verify-email|reset-password).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|signin|signup|verify-email|reset-password|unauthorized).*)',
   ],
 };

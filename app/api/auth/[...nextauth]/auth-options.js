@@ -177,7 +177,7 @@ const authOptions = {
           token.avatar = user.avatar;
           token.status = user.status;
           token.roleId = user.roleId;
-          token.roleName = role?.name;
+          token.roleName = role?.slug;
         }
       }
 
