@@ -21,7 +21,6 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Icons } from '@/components/common/icons';
-
 import { getSigninSchema } from '../forms/signin-schema';
 
 export default function Page() {
@@ -30,12 +29,11 @@ export default function Page() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState(null);
 
-
   const form = useForm({
     resolver: zodResolver(getSigninSchema()),
     defaultValues: {
-      email: 'demo@kt.com',
-      password: 'demo123',
+      email: '',
+      password: '',
       rememberMe: false,
     },
   });
@@ -88,29 +86,16 @@ export default function Page() {
 
   return (
     <Form {...form}>
-      <form
-        onSubmit={handleSubmit}
-        className="block w-full space-y-5"
-      >
+      <form onSubmit={handleSubmit} className="block w-full space-y-5">
         {/* Header */}
         <div className="space-y-1.5 pb-3">
           <h1 className="text-2xl font-semibold tracking-tight text-center">
-          Sign in to Nimto
+            Sign in to Nimto
           </h1>
-          <p className="mt-2 text-sm text-slate-600 text-center">Manage your events seamlessly.</p>
+          <p className="mt-2 text-sm text-slate-600 text-center">
+            Manage your events seamlessly.
+          </p>
         </div>
-
-        {/* Demo Alert */}
-        {/* <Alert size="sm" close={false}>
-          <AlertIcon>
-            <RiErrorWarningFill className="text-primary" />
-          </AlertIcon>
-          <AlertTitle className="text-accent-foreground">
-            Use <span className="font-mono font-semibold">demo@kt.com</span> and{' '}
-            <span className="font-mono font-semibold">demo123</span> for demo
-            access.
-          </AlertTitle>
-        </Alert> */}
 
         {/* Social Login */}
         <div className="flex flex-col gap-3.5">

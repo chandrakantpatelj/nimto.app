@@ -8,12 +8,12 @@ export function useRoleBasedAccess() {
 
   // Role definitions - only supporting the four specified roles
   const roles = {
-    isSuperAdmin: userRole === 'super admin',
+    isSuperAdmin: userRole === 'super-admin',
     isHost: userRole === 'host',
     isAttendee: userRole === 'attendee',
-    isApplicationAdmin: userRole === 'application admin',
+    isApplicationAdmin: userRole === 'application-admin',
     // Legacy support for backward compatibility
-    isAdmin: userRole === 'super admin' || userRole === 'application admin',
+    isAdmin: userRole === 'super-admin' || userRole === 'application-admin',
   };
 
   // Permission checks
@@ -29,28 +29,30 @@ export function useRoleBasedAccess() {
       roles.isHost || roles.isSuperAdmin || roles.isApplicationAdmin,
     canViewAllEvents:
       roles.isHost || roles.isSuperAdmin || roles.isApplicationAdmin,
-    
+
     // User management permissions
     canManageUsers: roles.isSuperAdmin || roles.isApplicationAdmin,
     canManageRoles: roles.isSuperAdmin || roles.isApplicationAdmin,
-    
+
     // System permissions
     canViewReports: roles.isSuperAdmin || roles.isApplicationAdmin,
     canAccessSettings: roles.isSuperAdmin || roles.isApplicationAdmin,
-    canAccessTemplates: roles.isHost || roles.isSuperAdmin || roles.isApplicationAdmin,
-    canAccessImageEditor: roles.isHost || roles.isSuperAdmin || roles.isApplicationAdmin,
-    canAccessMessaging: roles.isHost || roles.isSuperAdmin || roles.isApplicationAdmin,
+    canAccessTemplates:
+      roles.isHost || roles.isSuperAdmin || roles.isApplicationAdmin,
+    canAccessMessaging:
+      roles.isHost || roles.isSuperAdmin || roles.isApplicationAdmin,
     canAccessStoreAdmin: roles.isSuperAdmin || roles.isApplicationAdmin,
-    
+
     // Route access permissions
     canAccessUserManagement: roles.isSuperAdmin || roles.isApplicationAdmin,
     canAccessSettings: roles.isSuperAdmin || roles.isApplicationAdmin,
     canAccessReporting: roles.isSuperAdmin || roles.isApplicationAdmin,
-    canAccessTemplates: roles.isHost || roles.isSuperAdmin || roles.isApplicationAdmin,
-    canAccessImageEditor: roles.isHost || roles.isSuperAdmin || roles.isApplicationAdmin,
-    canAccessMessaging: roles.isHost || roles.isSuperAdmin || roles.isApplicationAdmin,
+    canAccessTemplates:
+      roles.isHost || roles.isSuperAdmin || roles.isApplicationAdmin,
+    canAccessMessaging:
+      roles.isHost || roles.isSuperAdmin || roles.isApplicationAdmin,
     canAccessStoreAdmin: roles.isSuperAdmin || roles.isApplicationAdmin,
-    
+
     // General access permissions
     canAccessNetwork: true, // All authenticated users
     canAccessPublicProfile: true, // All authenticated users
@@ -66,7 +68,6 @@ export function useRoleBasedAccess() {
     '/settings': permissions.canAccessSettings,
     '/reportings': permissions.canAccessReporting,
     '/templates': permissions.canAccessTemplates,
-    '/image-editor': permissions.canAccessImageEditor,
     '/messaging': permissions.canAccessMessaging,
     '/store-admin': permissions.canAccessStoreAdmin,
     '/network': permissions.canAccessNetwork,
@@ -105,7 +106,7 @@ export function useRoleBasedAccess() {
 
   // Check if user has any of the specified roles
   const hasAnyRole = (roleList) => {
-    return roleList.some(role => {
+    return roleList.some((role) => {
       switch (role) {
         case 'super-admin':
           return roles.isSuperAdmin;
@@ -125,12 +126,12 @@ export function useRoleBasedAccess() {
 
   // Check if user has all of the specified permissions
   const hasAllPermissions = (permissionList) => {
-    return permissionList.every(permission => permissions[permission]);
+    return permissionList.every((permission) => permissions[permission]);
   };
 
   // Check if user has any of the specified permissions
   const hasAnyPermission = (permissionList) => {
-    return permissionList.some(permission => permissions[permission]);
+    return permissionList.some((permission) => permissions[permission]);
   };
 
   return {
