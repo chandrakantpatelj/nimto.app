@@ -17,8 +17,8 @@ const PixieEditor = forwardRef(
       initialContent,
       width = '100%',
       height = '500px',
-      config = {},
       onImageSelect,
+      config = {},
     },
     ref,
   ) => {
@@ -131,9 +131,6 @@ const PixieEditor = forwardRef(
             ignoreExternalImageErrors: true,
           },
           tools: {
-            zoom: {
-              allowUserZoom: false,
-            },
             crop: {
               allowExternalImages: true,
               ignoreExternalImageErrors: true,

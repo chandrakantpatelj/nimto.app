@@ -9,11 +9,14 @@ import {
   updateEvent,
 } from './slices/eventsSlice';
 import {
+  clearActiveFilters,
+  clearAllTemplates,
   createCustomTemplate,
   deleteTemplate,
   fetchTemplateById,
   fetchTemplateCategories,
   fetchTemplates,
+  setActiveFilters,
   updateTemplate,
 } from './slices/templatesSlice';
 
@@ -106,6 +109,8 @@ export const useTemplateLoading = () =>
   useAppSelector((state) => state.templates.isLoading);
 export const useTemplateError = () =>
   useAppSelector((state) => state.templates.error);
+export const useActiveFilters = () =>
+  useAppSelector((state) => state.templates.activeFilters);
 export const useTheme = () => useAppSelector((state) => state.ui.theme);
 export const useModals = () => useAppSelector((state) => state.ui.modals);
 export const useNotifications = () =>
@@ -317,9 +322,12 @@ export const useTemplateActions = () => {
     }, [dispatch]),
 
     // Async thunks - API calls
-    fetchTemplates: useCallback(() => {
-      return dispatch(fetchTemplates());
-    }, [dispatch]),
+    fetchTemplates: useCallback(
+      (queryParams) => {
+        return dispatch(fetchTemplates(queryParams));
+      },
+      [dispatch],
+    ),
 
     fetchTemplateById: useCallback(
       (templateId) => {
@@ -352,6 +360,22 @@ export const useTemplateActions = () => {
       },
       [dispatch],
     ),
+
+    // New filter management actions
+    setActiveFilters: useCallback(
+      (filters) => {
+        dispatch(setActiveFilters(filters));
+      },
+      [dispatch],
+    ),
+
+    clearActiveFilters: useCallback(() => {
+      dispatch(clearActiveFilters());
+    }, [dispatch]),
+
+    clearAllTemplates: useCallback(() => {
+      dispatch(clearAllTemplates());
+    }, [dispatch]),
   };
 };
 
