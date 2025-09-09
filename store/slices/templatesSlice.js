@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 // Initial state
 const initialState = {
-  templates: [],
+  templates: [], // All templates from all API calls
   selectedTemplate: null,
   isLoading: false,
   error: null,
@@ -10,22 +10,43 @@ const initialState = {
   searchQuery: '',
   selectedCategory: null,
   customTemplates: [],
+  // Active filters state for persistence
+  activeFilters: {
+    searchQuery: '',
+    selectedCategory: null,
+    orientation: null,
+    premium: null,
+    trending: false,
+    featured: false,
+    new: false,
+  },
 };
 
 // Async thunks
 export const fetchTemplates = createAsyncThunk(
   'templates/fetchTemplates',
-  async (_, { rejectWithValue }) => {
+  async (queryParams = '', { rejectWithValue }) => {
     try {
-      const response = await fetch('/api/template');
+      // Build URL with query parameters
+      const url = queryParams
+        ? `/api/template?${queryParams}`
+        : '/api/template';
+
+      const response = await fetch(url);
 
       if (!response.ok) {
         throw new Error('Failed to fetch templates');
       }
 
-      const data = await response.json();
-      return data;
+      const result = await response.json();
+
+      if (result.success) {
+        return result.data; // Return only the templates array
+      } else {
+        throw new Error(result.error || 'Failed to fetch templates');
+      }
     } catch (error) {
+      console.error('❌ Redux: Error fetching templates:', error);
       return rejectWithValue(error.message);
     }
   },
@@ -42,7 +63,7 @@ export const fetchTemplateById = createAsyncThunk(
 
       const data = await response.json();
 
-      return data;
+      return data.data;
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -53,20 +74,29 @@ export const fetchTemplateCategories = createAsyncThunk(
   'templates/fetchTemplateCategories',
   async (_, { rejectWithValue }) => {
     try {
-      // For now, return a mock list of categories since the API route doesn't exist
-      // TODO: Create /api/template/categories route or extract categories from templates
-      const categories = [
-        'Birthday',
-        'Wedding',
-        'Anniversary',
-        'Graduation',
-        'Corporate',
-        'Holiday',
-        'Other',
-      ];
+      console.log('🔍 Redux: Fetching template categories from API...');
 
-      return { success: true, data: categories };
+      const response = await fetch('/api/template-categories');
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch template categories');
+      }
+
+      const result = await response.json();
+      console.log('📦 Redux: Categories API Response:', result);
+
+      if (result.success) {
+        console.log(
+          '✅ Redux: Categories fetched successfully:',
+          result.data.length,
+          'categories',
+        );
+        return result.data; // Return only the categories array
+      } else {
+        throw new Error(result.error || 'Failed to fetch template categories');
+      }
     } catch (error) {
+      console.error('❌ Redux: Error fetching categories:', error);
       return rejectWithValue(error.message);
     }
   },
@@ -149,9 +179,11 @@ const templatesSlice = createSlice({
     },
     setSearchQuery: (state, action) => {
       state.searchQuery = action.payload;
+      state.activeFilters.searchQuery = action.payload;
     },
     setSelectedCategory: (state, action) => {
       state.selectedCategory = action.payload;
+      state.activeFilters.selectedCategory = action.payload;
     },
     clearSelectedTemplate: (state) => {
       state.selectedTemplate = null;
@@ -161,6 +193,34 @@ const templatesSlice = createSlice({
     },
     setLoading: (state, action) => {
       state.isLoading = action.payload;
+    },
+    // New actions for active filters management
+    setActiveFilters: (state, action) => {
+      state.activeFilters = { ...state.activeFilters, ...action.payload };
+      // Also update individual filter states for backward compatibility
+      if (action.payload.searchQuery !== undefined) {
+        state.searchQuery = action.payload.searchQuery;
+      }
+      if (action.payload.selectedCategory !== undefined) {
+        state.selectedCategory = action.payload.selectedCategory;
+      }
+    },
+    clearActiveFilters: (state) => {
+      state.activeFilters = {
+        searchQuery: '',
+        selectedCategory: null,
+        orientation: null,
+        premium: null,
+        trending: false,
+        featured: false,
+        new: false,
+      };
+      state.searchQuery = '';
+      state.selectedCategory = null;
+    },
+    // Clear all templates (useful for fresh start)
+    clearAllTemplates: (state) => {
+      state.templates = [];
     },
     // Filter templates based on search and category
     filterTemplates: (state) => {
@@ -177,7 +237,13 @@ const templatesSlice = createSlice({
       })
       .addCase(fetchTemplates.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.templates = action.payload;
+
+        // Store API response in Redux templates store (accumulate instead of replace)
+
+        // Add only new templates to avoid duplicates
+
+        // Accumulate templates from all API calls
+        state.templates = action.payload || [];
         state.error = null;
       })
       .addCase(fetchTemplates.rejected, (state, action) => {
@@ -277,6 +343,9 @@ export const {
   clearSelectedTemplate,
   clearError,
   setLoading,
+  setActiveFilters,
+  clearActiveFilters,
+  clearAllTemplates,
   filterTemplates,
 } = templatesSlice.actions;
 

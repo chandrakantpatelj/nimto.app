@@ -1,10 +1,17 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Loader2, Trash2, Star, Crown, Zap, Sparkles } from 'lucide-react';
-import { apiFetch } from '@/lib/api';
+import { useRouter } from 'next/navigation';
+import {
+  useActiveFilters,
+  useAllTemplates,
+  useEventActions,
+  useTemplateActions,
+  useTemplateError,
+  useTemplateLoading,
+} from '@/store/hooks';
+import { Crown, Loader2, Sparkles, Star, Trash2, Zap } from 'lucide-react';
 import { getProxiedImageUrl } from '@/lib/image-proxy';
 import {
   AlertDialog,
@@ -16,72 +23,141 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { showCustomToast } from '@/components/common/custom-toast';
 import TemplateImageDisplay from '@/components/template-image-display';
 import LazyImage from './LazyImage';
 
-const EnhancedTemplates = ({ searchQuery = '', selectedCategory = null, filters = {} }) => {
+const EnhancedTemplates = ({
+  searchQuery = '',
+  selectedCategory = null,
+  filters = {},
+}) => {
   const router = useRouter();
-  const [templates, setTemplates] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+
+  // Redux state and actions
+  const allTemplates = useAllTemplates();
+  const loading = useTemplateLoading();
+  const error = useTemplateError();
+  const activeFilters = useActiveFilters();
+  const {
+    fetchTemplates,
+    deleteTemplate,
+    setActiveFilters,
+    setSelectedTemplate,
+  } = useTemplateActions();
+
+  const { setSelectedEvent } = useEventActions();
+  // Local state for UI
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deletingTemplateId, setDeletingTemplateId] = useState(null);
 
-  // Fetch templates from API
-  const fetchTemplates = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+  // Update active filters in Redux when props change
+  useEffect(() => {
+    const newFilters = {
+      searchQuery,
+      selectedCategory,
+      orientation: filters.orientation,
+      premium: filters.premium,
+      trending: filters.trending,
+      featured: filters.featured,
+      new: filters.new,
+    };
 
-      // Build query parameters
+    // Only update if filters have actually changed
+    const filtersChanged = Object.keys(newFilters).some(
+      (key) => activeFilters[key] !== newFilters[key],
+    );
+
+    if (filtersChanged) {
+      setActiveFilters(newFilters);
+    }
+  }, [searchQuery, selectedCategory, filters, activeFilters, setActiveFilters]);
+
+  // Load templates using Redux with server-side filtering (keep original API logic)
+  const loadTemplates = async () => {
+    try {
+      // Build query parameters for server-side filtering (keep original logic)
       const params = new URLSearchParams();
       if (searchQuery) params.append('search', searchQuery);
       if (selectedCategory) params.append('category', selectedCategory);
-      if (filters.orientation) params.append('orientation', filters.orientation);
+      if (filters.orientation)
+        params.append('orientation', filters.orientation);
       if (filters.premium === 'premium') params.append('isPremium', 'true');
       if (filters.premium === 'free') params.append('isPremium', 'false');
       if (filters.trending) params.append('trending', 'true');
       if (filters.featured) params.append('featured', 'true');
       if (filters.new) params.append('new', 'true');
 
-      const url = `/api/template?${params.toString()}`;
-      const response = await apiFetch(url);
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch templates');
-      }
-
-      const result = await response.json();
-
-      if (result.success) {
-        setTemplates(result.data);
-      } else {
-        throw new Error(result.error || 'Failed to fetch templates');
-      }
+      // Call Redux action with query parameters (API response will be stored in Redux)
+      await fetchTemplates(params.toString());
     } catch (err) {
-      console.error('Error fetching templates:', err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
+      console.error('❌ Component: Error fetching templates:', err);
     }
   };
 
+  // Load templates when filters change
   useEffect(() => {
-    fetchTemplates();
+    loadTemplates();
   }, [searchQuery, selectedCategory, filters]);
 
+  // Load templates on component mount based on stored filters
+  useEffect(() => {
+    // If we have stored filters in Redux, apply them and load templates
+    if (
+      activeFilters &&
+      (activeFilters.searchQuery ||
+        activeFilters.selectedCategory ||
+        activeFilters.orientation ||
+        activeFilters.premium ||
+        activeFilters.trending ||
+        activeFilters.featured ||
+        activeFilters.new)
+    ) {
+      loadTemplatesFromStoredFilters();
+    } else if (allTemplates.length === 0) {
+      // If no stored filters and no templates, load all templates
+      loadTemplates();
+    } else {
+    }
+  }, []); // Only run on mount
+
+  // Load templates based on stored Redux filters
+  const loadTemplatesFromStoredFilters = async () => {
+    try {
+      // Build query parameters from stored Redux filters
+      const params = new URLSearchParams();
+      if (activeFilters.searchQuery)
+        params.append('search', activeFilters.searchQuery);
+      if (activeFilters.selectedCategory)
+        params.append('category', activeFilters.selectedCategory);
+      if (activeFilters.orientation)
+        params.append('orientation', activeFilters.orientation);
+      if (activeFilters.premium === 'premium')
+        params.append('isPremium', 'true');
+      if (activeFilters.premium === 'free') params.append('isPremium', 'false');
+      if (activeFilters.trending) params.append('trending', 'true');
+      if (activeFilters.featured) params.append('featured', 'true');
+      if (activeFilters.new) params.append('new', 'true');
+
+      // Call Redux action with stored filter parameters
+      await fetchTemplates(params.toString());
+    } catch (err) {
+      console.error('Error loading templates from stored filters:', err);
+    }
+  };
+
   const handleTemplateSelect = (template) => {
-    // Navigate to events design page with template
+    setSelectedEvent(template);
     router.push(`/events/design/${template.id}`);
   };
 
   const handleEdit = (template) => {
+    setSelectedTemplate(template);
     router.push(`/templates/design/${template.id}`);
   };
 
@@ -90,25 +166,16 @@ const EnhancedTemplates = ({ searchQuery = '', selectedCategory = null, filters 
       setDeleteLoading(true);
       setDeletingTemplateId(template.id);
 
-      const response = await apiFetch(`/api/template/${template.id}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to delete template');
-      }
+      await deleteTemplate(template.id);
 
       showCustomToast('Template deleted successfully', 'success');
-      fetchTemplates(); // Refresh the list
+      setShowDeleteDialog(false);
+      setTemplateToDelete(null);
     } catch (err) {
-      console.error('Error deleting template:', err);
       showCustomToast(`Failed to delete template: ${err.message}`, 'error');
     } finally {
       setDeleteLoading(false);
       setDeletingTemplateId(null);
-      setShowDeleteDialog(false);
-      setTemplateToDelete(null);
     }
   };
 
@@ -172,7 +239,7 @@ const EnhancedTemplates = ({ searchQuery = '', selectedCategory = null, filters 
     return (
       <div className="text-center py-12">
         <p className="text-red-600 mb-4">{error}</p>
-        <Button onClick={fetchTemplates}>Try Again</Button>
+        <Button onClick={loadTemplates}>Try Again</Button>
       </div>
     );
   }
@@ -180,9 +247,11 @@ const EnhancedTemplates = ({ searchQuery = '', selectedCategory = null, filters 
   return (
     <div className="space-y-6">
       {/* Templates Grid */}
-      {templates.length === 0 ? (
+      {allTemplates.length === 0 ? (
         <div className="text-center py-8 sm:py-12 px-4 sm:px-0">
-          <p className="text-gray-600 mb-4 text-sm sm:text-base">No templates found.</p>
+          <p className="text-gray-600 mb-4 text-sm sm:text-base">
+            No templates found.
+          </p>
           <Button asChild className="w-full sm:w-auto">
             <Link href="/templates/design">Create Your First Template</Link>
           </Button>
@@ -191,13 +260,13 @@ const EnhancedTemplates = ({ searchQuery = '', selectedCategory = null, filters 
         <>
           <div className="flex justify-between items-center mb-6 sm:mb-8 px-4 sm:px-0">
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-              Templates ({templates.length})
+              Templates ({allTemplates.length})
             </h2>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 md:gap-5 px-4 sm:px-0">
-            {templates.map((template) => (
-              <Card 
+            {allTemplates.map((template) => (
+              <Card
                 key={template.id}
                 className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 border-0 shadow-md bg-white rounded-lg sm:rounded-xl overflow-hidden"
                 onClick={() => handleTemplateSelect(template)}
@@ -207,7 +276,9 @@ const EnhancedTemplates = ({ searchQuery = '', selectedCategory = null, filters 
                   <div className="relative aspect-[3/4] overflow-hidden">
                     {template.thumbnailUrl || template.previewImageUrl ? (
                       <LazyImage
-                        src={getProxiedImageUrl(template.thumbnailUrl || template.previewImageUrl)}
+                        src={getProxiedImageUrl(
+                          template.thumbnailUrl || template.previewImageUrl,
+                        )}
                         alt={template.name}
                         className="w-full h-full group-hover:scale-110 transition-transform duration-300"
                         placeholder={
@@ -217,23 +288,25 @@ const EnhancedTemplates = ({ searchQuery = '', selectedCategory = null, filters 
                                 {template.name.charAt(0).toUpperCase()}
                               </span>
                             </div>
-                            <span className="text-xs text-gray-500 dark:text-gray-400">Loading...</span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                              Loading...
+                            </span>
                           </div>
                         }
                       />
                     ) : (
                       <div className="w-full h-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                        <TemplateImageDisplay 
+                        <TemplateImageDisplay
                           template={template}
                           className="w-full h-full object-cover"
                         />
                       </div>
                     )}
-                    
+
                     {/* Badges */}
                     <div className="absolute top-1 left-1 flex flex-col gap-1">
                       {template.badge && (
-                        <Badge 
+                        <Badge
                           variant={getBadgeVariant(template.badge)}
                           className="text-xs font-medium px-1 py-0"
                         >
@@ -242,19 +315,28 @@ const EnhancedTemplates = ({ searchQuery = '', selectedCategory = null, filters 
                         </Badge>
                       )}
                       {template.isTrending && (
-                        <Badge variant="default" className="text-xs font-medium px-1 py-0">
+                        <Badge
+                          variant="default"
+                          className="text-xs font-medium px-1 py-0"
+                        >
                           <Zap className="h-2 w-2 mr-1" />
                           Trending
                         </Badge>
                       )}
                       {template.isFeatured && (
-                        <Badge variant="outline" className="text-xs font-medium px-1 py-0">
+                        <Badge
+                          variant="outline"
+                          className="text-xs font-medium px-1 py-0"
+                        >
                           <Star className="h-2 w-2 mr-1" />
                           Featured
                         </Badge>
                       )}
                       {template.isNew && (
-                        <Badge variant="secondary" className="text-xs font-medium px-1 py-0">
+                        <Badge
+                          variant="secondary"
+                          className="text-xs font-medium px-1 py-0"
+                        >
                           <Sparkles className="h-2 w-2 mr-1" />
                           New
                         </Badge>
@@ -264,11 +346,17 @@ const EnhancedTemplates = ({ searchQuery = '', selectedCategory = null, filters 
                     {/* Price Badge */}
                     <div className="absolute top-1 right-1">
                       {template.isPremium ? (
-                        <Badge variant="destructive" className="text-xs font-medium px-1 py-0">
+                        <Badge
+                          variant="destructive"
+                          className="text-xs font-medium px-1 py-0"
+                        >
                           ${template.price}
                         </Badge>
                       ) : (
-                        <Badge variant="secondary" className="text-xs font-medium px-1 py-0">
+                        <Badge
+                          variant="secondary"
+                          className="text-xs font-medium px-1 py-0"
+                        >
                           Free
                         </Badge>
                       )}
@@ -277,8 +365,8 @@ const EnhancedTemplates = ({ searchQuery = '', selectedCategory = null, filters 
                     {/* Orientation Badge */}
                     {template.orientation && (
                       <div className="absolute bottom-1 right-1">
-                        <Badge 
-                          variant="outline" 
+                        <Badge
+                          variant="outline"
                           className={`text-xs px-1 py-0 ${getOrientationColor(template.orientation)}`}
                         >
                           {template.orientation.toUpperCase()}
@@ -305,7 +393,7 @@ const EnhancedTemplates = ({ searchQuery = '', selectedCategory = null, filters 
                     <p className="text-xs text-gray-600 mb-2 font-medium">
                       {template.category}
                     </p>
-                    
+
                     {/* Colors */}
                     {template.colors && template.colors.length > 0 && (
                       <div className="flex gap-1 mb-2">
@@ -326,7 +414,7 @@ const EnhancedTemplates = ({ searchQuery = '', selectedCategory = null, filters 
                     )}
 
                     <div className="flex flex-col gap-1 mt-2">
-                      <Button 
+                      <Button
                         className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 rounded-md transition-all duration-300 text-xs"
                         size="sm"
                         onClick={(e) => {
@@ -337,7 +425,7 @@ const EnhancedTemplates = ({ searchQuery = '', selectedCategory = null, filters 
                         Use Template
                       </Button>
                       <div className="flex gap-1">
-                        <Button 
+                        <Button
                           variant="outline"
                           size="sm"
                           className="flex-1 border border-gray-200 hover:border-purple-500 hover:text-purple-600 font-semibold py-1 rounded-md transition-all duration-300 text-xs"
@@ -380,12 +468,14 @@ const EnhancedTemplates = ({ searchQuery = '', selectedCategory = null, filters 
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Template</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{templateToDelete?.name}"? This action
-              cannot be undone.
+              Are you sure you want to delete "{templateToDelete?.name}"? This
+              action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleteLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleteLoading}>
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => handleDelete(templateToDelete)}
               disabled={deleteLoading}
