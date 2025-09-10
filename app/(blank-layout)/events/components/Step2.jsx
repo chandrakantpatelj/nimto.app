@@ -28,7 +28,7 @@ function Step2() {
     : 'TBD';
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex min-h-[calc(100vh-var(--header-height))] h-full bg-gray-50">
       {/* Left Side - Preview */}
       <div className="flex-1 flex flex-col">
         {/* Preview Content */}
