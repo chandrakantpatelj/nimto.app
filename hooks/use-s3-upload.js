@@ -56,7 +56,7 @@ export function useS3Upload() {
         );
       }
 
-      // Step 3: Generate public URL using clean path format
+      // Step 3: Generate public URL using AWS standard path format (bucket/bucket/path)
       const publicUrl = `https://${bucket}.s3.${region}.amazonaws.com/${bucket}/${key}`;
 
       setUploadProgress(100);

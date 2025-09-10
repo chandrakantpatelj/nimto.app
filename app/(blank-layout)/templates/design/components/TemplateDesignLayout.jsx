@@ -19,7 +19,6 @@ const TemplateDesignLayout = ({
   const router = useRouter();
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
   const pixieEditorRef = useRef(null);
-  const sidebarRef = useRef(null);
 
   // Toggle sidebar function
   const toggleSidebar = () => {
@@ -43,7 +42,6 @@ const TemplateDesignLayout = ({
 
   // Image state
   const [imageUrl, setImageUrl] = useState('');
-  const [canvasState, setCanvasState] = useState(null);
   const [uploadedImageFile, setUploadedImageFile] = useState(null);
 
   // Initialize form data when initialFormData changes
@@ -54,13 +52,6 @@ const TemplateDesignLayout = ({
     }
   }, [initialFormData]);
 
-  // Debug image state changes
-  useEffect(() => {
-    console.log('Image state changed:', {
-      imageUrl,
-      s3ImageUrl: formData?.s3ImageUrl,
-    });
-  }, [imageUrl, formData?.s3ImageUrl]);
   // Handle form field changes
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({
@@ -86,69 +77,56 @@ const TemplateDesignLayout = ({
     }));
   };
 
-  // Handle image upload
-  const handleImageUpload = async (file) => {
-    // Validate file type
+  // Validate image file
+  const validateImageFile = (file) => {
+    if (!file) {
+      showCustomToast('No file selected', 'error');
+      return false;
+    }
     if (!file.type.startsWith('image/')) {
       showCustomToast('Please select a valid image file', 'error');
-      return;
+      return false;
     }
-
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       showCustomToast('Image size should be less than 5MB', 'error');
-      return;
+      return false;
     }
-
-    try {
-      setUploadedImageFile(file);
-      const previewUrl = URL.createObjectURL(file);
-      setImageUrl(previewUrl);
-      showCustomToast('Image selected successfully!', 'success');
-    } catch (error) {
-      showCustomToast(`Failed to process image: ${error.message}`, 'error');
-    }
+    return true;
   };
-
-  // Handle canvas save
 
   // Handle image selection from file input or Pixie dialog
   const handleImageSelect = (fileOrEvent) => {
     try {
-      // Handle both file object (from Pixie) and event object (from file input)
       const file = fileOrEvent?.target?.files?.[0] || fileOrEvent;
 
-      if (!file) {
-        showCustomToast('No file selected', 'error');
-        return;
-      }
-
-      // Validate file
-      if (!file.type.startsWith('image/')) {
-        showCustomToast('Please select a valid image file', 'error');
-        return;
-      }
-      if (file.size > 5 * 1024 * 1024) {
-        showCustomToast('Image size should be less than 5MB', 'error');
-        return;
-      }
+      if (!validateImageFile(file)) return;
 
       setUploadedImageFile(file);
       const previewUrl = URL.createObjectURL(file);
       setImageUrl(previewUrl);
-      console.log('Image uploaded successfully:', { file, previewUrl });
       showCustomToast('Image selected successfully!', 'success');
     } catch (error) {
       showCustomToast('Failed to process selected image', 'error');
     }
   };
 
-  // Manually trigger the image dialog
-  const handleShowImageDialog = () => {
-    if (pixieEditorRef?.current?.showImageDialog) {
-      pixieEditorRef.current.showImageDialog();
-    } else {
+  // Handle image replacement while preserving content
+  const handleReplaceImage = (file) => {
+    if (!pixieEditorRef?.current?.replaceImage) {
       showCustomToast('Editor not ready. Please try again.', 'error');
+      return;
+    }
+
+    if (!validateImageFile(file)) return;
+
+    try {
+      const previewUrl = URL.createObjectURL(file);
+      setImageUrl(previewUrl);
+      setUploadedImageFile(file);
+      pixieEditorRef.current.replaceImage(previewUrl);
+      showCustomToast('Image replaced successfully!', 'success');
+    } catch (error) {
+      showCustomToast('Failed to replace image', 'error');
     }
   };
 
@@ -180,7 +158,6 @@ const TemplateDesignLayout = ({
 
       // Call the parent's save function with template data and uploaded file
       await onSave(templateData, uploadedImageFile);
-      console.log('templateData', templateData);
     } catch (err) {
       showCustomToast(err.message || 'Failed to save template', 'error');
     }
@@ -264,7 +241,6 @@ const TemplateDesignLayout = ({
       <div className="flex flex-1 pt-16">
         {/* Collapsible Sidebar */}
         <div
-          ref={sidebarRef}
           className={`fixed left-0 top-16 h-[calc(100vh-4rem)] z-40 transition-all duration-300 ease-in-out ${
             sidebarExpanded ? 'w-80' : 'w-16'
           }`}
@@ -350,7 +326,9 @@ const TemplateDesignLayout = ({
                     </div>
 
                     <Button
-                      onClick={handleShowImageDialog}
+                      onClick={() =>
+                        document.getElementById('replace-image-upload')?.click()
+                      }
                       className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg py-2 text-sm font-medium shadow-lg hover:shadow-xl transition-all duration-200"
                     >
                       <svg
@@ -363,10 +341,10 @@ const TemplateDesignLayout = ({
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           strokeWidth={2}
-                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                         />
                       </svg>
-                      Add Image
+                      Replace Image
                     </Button>
                   </div>
 
@@ -687,13 +665,25 @@ const TemplateDesignLayout = ({
               />
             )}
 
-            {/* Hidden File Input */}
+            {/* Hidden File Inputs */}
             <input
               id="image-upload"
               type="file"
               accept="image/*"
               className="hidden"
               onChange={handleImageSelect}
+            />
+            <input
+              id="replace-image-upload"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  handleReplaceImage(file);
+                }
+              }}
             />
           </div>
         </div>

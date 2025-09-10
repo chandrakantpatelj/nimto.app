@@ -4,7 +4,11 @@ import { PrismaClient } from '@prisma/client';
 import { getServerSession } from 'next-auth';
 import { checkEventManagementAccess } from '@/lib/auth-utils';
 import { uid } from '@/lib/helpers';
-import { deleteImageFromS3, generateS3Url, getS3Config } from '@/lib/s3-utils';
+import {
+  deleteImageFromS3,
+  generateDirectS3Url,
+  getS3Config,
+} from '@/lib/s3-utils';
 import { sendBulkEventInvitations } from '@/services/send-event-invitation.js';
 import authOptions from '@/app/api/auth/[...nextauth]/auth-options';
 
@@ -81,11 +85,9 @@ export async function GET(request, { params }) {
       );
     }
 
-    // Generate S3 URL for event image if exists
+    // Generate standardized proxy URL for event image if exists
     if (event.imagePath) {
-      const s3ImageUrl = generateS3Url(event.imagePath);
-      const proxyImageUrl = `/api/image-proxy?url=${s3ImageUrl}`;
-      event.s3ImageUrl = proxyImageUrl;
+      event.s3ImageUrl = generateDirectS3Url(event.imagePath);
     }
 
     return NextResponse.json({
@@ -356,11 +358,9 @@ export async function PUT(request, { params }) {
       },
     });
 
-    // Generate S3 URL for event image if exists
+    // Generate standardized proxy URL for event image if exists
     if (event.imagePath) {
-      const s3ImageUrl = generateS3Url(event.imagePath);
-      const proxyImageUrl = `/api/image-proxy?url=${s3ImageUrl}`;
-      event.s3ImageUrl = proxyImageUrl;
+      event.s3ImageUrl = generateDirectS3Url(event.imagePath);
     }
 
     // Handle invitation sending if requested

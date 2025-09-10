@@ -10,6 +10,25 @@ import {
 
 let editorInstanceId = 0;
 
+// UI Configuration constants
+const NAV_ITEMS = [
+  {
+    name: 'text',
+    action: 'text',
+    icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXR5cGUtaWNvbiBsdWNpZGUtdHlwZSI+PHBhdGggZD0iTTEyIDR2MTYiLz48cGF0aCBkPSJNNCA3VjVhMSAxIDAgMCAxIDEtMWgxNGExIDEgMCAwIDEgMSAxdjIiLz48cGF0aCBkPSJNOSAyMGg2Ii8+PC9zdmc+',
+  },
+  {
+    name: 'shapes',
+    action: 'shapes',
+    icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXB1enpsZS1pY29uIGx1Y2lkZS1wdXp6bGUiPjxwYXRoIGQ9Ik0xNS4zOSA0LjM5YTEgMSAwIDAgMCAxLjY4LS40NzQgMi41IDIuNSAwIDEgMSAzLjAxNCAzLjAxNSAxIDEgMCAwIDAtLjQ3NCAxLjY4bDEuNjgzIDEuNjgyYTIuNDE0IDIuNDE0IDAgMCAxIDAgMy40MTRMMTkuNjEgMTUuMzlhMSAxIDAgMCAxLTEuNjgtLjQ3NCAyLjUgMi41IDAgMSAwLTMuMDE0IDMuMDE1IDEgMSAwIDAgMSAuNDc0IDEuNjhsLTEuNjgzIDEuNjgyYTIuNDE0IDIuNDE0IDAgMCAxLTMuNDE0IDBMOC42MSAxOS42MWExIDEgMCAwIDAtMS42OC40NzQgMi41IDIuNSAwIDEgMS0zLjAxNC0zLjAxNSAxIDEgMCAwIDAgLjQ3NC0xLjY4bC0xLjY4My0xLjY4MmEyLjQxNCAyLjQxNCAwIDAgMSAwLTMuNDE0TDQuMzkgOC42MWExIDEgMCAwIDEgMS42OC40NzQgMi41IDIuNSAwIDEgMCAzLjAxNC0zLjAxNSAxIDEgMCAwIDEtLjQ3NC0xLjY4bDEuNjgzLTEuNjgyYTIuNDE0IDIuNDE0IDAgMCAxIDMuNDE0IDB6Ii8+PC9zdmc+',
+  },
+  {
+    name: 'stickers',
+    action: 'stickers',
+    icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXNtaWxlLXBsdXMtaWNvbiBsdWNpZGUtc21pbGUtcGx1cyI+PHBhdGggZD0iTTIyIDExdjFhMTAgMTAgMCAxIDEtOS0xMCIvPjxwYXRoIGQ9Ik04IDE0czEuNSAyIDQgMiA0LTIgNC0yIi8+PGxpbmUgeDE9IjkiIHgyPSI5LjAxIiB5MT0iOSIgeTI9IjkiLz48bGluZSB4MT0iMTUiIHgyPSIxNS4wMSIgeTE9IjkiIHkyPSI5Ii8+PHBhdGggZD0iTTE2IDVoNiIvPjxwYXRoIGQ9Ik0xOSAydjYiLz48L3N2Zz4=',
+  },
+];
+
 const PixieEditor = forwardRef(
   (
     {
@@ -22,44 +41,84 @@ const PixieEditor = forwardRef(
     },
     ref,
   ) => {
-    const containerRef = useRef(null);
     const pixieRef = useRef(null);
     const [containerId, setContainerId] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    // Helper function to load image into Pixie
+    const loadImageIntoPixie = (imageUrl) => {
+      if (pixieRef.current?.tools?.import?.openBackgroundImage) {
+        return pixieRef.current.tools.import.openBackgroundImage(imageUrl);
+      } else if (pixieRef.current?.loadImage) {
+        return pixieRef.current.loadImage(imageUrl);
+      } else if (pixieRef.current?.setImage) {
+        return pixieRef.current.setImage(imageUrl);
+      }
+    };
 
     // Expose API to parent
     useImperativeHandle(ref, () => ({
       save: async () => {
         if (!pixieRef.current?.getState) return null;
 
-        const state = pixieRef.current.getState();
-        try {
-          const exportedImage = await pixieRef.current.export({
-            format: 'png',
-            quality: 1,
-            allowExternalImages: true,
-            ignoreExternalImageErrors: true,
-          });
-          state.exportedImage = exportedImage;
-        } catch {
-          if (pixieRef.current.canvas?.toDataURL) {
-            state.exportedImage =
-              pixieRef.current.canvas.toDataURL('image/png');
-          }
-        }
-        return state;
+        const state = JSON.parse(pixieRef.current.getState());
+        // Separate image object (main background) from other objects
+        const imageObj = state.canvas?.objects?.find((o) => o.type === 'image');
+
+        const otherObjects = state.canvas?.objects?.filter(
+          (o) => o.type !== 'image',
+        );
+
+        const cleanedState = {
+          ...state,
+          canvas: {
+            objects: otherObjects || [],
+          },
+        };
+
+        return JSON.stringify(cleanedState);
       },
-      getState: () => pixieRef.current?.getState?.() || null,
-      setState: (s) => pixieRef.current?.setState?.(s),
-      clear: () => pixieRef.current?.clear?.(),
-      openImage: (imageUrl) => {
-        if (pixieRef.current?.tools?.import?.openBackgroundImage) {
-          pixieRef.current.tools.import.openBackgroundImage(imageUrl);
-        } else if (pixieRef.current?.loadImage) {
-          pixieRef.current.loadImage(imageUrl);
-        } else if (pixieRef.current?.setImage) {
-          pixieRef.current.setImage(imageUrl);
+
+      // Replace image while preserving existing content
+      replaceImage: async (newImageUrl) => {
+        if (!pixieRef.current?.getState) return;
+
+        try {
+          // Get current state to preserve existing content
+          const currentState = JSON.parse(pixieRef.current.getState());
+
+          // Get all non-image objects (text, shapes, etc.)
+          const existingObjects =
+            currentState.canvas?.objects?.filter((o) => o.type !== 'image') ||
+            [];
+
+          // Load the new image
+          await loadImageIntoPixie(newImageUrl);
+
+          // Wait a moment for the image to load, then restore the content
+          setTimeout(() => {
+            const newState = JSON.parse(pixieRef.current.getState());
+            const newImageObj = newState.canvas?.objects?.find(
+              (o) => o.type === 'image',
+            );
+
+            if (newImageObj && existingObjects.length > 0) {
+              // Merge: new image + existing content
+              const mergedState = {
+                ...newState,
+                canvas: {
+                  ...newState.canvas,
+                  objects: [newImageObj, ...existingObjects],
+                },
+              };
+
+              pixieRef.current.setState(mergedState);
+            }
+          }, 500); // Wait for image to load
+        } catch (err) {
+          // Fallback: just load the new image without preserving content
+          loadImageIntoPixie(newImageUrl);
         }
       },
       // Manually show the image dialog
@@ -77,13 +136,7 @@ const PixieEditor = forwardRef(
 
             // Also load the image into Pixie
             const imageUrl = URL.createObjectURL(file);
-            if (pixieRef.current?.tools?.import?.openBackgroundImage) {
-              pixieRef.current.tools.import.openBackgroundImage(imageUrl);
-            } else if (pixieRef.current?.loadImage) {
-              pixieRef.current.loadImage(imageUrl);
-            } else if (pixieRef.current?.setImage) {
-              pixieRef.current.setImage(imageUrl);
-            }
+            loadImageIntoPixie(imageUrl);
           }
         };
         input.click();
@@ -99,7 +152,6 @@ const PixieEditor = forwardRef(
 
     // Load Pixie script
     const loadPixieScript = async () => {
-      // if (window.Pixie) return;
       await new Promise((resolve, reject) => {
         const script = document.createElement('script');
         script.src = '/pixie-assets/pixie.umd.js';
@@ -141,23 +193,7 @@ const PixieEditor = forwardRef(
           ui: {
             nav: {
               replaceDefault: true,
-              items: [
-                {
-                  name: 'text',
-                  action: 'text',
-                  icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXR5cGUtaWNvbiBsdWNpZGUtdHlwZSI+PHBhdGggZD0iTTEyIDR2MTYiLz48cGF0aCBkPSJNNCA3VjVhMSAxIDAgMCAxIDEtMWgxNGExIDEgMCAwIDEgMSAxdjIiLz48cGF0aCBkPSJNOSAyMGg2Ii8+PC9zdmc+',
-                },
-                {
-                  name: 'shapes',
-                  action: 'shapes',
-                  icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXB1enpsZS1pY29uIGx1Y2lkZS1wdXp6bGUiPjxwYXRoIGQ9Ik0xNS4zOSA0LjM5YTEgMSAwIDAgMCAxLjY4LS40NzQgMi41IDIuNSAwIDEgMSAzLjAxNCAzLjAxNSAxIDEgMCAwIDAtLjQ3NCAxLjY4bDEuNjgzIDEuNjgyYTIuNDE0IDIuNDE0IDAgMCAxIDAgMy40MTRMMTkuNjEgMTUuMzlhMSAxIDAgMCAxLTEuNjgtLjQ3NCAyLjUgMi41IDAgMSAwLTMuMDE0IDMuMDE1IDEgMSAwIDAgMSAuNDc0IDEuNjhsLTEuNjgzIDEuNjgyYTIuNDE0IDIuNDE0IDAgMCAxLTMuNDE0IDBMOC42MSAxOS42MWExIDEgMCAwIDAtMS42OC40NzQgMi41IDIuNSAwIDEgMS0zLjAxNC0zLjAxNSAxIDEgMCAwIDAgLjQ3NC0xLjY4bC0xLjY4My0xLjY4MmEyLjQxNCAyLjQxNCAwIDAgMSAwLTMuNDE0TDQuMzkgOC42MWExIDEgMCAwIDEgMS42OC40NzQgMi41IDIuNSAwIDEgMCAzLjAxNC0zLjAxNSAxIDEgMCAwIDEtLjQ3NC0xLjY4bDEuNjgzLTEuNjgyYTIuNDE0IDIuNDE0IDAgMCAxIDMuNDE0IDB6Ii8+PC9zdmc+',
-                },
-                {
-                  name: 'stickers',
-                  action: 'stickers',
-                  icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXNtaWxlLXBsdXMtaWNvbiBsdWNpZGUtc21pbGUtcGx1cyI+PHBhdGggZD0iTTIyIDExdjFhMTAgMTAgMCAxIDEtOS0xMCIvPjxwYXRoIGQ9Ik04IDE0czEuNSAyIDQgMiA0LTIgNC0yIi8+PGxpbmUgeDE9IjkiIHgyPSI5LjAxIiB5MT0iOSIgeTI9IjkiLz48bGluZSB4MT0iMTUiIHgyPSIxNS4wMSIgeTE9IjkiIHkyPSI5Ii8+PHBhdGggZD0iTTE2IDVoNiIvPjxwYXRoIGQ9Ik0xOSAydjYiLz48L3N2Zz4=',
-                },
-              ],
+              items: NAV_ITEMS,
             },
             openImageDialog: { show: false },
           },
@@ -168,11 +204,37 @@ const PixieEditor = forwardRef(
                   typeof initialContent === 'string'
                     ? JSON.parse(initialContent)
                     : initialContent;
+
                 if (initialContentJson?.canvas?.objects?.length > 0) {
-                  await editor.setState(initialContentJson);
+                  // Get current state to preserve the loaded image
+                  const currentState = JSON.parse(editor.getState());
+
+                  // Find the image object in current state (the one we just loaded)
+                  const currentImageObj = currentState.canvas?.objects?.find(
+                    (o) => o.type === 'image',
+                  );
+
+                  // Get other objects from saved content (text, shapes, etc.)
+                  const savedObjects =
+                    initialContentJson.canvas?.objects?.filter(
+                      (o) => o.type !== 'image',
+                    ) || [];
+
+                  // Create merged state: current image + saved objects
+                  const mergedState = {
+                    ...initialContentJson,
+                    canvas: {
+                      ...initialContentJson.canvas,
+                      objects: currentImageObj
+                        ? [currentImageObj, ...savedObjects]
+                        : savedObjects,
+                    },
+                  };
+
+                  await editor.setState(mergedState);
                 }
               } catch (err) {
-                console.warn('Pixie: failed to set initial content', err);
+                // Silent fail - content will load without saved state
               }
             }
             setIsLoading(false);
@@ -181,7 +243,7 @@ const PixieEditor = forwardRef(
 
         pixieRef.current = instance;
       } catch (err) {
-        setError(err.message || 'Failed to initialize Pixie editor');
+        setError('Failed to initialize image editor');
         setIsLoading(false);
       }
     };
@@ -298,12 +360,9 @@ const PixieEditor = forwardRef(
           </div>
         )}
 
-        {/* No Image State */}
-
         {/* Pixie Editor Container */}
         {containerId && (
           <div
-            ref={containerRef}
             id={containerId}
             style={{ width, height }}
             className="border border-gray-200 rounded-lg overflow-hidden bg-white pixie-editor-container"

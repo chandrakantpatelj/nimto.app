@@ -50,10 +50,23 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Invalid S3 URL' }, { status: 400 });
     }
 
-    const bucket = url.hostname.split('.')[0]; // Extract bucket name from hostname
-    const key = pathParts.join('/'); // The rest is the object key
+    // Extract bucket name from hostname (e.g., "bucket.s3.region.amazonaws.com" -> "bucket")
+    const bucket = url.hostname.split('.')[0];
+    // For AWS standard path structure (bucket/bucket/path), remove the first bucket name from path
+    // The key is the path after the bucket name (e.g., "templates/filename.png")
+    const key =
+      pathParts.length > 1 ? pathParts.slice(1).join('/') : pathParts.join('/');
+    // Decode the URL-encoded key to get the actual S3 object key
+    const decodedKey = decodeURIComponent(key);
 
-    console.log('S3 Proxy - Bucket:', bucket, 'Key:', key);
+    console.log(
+      'S3 Proxy - Bucket:',
+      bucket,
+      'Key:',
+      key,
+      'Decoded Key:',
+      decodedKey,
+    );
 
     // Create S3 client with credentials
     const s3Client = new S3Client({
@@ -64,10 +77,10 @@ export async function GET(request) {
       },
     });
 
-    // Get the object from S3
+    // Get the object from S3 using the decoded key
     const command = new GetObjectCommand({
       Bucket: bucket,
-      Key: key,
+      Key: decodedKey,
     });
 
     const response = await s3Client.send(command);
