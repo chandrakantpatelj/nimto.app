@@ -12,7 +12,7 @@ import {
   useTemplateLoading,
 } from '@/store/hooks';
 import { Crown, Loader2, Sparkles, Star, Trash2, Zap } from 'lucide-react';
-import { getProxiedImageUrl } from '@/lib/image-proxy';
+// Removed import - now using standardized s3ImageUrl from API
 import {
   AlertDialog,
   AlertDialogAction,
@@ -274,11 +274,15 @@ const EnhancedTemplates = ({
                 <CardContent className="p-0">
                   {/* Template Image */}
                   <div className="relative aspect-[3/4] overflow-hidden">
-                    {template.thumbnailUrl || template.previewImageUrl ? (
+                    {template.s3ImageUrl ||
+                    template.thumbnailUrl ||
+                    template.previewImageUrl ? (
                       <LazyImage
-                        src={getProxiedImageUrl(
-                          template.thumbnailUrl || template.previewImageUrl,
-                        )}
+                        src={
+                          template.s3ImageUrl ||
+                          template.thumbnailUrl ||
+                          template.previewImageUrl
+                        }
                         alt={template.name}
                         className="w-full h-full group-hover:scale-110 transition-transform duration-300"
                         placeholder={

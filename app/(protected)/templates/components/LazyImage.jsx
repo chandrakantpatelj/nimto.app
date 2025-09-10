@@ -1,16 +1,17 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 
-const LazyImage = ({ 
-  src, 
-  alt, 
-  className = '', 
+const LazyImage = ({
+  src,
+  alt,
+  className = '',
   placeholder = null,
   onError = null,
-  ...props 
+  ...props
 }) => {
+  console.log('LazyImage src:', src);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInView, setIsInView] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -26,8 +27,8 @@ const LazyImage = ({
       },
       {
         threshold: 0.1,
-        rootMargin: '50px'
-      }
+        rootMargin: '50px',
+      },
     );
 
     if (imgRef.current) {

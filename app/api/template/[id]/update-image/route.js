@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server';
+import {
+  DeleteObjectCommand,
+  HeadObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import { PrismaClient } from '@prisma/client';
 import { getServerSession } from 'next-auth';
-import authOptions from '../../../auth/[...nextauth]/auth-options';
-import { S3Client, PutObjectCommand, HeadObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { uid } from '@/lib/helpers';
-import { generateS3Url } from '@/lib/s3-utils';
+import { generateProxyUrl } from '@/lib/s3-utils';
+import authOptions from '../../../auth/[...nextauth]/auth-options';
 
 const prisma = new PrismaClient();
 
@@ -13,8 +18,11 @@ function createS3Client() {
   const config = {
     region: process.env.AWS_REGION || process.env.STORAGE_REGION || 'us-east-1',
     credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID || process.env.STORAGE_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || process.env.STORAGE_SECRET_ACCESS_KEY,
+      accessKeyId:
+        process.env.AWS_ACCESS_KEY_ID || process.env.STORAGE_ACCESS_KEY_ID,
+      secretAccessKey:
+        process.env.AWS_SECRET_ACCESS_KEY ||
+        process.env.STORAGE_SECRET_ACCESS_KEY,
     },
   };
 
@@ -54,7 +62,11 @@ async function deleteImageFromS3(s3Client, bucket, key) {
 }
 
 // Generate unique image path
-function generateUniqueImagePath(templateId, originalFileName, imageFormat = 'png') {
+function generateUniqueImagePath(
+  templateId,
+  originalFileName,
+  imageFormat = 'png',
+) {
   const timestamp = Date.now();
   const uniqueId = uid();
   const extension = imageFormat || originalFileName?.split('.').pop() || 'png';
@@ -66,21 +78,25 @@ function generateUniqueImagePath(templateId, originalFileName, imageFormat = 'pn
 export async function POST(request, { params }) {
   try {
     const session = await getServerSession(authOptions);
-    
+
     if (!session) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
     const { id } = params;
-    const { imageData, imageFormat = 'png', originalFileName } = await request.json();
+    const {
+      imageData,
+      imageFormat = 'png',
+      originalFileName,
+    } = await request.json();
 
     if (!imageData) {
       return NextResponse.json(
         { success: false, error: 'Image data is required' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -95,23 +111,27 @@ export async function POST(request, { params }) {
     if (!template) {
       return NextResponse.json(
         { success: false, error: 'Template not found' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     const s3Client = createS3Client();
     const bucket = process.env.AWS_S3_BUCKET || process.env.STORAGE_BUCKET;
-    
+
     if (!bucket) {
       return NextResponse.json(
         { success: false, error: 'S3 bucket not configured' },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     // Generate unique image path
-    const newImagePath = generateUniqueImagePath(id, originalFileName, imageFormat);
-    
+    const newImagePath = generateUniqueImagePath(
+      id,
+      originalFileName,
+      imageFormat,
+    );
+
     // Convert base64 to buffer
     const base64Data = imageData.replace(/^data:image\/\w+;base64,/, '');
     const imageBuffer = Buffer.from(base64Data, 'base64');
@@ -131,9 +151,17 @@ export async function POST(request, { params }) {
     // If template has an existing image, delete it from S3
     let oldImageDeleted = false;
     if (template.imagePath) {
-      const oldImageExists = await checkImageExists(s3Client, bucket, template.imagePath);
+      const oldImageExists = await checkImageExists(
+        s3Client,
+        bucket,
+        template.imagePath,
+      );
       if (oldImageExists) {
-        oldImageDeleted = await deleteImageFromS3(s3Client, bucket, template.imagePath);
+        oldImageDeleted = await deleteImageFromS3(
+          s3Client,
+          bucket,
+          template.imagePath,
+        );
       }
     }
 
@@ -146,8 +174,8 @@ export async function POST(request, { params }) {
       },
     });
 
-    // Generate the full S3 URL
-    const imageUrl = generateS3Url(newImagePath);
+    // Generate the standardized proxy URL
+    const imageUrl = generateProxyUrl(newImagePath);
 
     return NextResponse.json({
       success: true,
@@ -160,12 +188,11 @@ export async function POST(request, { params }) {
         message: 'Image updated successfully',
       },
     });
-
   } catch (error) {
     console.error('Error updating template image:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to update image' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -174,11 +201,11 @@ export async function POST(request, { params }) {
 export async function PUT(request, { params }) {
   try {
     const session = await getServerSession(authOptions);
-    
+
     if (!session) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -191,16 +218,25 @@ export async function PUT(request, { params }) {
     if (!file) {
       return NextResponse.json(
         { success: false, error: 'Image file is required' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    const allowedTypes = [
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+    ];
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
-        { success: false, error: 'Only image files (JPG, PNG, GIF, WebP) are allowed' },
-        { status: 400 }
+        {
+          success: false,
+          error: 'Only image files (JPG, PNG, GIF, WebP) are allowed',
+        },
+        { status: 400 },
       );
     }
 
@@ -209,7 +245,7 @@ export async function PUT(request, { params }) {
     if (file.size > maxSize) {
       return NextResponse.json(
         { success: false, error: 'File size must be less than 5MB' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -224,37 +260,45 @@ export async function PUT(request, { params }) {
     if (!template) {
       return NextResponse.json(
         { success: false, error: 'Template not found' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     const s3Client = createS3Client();
     const bucket = process.env.AWS_S3_BUCKET || process.env.STORAGE_BUCKET;
-    
+
     if (!bucket) {
       return NextResponse.json(
         { success: false, error: 'S3 bucket not configured' },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     // Generate image path - use existing path if requested, otherwise generate new unique path
     const imageFormat = file.type.split('/')[1];
     let newImagePath;
-    
+
     if (useExistingPath && existingPath) {
       newImagePath = existingPath;
     } else {
       newImagePath = generateUniqueImagePath(id, file.name, imageFormat);
     }
-    
+
     // Handle existing image deletion BEFORE upload
     let oldImageDeleted = false;
     if (template.imagePath && useExistingPath) {
-      const oldImageExists = await checkImageExists(s3Client, bucket, template.imagePath);
+      const oldImageExists = await checkImageExists(
+        s3Client,
+        bucket,
+        template.imagePath,
+      );
       if (oldImageExists) {
         // Delete the existing file first to force update
-        oldImageDeleted = await deleteImageFromS3(s3Client, bucket, template.imagePath);
+        oldImageDeleted = await deleteImageFromS3(
+          s3Client,
+          bucket,
+          template.imagePath,
+        );
       }
     }
 
@@ -272,17 +316,25 @@ export async function PUT(request, { params }) {
       // Force update by adding metadata
       Metadata: {
         'last-updated': new Date().toISOString(),
-        'updated-by': 'template-editor'
-      }
+        'updated-by': 'template-editor',
+      },
     });
 
     await s3Client.send(uploadCommand);
 
     // Handle existing image deletion for new paths
     if (template.imagePath && !useExistingPath) {
-      const oldImageExists = await checkImageExists(s3Client, bucket, template.imagePath);
+      const oldImageExists = await checkImageExists(
+        s3Client,
+        bucket,
+        template.imagePath,
+      );
       if (oldImageExists) {
-        oldImageDeleted = await deleteImageFromS3(s3Client, bucket, template.imagePath);
+        oldImageDeleted = await deleteImageFromS3(
+          s3Client,
+          bucket,
+          template.imagePath,
+        );
       }
     }
 
@@ -295,8 +347,8 @@ export async function PUT(request, { params }) {
       },
     });
 
-    // Generate the full S3 URL
-    const imageUrl = generateS3Url(newImagePath);
+    // Generate the standardized proxy URL
+    const imageUrl = generateProxyUrl(newImagePath);
 
     return NextResponse.json({
       success: true,
@@ -309,12 +361,11 @@ export async function PUT(request, { params }) {
         message: 'Image uploaded successfully',
       },
     });
-
   } catch (error) {
     console.error('Error uploading template image:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to upload image' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

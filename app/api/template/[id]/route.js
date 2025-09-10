@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { getServerSession } from 'next-auth';
-import { generateS3Url } from '@/lib/s3-utils';
+import { generateDirectS3Url } from '@/lib/s3-utils';
 import authOptions from '../../auth/[...nextauth]/auth-options';
 
 const prisma = new PrismaClient();
@@ -25,12 +25,10 @@ export async function GET(request, { params }) {
       );
     }
 
-    // Generate S3 URL for template image
+    // Generate standardized proxy URL for template image
     let s3ImageUrl = null;
     if (template.imagePath) {
-      const directS3Url = generateS3Url(template.imagePath);
-      // Use proxy URL to avoid CORS issues and access private S3 bucket
-      s3ImageUrl = `/api/image-proxy?url=${directS3Url}`;
+      s3ImageUrl = generateDirectS3Url(template.imagePath);
     }
 
     // Parse JSON content back to object
