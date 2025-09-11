@@ -45,11 +45,10 @@ export async function GET(request) {
     }
 
     const bucket = url.hostname.split('.')[0];
-    const decodedKey = decodeURIComponent(
-      pathParts.length > 1 ? pathParts.slice(1).join('/') : pathParts[0],
-    );
+    const key =
+      pathParts.length > 1 ? pathParts.slice(1).join('/') : pathParts[0];
 
-    console.log('S3 Proxy - Parsed:', { bucket, decodedKey });
+    console.log('S3 Proxy - Parsed:', { bucket, key });
 
     // Configure S3 client
     const s3Client = new S3Client({
@@ -64,9 +63,7 @@ export async function GET(request) {
 
     // Validate that the object exists
     try {
-      await s3Client.send(
-        new HeadObjectCommand({ Bucket: bucket, Key: decodedKey }),
-      );
+      await s3Client.send(new HeadObjectCommand({ Bucket: bucket, Key: key }));
     } catch (headError) {
       if (headError.name === 'NoSuchKey') {
         return NextResponse.json({ error: 'Image not found' }, { status: 404 });
@@ -79,7 +76,7 @@ export async function GET(request) {
 
     // Fetch object from S3
     const { Body, ContentType: fetchedContentType } = await s3Client.send(
-      new GetObjectCommand({ Bucket: bucket, Key: decodedKey }),
+      new GetObjectCommand({ Bucket: bucket, Key: key }),
     );
 
     if (!Body) {

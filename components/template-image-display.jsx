@@ -13,7 +13,12 @@ export default function TemplateImageDisplay({
   // Use image proxy for validation
   const imageUrl = useMemo(() => {
     if (template?.s3ImageUrl) {
-      return `/api/image-proxy?url=${encodeURIComponent(template.s3ImageUrl)}`;
+      // If s3ImageUrl is already a proxy URL, use it directly
+      if (template.s3ImageUrl.startsWith('/api/image-proxy')) {
+        return template.s3ImageUrl;
+      }
+      // If it's a direct S3 URL, wrap it with image proxy
+      return `/api/image-proxy?url=${template.s3ImageUrl}`;
     }
     return null;
   }, [template?.s3ImageUrl]);
