@@ -49,26 +49,21 @@ export function SidebarMenu() {
       // Super Admin sees all menu items
       return MENU_SIDEBAR;
     } else if (roles.isHost) {
-      // Host sees limited menu items
+      // Host sees limited menu items (Templates removed - admin only)
       return [
         {
           title: 'Dashboard',
-          icon: MENU_SIDEBAR.find(item => item.title === 'Dashboard')?.icon,
+          icon: MENU_SIDEBAR.find((item) => item.title === 'Dashboard')?.icon,
           path: '/',
         },
         {
           title: 'Events',
-          icon: MENU_SIDEBAR.find(item => item.title === 'Events')?.icon,
+          icon: MENU_SIDEBAR.find((item) => item.title === 'Events')?.icon,
           path: '/events',
         },
         {
-          title: 'Templates',
-          icon: MENU_SIDEBAR.find(item => item.title === 'Templates')?.icon,
-          path: '/templates',
-        },
-        {
           title: 'My Profile',
-          icon: MENU_SIDEBAR.find(item => item.title === 'My Profile')?.icon,
+          icon: MENU_SIDEBAR.find((item) => item.title === 'My Profile')?.icon,
           path: '/my-profile',
         },
       ];
@@ -77,47 +72,48 @@ export function SidebarMenu() {
       return [
         {
           title: 'Dashboard',
-          icon: MENU_SIDEBAR.find(item => item.title === 'Dashboard')?.icon,
+          icon: MENU_SIDEBAR.find((item) => item.title === 'Dashboard')?.icon,
           path: '/',
         },
         {
           title: 'Events',
-          icon: MENU_SIDEBAR.find(item => item.title === 'Events')?.icon,
+          icon: MENU_SIDEBAR.find((item) => item.title === 'Events')?.icon,
           path: '/events',
         },
         {
           title: 'Templates',
-          icon: MENU_SIDEBAR.find(item => item.title === 'Templates')?.icon,
+          icon: MENU_SIDEBAR.find((item) => item.title === 'Templates')?.icon,
           path: '/templates',
         },
         {
           title: 'Users',
-          icon: MENU_SIDEBAR.find(item => item.title === 'Users')?.icon,
+          icon: MENU_SIDEBAR.find((item) => item.title === 'Users')?.icon,
           path: '/user-management/users',
         },
         {
           title: 'Roles',
-          icon: MENU_SIDEBAR.find(item => item.title === 'Roles')?.icon,
+          icon: MENU_SIDEBAR.find((item) => item.title === 'Roles')?.icon,
           path: '/user-management/roles',
         },
         {
           title: 'App Settings',
-          icon: MENU_SIDEBAR.find(item => item.title === 'App Settings')?.icon,
+          icon: MENU_SIDEBAR.find((item) => item.title === 'App Settings')
+            ?.icon,
           path: '/settings',
         },
         {
           title: 'Reporting',
-          icon: MENU_SIDEBAR.find(item => item.title === 'Reporting')?.icon,
+          icon: MENU_SIDEBAR.find((item) => item.title === 'Reporting')?.icon,
           path: '/reportings',
         },
         {
           title: 'Messaging',
-          icon: MENU_SIDEBAR.find(item => item.title === 'Messaging')?.icon,
+          icon: MENU_SIDEBAR.find((item) => item.title === 'Messaging')?.icon,
           path: '/messaging',
         },
         {
           title: 'My Profile',
-          icon: MENU_SIDEBAR.find(item => item.title === 'My Profile')?.icon,
+          icon: MENU_SIDEBAR.find((item) => item.title === 'My Profile')?.icon,
           path: '/my-profile',
         },
       ];
@@ -126,17 +122,17 @@ export function SidebarMenu() {
       return [
         {
           title: 'Dashboard',
-          icon: MENU_SIDEBAR.find(item => item.title === 'Dashboard')?.icon,
+          icon: MENU_SIDEBAR.find((item) => item.title === 'Dashboard')?.icon,
           path: '/',
         },
         {
           title: 'Events',
-          icon: MENU_SIDEBAR.find(item => item.title === 'Events')?.icon,
+          icon: MENU_SIDEBAR.find((item) => item.title === 'Events')?.icon,
           path: '/events',
         },
         {
           title: 'My Profile',
-          icon: MENU_SIDEBAR.find(item => item.title === 'My Profile')?.icon,
+          icon: MENU_SIDEBAR.find((item) => item.title === 'My Profile')?.icon,
           path: '/my-profile',
         },
       ];
@@ -145,17 +141,17 @@ export function SidebarMenu() {
       return [
         {
           title: 'Dashboard',
-          icon: MENU_SIDEBAR.find(item => item.title === 'Dashboard')?.icon,
+          icon: MENU_SIDEBAR.find((item) => item.title === 'Dashboard')?.icon,
           path: '/',
         },
         {
           title: 'Events',
-          icon: MENU_SIDEBAR.find(item => item.title === 'Events')?.icon,
+          icon: MENU_SIDEBAR.find((item) => item.title === 'Events')?.icon,
           path: '/events',
         },
         {
           title: 'My Profile',
-          icon: MENU_SIDEBAR.find(item => item.title === 'My Profile')?.icon,
+          icon: MENU_SIDEBAR.find((item) => item.title === 'My Profile')?.icon,
           path: '/my-profile',
         },
       ];

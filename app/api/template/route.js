@@ -1,12 +1,34 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { getServerSession } from 'next-auth';
 import { generateDirectS3Url } from '@/lib/s3-utils';
+import authOptions from '../auth/[...nextauth]/auth-options';
 
 const prisma = new PrismaClient();
+
+// Helper function to check if user has admin role
+function hasAdminRole(userRole) {
+  return (
+    userRole === 'super-admin' ||
+    userRole === 'host' ||
+    userRole === 'application-admin'
+  );
+}
 
 // GET /api/template - Get all templates
 export async function GET(request) {
   try {
+    // Check authentication and role
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.roleName || !hasAdminRole(session.user.roleName)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Unauthorized - Admin or Host access required',
+        },
+        { status: 403 },
+      );
+    }
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
     const isPremium = searchParams.get('isPremium');
@@ -70,8 +92,8 @@ export async function GET(request) {
     // Generate S3 URLs for templates with imagePath
     const templatesWithUrls = templates.map((template) => {
       if (template.imagePath) {
-        // Generate standardized proxy URL
-        const s3ImageUrl = generateDirectS3Url(template.imagePath);
+        // Use image proxy to avoid CORS and permission issues
+        const s3ImageUrl = `/api/image-proxy?url=${generateDirectS3Url(template.imagePath)}`;
 
         return {
           ...template,

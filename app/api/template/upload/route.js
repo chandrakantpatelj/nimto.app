@@ -1,19 +1,24 @@
+import { existsSync } from 'fs';
+import { mkdir, writeFile } from 'fs/promises';
+import { join } from 'path';
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import authOptions from '../../auth/[...nextauth]/auth-options';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
-import { existsSync } from 'fs';
+
+// Helper function to check if user has admin role
+function hasAdminRole(userRole) {
+  return userRole === 'super-admin' || userRole === 'application-admin';
+}
 
 // POST /api/template/upload - Upload template image
 export async function POST(request) {
   try {
     const session = await getServerSession(authOptions);
-    
-    if (!session) {
+
+    if (!session?.user?.roleName || !hasAdminRole(session.user.roleName)) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
+        { success: false, error: 'Unauthorized - Admin access required' },
+        { status: 403 },
       );
     }
 
@@ -23,16 +28,26 @@ export async function POST(request) {
     if (!file) {
       return NextResponse.json(
         { success: false, error: 'No image file provided' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    const allowedTypes = [
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+    ];
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
-        { success: false, error: 'Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.' },
-        { status: 400 }
+        {
+          success: false,
+          error:
+            'Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.',
+        },
+        { status: 400 },
       );
     }
 
@@ -41,7 +56,7 @@ export async function POST(request) {
     if (file.size > maxSize) {
       return NextResponse.json(
         { success: false, error: 'File size too large. Maximum size is 5MB.' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -79,7 +94,7 @@ export async function POST(request) {
     console.error('Error uploading template image:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to upload image' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

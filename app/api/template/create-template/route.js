@@ -3,17 +3,22 @@ import { PrismaClient } from '@prisma/client';
 import { getServerSession } from 'next-auth';
 import authOptions from '../../auth/[...nextauth]/auth-options';
 
+// Helper function to check if user has admin role
+function hasAdminRole(userRole) {
+  return userRole === 'super-admin' || userRole === 'application-admin';
+}
+
 const prisma = new PrismaClient();
 
 // POST /api/template/create-template - Create a new template
 export async function POST(request) {
   try {
     const session = await getServerSession(authOptions);
-    
-    if (!session) {
+
+    if (!session?.user?.roleName || !hasAdminRole(session.user.roleName)) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
+        { success: false, error: 'Unauthorized - Admin access required' },
+        { status: 403 },
       );
     }
 
@@ -37,13 +42,15 @@ export async function POST(request) {
     if (!name || !category) {
       return NextResponse.json(
         { success: false, error: 'Name and category are required' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Convert content array to JSON string
     const jsonContent = content ? JSON.stringify(content) : null;
-    const backgroundStyleJson = backgroundStyle ? JSON.stringify(backgroundStyle) : null;
+    const backgroundStyleJson = backgroundStyle
+      ? JSON.stringify(backgroundStyle)
+      : null;
 
     const template = await prisma.template.create({
       data: {
@@ -63,15 +70,18 @@ export async function POST(request) {
       },
     });
 
-    return NextResponse.json({
-      success: true,
-      data: template,
-    }, { status: 201 });
+    return NextResponse.json(
+      {
+        success: true,
+        data: template,
+      },
+      { status: 201 },
+    );
   } catch (error) {
     console.error('Error creating template:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to create template' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

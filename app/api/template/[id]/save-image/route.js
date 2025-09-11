@@ -5,6 +5,11 @@ import { getServerSession } from 'next-auth';
 import { generateProxyUrl } from '@/lib/s3-utils';
 import authOptions from '../../../auth/[...nextauth]/auth-options';
 
+// Helper function to check if user has admin role
+function hasAdminRole(userRole) {
+  return userRole === 'super-admin' || userRole === 'application-admin';
+}
+
 const prisma = new PrismaClient();
 
 // S3 Client configuration
@@ -35,10 +40,10 @@ export async function POST(request, { params }) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session) {
+    if (!session?.user?.roleName || !hasAdminRole(session.user.roleName)) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 },
+        { success: false, error: 'Unauthorized - Admin access required' },
+        { status: 403 },
       );
     }
 
