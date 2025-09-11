@@ -25,13 +25,12 @@ function Step1({ mode = 'create', pixieEditorRef: externalPixieRef }) {
   }, [eventData]);
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex min-h-[calc(100vh-var(--header-height))] h-full bg-gray-50">
       {/* Left Side - Full Size Pixie Editor */}
-      <div className="flex-1 flex flex-col">
-        {/* Header */}
+      
 
         {/* Pixie Editor Container */}
-        <div className="flex-1 p-4">
+        <div className=" p-4">
           {templateLoading ? (
             <div className="h-full flex items-center justify-center">
               <div className="text-center space-y-4">
@@ -54,7 +53,6 @@ function Step1({ mode = 'create', pixieEditorRef: externalPixieRef }) {
             </div>
           )}
         </div>
-      </div>
     </div>
   );
 }
