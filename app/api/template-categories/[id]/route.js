@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
+import { prisma } from '@/lib/prisma';
 import authOptions from '@/app/api/auth/[...nextauth]/auth-options';
 
 export async function GET(request, { params }) {
@@ -17,7 +17,7 @@ export async function GET(request, { params }) {
           success: false,
           error: 'Category not found',
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -32,7 +32,7 @@ export async function GET(request, { params }) {
         success: false,
         error: 'Failed to fetch template category',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -41,19 +41,30 @@ export async function PUT(request, { params }) {
   try {
     // Check if user is super admin
     const session = await getServerSession(authOptions);
-    if (!session?.user?.roleName || session.user.roleName.toLowerCase() !== 'super admin') {
+    if (
+      !session?.user?.roleName ||
+      session.user.roleName.toLowerCase() !== 'super-admin'
+    ) {
       return NextResponse.json(
         {
           success: false,
           error: 'Unauthorized. Super admin access required.',
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
     const { id } = params;
     const body = await request.json();
-    const { name, slug, description, thumbnailUrl, color, sortOrder, isActive } = body;
+    const {
+      name,
+      slug,
+      description,
+      thumbnailUrl,
+      color,
+      sortOrder,
+      isActive,
+    } = body;
 
     // Check if category exists
     const existingCategory = await prisma.templateCategory.findUnique({
@@ -66,7 +77,7 @@ export async function PUT(request, { params }) {
           success: false,
           error: 'Category not found',
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -82,7 +93,7 @@ export async function PUT(request, { params }) {
             success: false,
             error: 'Category with this slug already exists',
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
     }
@@ -112,7 +123,7 @@ export async function PUT(request, { params }) {
         success: false,
         error: 'Failed to update template category',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -121,13 +132,16 @@ export async function DELETE(request, { params }) {
   try {
     // Check if user is super admin
     const session = await getServerSession(authOptions);
-    if (!session?.user?.roleName || session.user.roleName.toLowerCase() !== 'super admin') {
+    if (
+      !session?.user?.roleName ||
+      session.user.roleName.toLowerCase() !== 'super-admin'
+    ) {
       return NextResponse.json(
         {
           success: false,
           error: 'Unauthorized. Super admin access required.',
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -144,7 +158,7 @@ export async function DELETE(request, { params }) {
           success: false,
           error: 'Category not found',
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -162,7 +176,7 @@ export async function DELETE(request, { params }) {
           success: false,
           error: 'Cannot delete category that is being used by templates',
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -182,7 +196,7 @@ export async function DELETE(request, { params }) {
         success: false,
         error: 'Failed to delete template category',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
