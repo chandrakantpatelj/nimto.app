@@ -25,7 +25,7 @@ export function RouteGuard({
     }
 
     if (status === 'unauthenticated') {
-      router.push('/signin');
+      router.push('/');
       return;
     }
 

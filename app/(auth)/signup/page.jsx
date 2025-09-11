@@ -97,7 +97,7 @@ export default function Page() {
             },
           },
         );
-        router.push('/');
+        router.push('/templates');
       }
     } catch (err) {
       setError(
@@ -146,7 +146,7 @@ export default function Page() {
             <Button
               variant="outline"
               type="button"
-              onClick={() => signIn('google', { callbackUrl: '/' })}
+              onClick={() => signIn('google', { callbackUrl: '/templates' })}
             >
               <Icons.googleColorful className="size-4!" /> Sign up with Google
             </Button>
