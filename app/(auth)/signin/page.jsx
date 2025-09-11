@@ -53,7 +53,7 @@ export default function Page() {
         email: values.email,
         password: values.password,
         rememberMe: values.rememberMe,
-        callbackUrl: '/', // always return here after login
+        callbackUrl: '/templates', // redirect to templates after login
       });
 
       console.log('SignIn Response:', response);
@@ -102,7 +102,7 @@ export default function Page() {
           <Button
             variant="outline"
             type="button"
-            onClick={() => signIn('google', { callbackUrl: '/' })}
+            onClick={() => signIn('google', { callbackUrl: '/templates' })}
           >
             <Icons.googleColorful className="size-5 opacity-100" /> Sign in with
             Google

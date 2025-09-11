@@ -15,8 +15,16 @@ export default withAuth(
     const token = req.nextauth.token;
     const { pathname } = req.nextUrl;
 
+    // Allow public access to root route (coming soon page)
+    if (pathname === '/') return NextResponse.next();
     if (pathname === '/unauthorized') return NextResponse.next();
-    if (!token) return redirect('/signin', req);
+    
+    // Redirect authenticated users away from auth pages
+    if (token && (pathname.startsWith('/signin') || pathname.startsWith('/signup') || pathname.startsWith('/reset-password'))) {
+      return redirect('/templates', req);
+    }
+    
+    if (!token) return redirect('/', req);
 
     const userRole = getRoleSlug(token.roleName);
     if (!userRole) return redirect('/unauthorized', req);
@@ -64,7 +72,6 @@ export default withAuth(
         'super-admin',
         'application-admin',
       ]),
-      '/': new Set(['host', 'attendee', 'super-admin', 'application-admin']),
     };
 
     const sortedRoutes = Object.keys(routePermissions).sort(
@@ -96,13 +103,19 @@ export default withAuth(
     return NextResponse.next();
   },
   {
-    callbacks: { authorized: ({ token }) => !!token },
+    callbacks: { 
+      authorized: ({ token, req }) => {
+        // Allow public access to root route
+        if (req.nextUrl.pathname === '/') return true;
+        // Require token for all other routes
+        return !!token;
+      }
+    },
   },
 );
 
 export const config = {
   matcher: [
-    '/',
     '/events/:path*',
     '/host/:path*',
     '/admin/:path*',
@@ -118,6 +131,6 @@ export const config = {
     '/network/:path*',
     '/public-profile/:path*',
     '/account/:path*',
-    '/((?!api|_next/static|_next/image|favicon.ico|signin|signup|verify-email|reset-password|unauthorized).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|signin|signup|verify-email|reset-password|unauthorized|^/$).*)',
   ],
 };

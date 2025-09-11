@@ -93,7 +93,7 @@ export default function Page() {
 
       if (response.ok) {
         setSuccessMessage('Password reset successful! Redirecting to login...');
-        setTimeout(() => router.push('/signin'), 3000);
+        setTimeout(() => router.push('/'), 3000);
       } else {
         const errorData = await response.json();
         setError(errorData.message || 'Password reset failed.');

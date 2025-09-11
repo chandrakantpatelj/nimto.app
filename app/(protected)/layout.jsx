@@ -12,7 +12,7 @@ export default function ProtectedLayout({ children }) {
 
   useEffect(() => {
     if (status === 'unauthenticated') {
-      router.push('/signin');
+      router.push('/');
     }
   }, [status, router]);
 
