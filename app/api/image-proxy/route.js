@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
-import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  GetObjectCommand,
+  HeadObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import { getS3Config } from '@/lib/s3-utils';
 
 export async function GET(request) {
@@ -8,25 +12,21 @@ export async function GET(request) {
     const imageUrl = searchParams.get('url');
     const imagePath = searchParams.get('path');
 
-    console.log('Image proxy - Received URL:', imageUrl, 'Path:', imagePath);
+    console.log('Image proxy - Input:', { imageUrl, imagePath });
 
+    // Build S3 URL if only path is provided
     let s3Url = imageUrl;
-
-    // If we have a path instead of a full URL, construct the S3 URL
     if (!s3Url && imagePath) {
       const { bucket, region, endpoint } = getS3Config();
-      console.log('Image proxy - S3 config:', { bucket, region, endpoint });
-
-      if (endpoint) {
-        s3Url = `${endpoint}/${imagePath}`;
-      } else if (bucket && region) {
-        s3Url = `https://${bucket}.s3.${region}.amazonaws.com/${imagePath}`;
-      } else {
+      if (!bucket && !endpoint) {
         return NextResponse.json(
           { error: 'S3 configuration not found' },
           { status: 500 },
         );
       }
+      s3Url = endpoint
+        ? `${endpoint}/${imagePath}`
+        : `https://${bucket}.s3.${region}.amazonaws.com/${imagePath}`;
       console.log('Image proxy - Constructed S3 URL:', s3Url);
     }
 
@@ -37,98 +37,90 @@ export async function GET(request) {
       );
     }
 
-    // Parse the S3 URL to extract bucket and key
+    // Parse S3 URL
     const url = new URL(s3Url);
-    const pathParts = url.pathname.split('/').filter((part) => part);
-
-    console.log('Image proxy - Parsed URL:', {
-      hostname: url.hostname,
-      pathParts,
-    });
-
+    const pathParts = url.pathname.split('/').filter(Boolean);
     if (pathParts.length === 0) {
       return NextResponse.json({ error: 'Invalid S3 URL' }, { status: 400 });
     }
 
-    // Extract bucket name from hostname (e.g., "bucket.s3.region.amazonaws.com" -> "bucket")
     const bucket = url.hostname.split('.')[0];
-    // For AWS standard path structure (bucket/bucket/path), remove the first bucket name from path
-    // The key is the path after the bucket name (e.g., "templates/filename.png")
-    const key =
-      pathParts.length > 1 ? pathParts.slice(1).join('/') : pathParts.join('/');
-    // Decode the URL-encoded key to get the actual S3 object key
-    const decodedKey = decodeURIComponent(key);
-
-    console.log(
-      'S3 Proxy - Bucket:',
-      bucket,
-      'Key:',
-      key,
-      'Decoded Key:',
-      decodedKey,
+    const decodedKey = decodeURIComponent(
+      pathParts.length > 1 ? pathParts.slice(1).join('/') : pathParts[0],
     );
 
-    // Create S3 client with credentials
+    console.log('S3 Proxy - Parsed:', { bucket, decodedKey });
+
+    // Configure S3 client
     const s3Client = new S3Client({
       region: process.env.STORAGE_REGION || 'ap-southeast-2',
       credentials: {
         accessKeyId: process.env.STORAGE_ACCESS_KEY_ID,
         secretAccessKey: process.env.STORAGE_SECRET_ACCESS_KEY,
       },
+      endpoint: process.env.STORAGE_ENDPOINT || undefined,
+      forcePathStyle: Boolean(process.env.STORAGE_ENDPOINT),
     });
 
-    // Get the object from S3 using the decoded key
-    const command = new GetObjectCommand({
-      Bucket: bucket,
-      Key: decodedKey,
-    });
+    // Validate that the object exists
+    try {
+      await s3Client.send(
+        new HeadObjectCommand({ Bucket: bucket, Key: decodedKey }),
+      );
+    } catch (headError) {
+      if (headError.name === 'NoSuchKey') {
+        return NextResponse.json({ error: 'Image not found' }, { status: 404 });
+      }
+      if (headError.name === 'AccessDenied') {
+        return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+      }
+      throw headError;
+    }
 
-    const response = await s3Client.send(command);
+    // Fetch object from S3
+    const { Body, ContentType: fetchedContentType } = await s3Client.send(
+      new GetObjectCommand({ Bucket: bucket, Key: decodedKey }),
+    );
 
-    if (!response.Body) {
+    if (!Body) {
       return NextResponse.json(
         { error: 'No image data received' },
         { status: 404 },
       );
     }
 
-    // Convert the readable stream to buffer
+    // Convert readable stream to buffer
     const chunks = [];
-    for await (const chunk of response.Body) {
-      chunks.push(chunk);
-    }
+    for await (const chunk of Body) chunks.push(chunk);
     const buffer = Buffer.concat(chunks);
-
-    // Determine content type
-    const contentType = response.ContentType || 'image/png';
 
     return new NextResponse(buffer, {
       headers: {
-        'Content-Type': contentType,
-        'Cache-Control': 'public, max-age=31536000', // Cache for 1 year
+        'Content-Type': fetchedContentType || 'image/png',
+        'Cache-Control': 'public, max-age=31536000',
         'Access-Control-Allow-Origin': '*',
       },
     });
   } catch (error) {
     console.error('Image proxy error:', error);
 
-    if (error.name === 'NoSuchKey') {
-      return NextResponse.json({ error: 'Image not found' }, { status: 404 });
-    }
-
-    if (error.name === 'AccessDenied') {
-      return NextResponse.json(
-        { error: 'Access denied to S3 bucket' },
-        { status: 403 },
-      );
-    }
+    const statusMap = {
+      NoSuchKey: 404,
+      AccessDenied: 403,
+    };
+    const status = statusMap[error.name] || 500;
 
     return NextResponse.json(
       {
-        error: 'Failed to fetch image',
+        error:
+          error.name === 'NoSuchKey'
+            ? 'Image not found'
+            : error.name === 'AccessDenied'
+              ? 'Access denied to S3 bucket'
+              : 'Failed to fetch image',
         details: error.message,
       },
-      { status: 500 },
+      { status },
     );
   }
 }

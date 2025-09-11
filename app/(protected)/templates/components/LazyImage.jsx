@@ -11,7 +11,6 @@ const LazyImage = ({
   onError = null,
   ...props
 }) => {
-  console.log('LazyImage src:', src);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInView, setIsInView] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -40,6 +39,7 @@ const LazyImage = ({
 
   const handleLoad = () => {
     setIsLoaded(true);
+    setHasError(false);
   };
 
   const handleError = (e) => {
@@ -76,7 +76,7 @@ const LazyImage = ({
       )}
 
       {/* Actual Image */}
-      {isInView && !hasError && (
+      {isInView && !hasError && src && (
         <img
           src={src}
           alt={alt}

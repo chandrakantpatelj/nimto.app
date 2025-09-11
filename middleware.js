@@ -31,7 +31,7 @@ export default withAuth(
       '/user-management': new Set(['super-admin', 'application-admin']),
       '/settings': new Set(['super-admin', 'application-admin']),
       '/reportings': new Set(['super-admin', 'application-admin']),
-      '/templates': new Set(['host', 'super-admin', 'application-admin']),
+      '/templates': new Set(['super-admin', 'application-admin']),
       '/messaging': new Set(['host', 'super-admin', 'application-admin']),
       '/store-admin': new Set(['super-admin', 'application-admin']),
       '/network': new Set([
