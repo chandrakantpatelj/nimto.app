@@ -124,7 +124,6 @@ export const config = {
     '/user-management/:path*',
     '/reportings/:path*',
     '/my-profile/:path*',
-    '/templates/:path*',
     '/image-editor/:path*',
     '/messaging/:path*',
     '/store-admin/:path*',

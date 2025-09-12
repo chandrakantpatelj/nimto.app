@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { FileText, ArrowRight, Moon, Sun, LayoutDashboard } from 'lucide-react';
 import { useRoleBasedAccess } from '@/hooks/use-role-based-access';
+import { HomeTemplatesPreview } from '@/app/components/home-templates-preview';
 
 export default function ComingSoonPage() {
   const { data: session, status } = useSession();
@@ -169,6 +170,10 @@ export default function ComingSoonPage() {
               </div>
             </div>
 
+            {/* Templates Preview Section */}
+            <div className="mt-16">
+              <HomeTemplatesPreview />
+            </div>
             {/* CTA Section */}
             <div className="mt-16 space-y-6">
               {isAuthenticated ? (
