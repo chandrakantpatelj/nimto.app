@@ -1,11 +1,9 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
 import { checkGuestManagementAccess } from '@/lib/auth-utils';
 import prisma from '@/lib/prisma';
 import { sendEventInvitation } from '@/services/send-event-invitation';
-import authOptions from '@/app/api/auth/[...nextauth]/auth-options';
 
-// POST /api/events/[eventId]/send-invitations - Send invitations to selected guests
+// POST /api/events/[id]/send-invitations - Send invitations to selected guests
 export async function POST(request, { params }) {
   try {
     // Check role-based access
@@ -14,7 +12,7 @@ export async function POST(request, { params }) {
       return accessCheck.error;
     }
 
-    const { eventId } = params;
+    const { id: eventId } = params;
     const body = await request.json();
     const { guestIds, type = 'invitation' } = body; // type: 'invitation' or 'reminder'
 

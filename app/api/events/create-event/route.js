@@ -6,12 +6,9 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3';
 import { PrismaClient } from '@prisma/client';
-import { getServerSession } from 'next-auth';
 import { checkEventManagementAccess } from '@/lib/auth-utils';
 import { uid } from '@/lib/helpers';
-import { generateProxyUrl } from '@/lib/s3-utils';
 import { sendEmail } from '@/services/send-email';
-import authOptions from '../../auth/[...nextauth]/auth-options';
 
 // Create a singleton Prisma client
 const globalForPrisma = global;

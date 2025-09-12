@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
 import { checkGuestManagementAccess } from '@/lib/auth-utils';
 import prisma from '@/lib/prisma';
 import { sendEventInvitation } from '@/services/send-event-invitation';
-import authOptions from '@/app/api/auth/[...nextauth]/auth-options';
 
 // GET /api/events/guests - Get all guests (with optional filtering)
 export async function GET(request) {
@@ -81,8 +79,6 @@ export async function POST(request) {
     if (accessCheck.error) {
       return accessCheck.error;
     }
-
-    const { session } = accessCheck;
 
     const body = await request.json();
 
