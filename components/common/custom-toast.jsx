@@ -1,11 +1,16 @@
-// utils/showCustomToast.jsx
 import { toast } from 'sonner';
-import CustomToast from '../ui/toast';
-
-// import CustomToast from '@/components/CustomToast';
+import { Toast } from '../ui/toast';
 
 export const showCustomToast = (message, type = 'info') => {
-  toast.custom(() => <CustomToast message={message} type={type} />, {
-    position: 'top-center',
-  });
+  const toastData = {
+    id: Date.now().toString(),
+    title: message,
+    type,
+    duration: type === 'error' ? 7000 : 5000,
+  };
+
+  toast.custom(
+    (t) => <Toast toast={toastData} onRemove={() => toast.dismiss(t)} />,
+    { position: 'top-center' },
+  );
 };

@@ -231,6 +231,16 @@ model Event {
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   isTrashed       Boolean     @default(false)
+  
+  // Guest Settings
+  privateGuestList     Boolean @default(false)
+  allowPlusOnes        Boolean @default(false)
+  maxPlusOnes          Int     @default(0)
+  allowMaybeRSVP       Boolean @default(true)
+  allowFamilyHeadcount Boolean @default(false)
+  limitEventCapacity   Boolean @default(false)
+  maxEventCapacity     Int     @default(0)
+  
   User            User        @relation(fields: [createdByUserId], references: [id])
   guests          Guest[]
 
@@ -249,6 +259,9 @@ model Guest {
   invitedAt   DateTime       @default(now())
   respondedAt DateTime?
   response    GuestResponse?
+  plusOnes    Int            @default(0)
+  adults      Int            @default(1)
+  children    Int            @default(0)
   event       Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   @@index([eventId])

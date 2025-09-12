@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
+import { prisma } from '@/lib/prisma';
 import authOptions from '@/app/api/auth/[...nextauth]/auth-options';
 
 export async function GET(request) {
@@ -12,10 +12,7 @@ export async function GET(request) {
       where: {
         isActive,
       },
-      orderBy: [
-        { sortOrder: 'asc' },
-        { name: 'asc' },
-      ],
+      orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
     });
 
     return NextResponse.json({
@@ -29,7 +26,7 @@ export async function GET(request) {
         success: false,
         error: 'Failed to fetch template categories',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -38,13 +35,16 @@ export async function POST(request) {
   try {
     // Check if user is super admin
     const session = await getServerSession(authOptions);
-    if (!session?.user?.roleName || session.user.roleName.toLowerCase() !== 'super admin') {
+    if (
+      !session?.user?.roleName ||
+      session.user.roleName.toLowerCase() !== 'super-admin'
+    ) {
       return NextResponse.json(
         {
           success: false,
           error: 'Unauthorized. Super admin access required.',
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -58,7 +58,7 @@ export async function POST(request) {
           success: false,
           error: 'Name and slug are required',
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -73,7 +73,7 @@ export async function POST(request) {
           success: false,
           error: 'Category with this slug already exists',
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -100,7 +100,7 @@ export async function POST(request) {
         success: false,
         error: 'Failed to create template category',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
