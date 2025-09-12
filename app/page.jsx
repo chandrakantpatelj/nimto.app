@@ -5,11 +5,13 @@ import { useSession } from 'next-auth/react';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { FileText, ArrowRight, Moon, Sun } from 'lucide-react';
+import { FileText, ArrowRight, Moon, Sun, LayoutDashboard } from 'lucide-react';
+import { useRoleBasedAccess } from '@/hooks/use-role-based-access';
 
 export default function ComingSoonPage() {
   const { data: session, status } = useSession();
   const { theme, setTheme } = useTheme();
+  const { roles } = useRoleBasedAccess();
   const isAuthenticated = status === 'authenticated' && session;
   const isLoading = status === 'loading';
 
@@ -55,12 +57,21 @@ export default function ComingSoonPage() {
               <Moon className="h-4 w-4 text-gray-600 dark:text-gray-400" />
             </div>
 
-            {/* Auth Buttons or Go to Templates */}
+            {/* Auth Buttons or Role-based Navigation */}
             {isAuthenticated ? (
               <Button variant="primary" asChild className="flex items-center gap-2">
-                <Link href="/dashboard">
-                  <FileText className="h-4 w-4" />
-                  Go to Dashboard
+                <Link href={roles.isSuperAdmin ? "/dashboard" : "/templates"}>
+                  {roles.isSuperAdmin ? (
+                    <>
+                      <LayoutDashboard className="h-4 w-4" />
+                      Go to Dashboard
+                    </>
+                  ) : (
+                    <>
+                      <FileText className="h-4 w-4" />
+                      Go to Templates
+                    </>
+                  )}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
@@ -167,14 +178,25 @@ export default function ComingSoonPage() {
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                     <Button size="lg" variant="primary" asChild className="flex items-center gap-2">
-                      <Link href="/dashboard">
-                        <FileText className="h-5 w-5" />
-                        Go to Dashboard
+                      <Link href={roles.isSuperAdmin ? "/dashboard" : "/templates"}>
+                        {roles.isSuperAdmin ? (
+                          <>
+                            <LayoutDashboard className="h-5 w-5" />
+                            Go to Dashboard
+                          </>
+                        ) : (
+                          <>
+                            <FileText className="h-5 w-5" />
+                            Go to Templates
+                          </>
+                        )}
                         <ArrowRight className="h-5 w-5" />
                       </Link>
                     </Button>
                     <Button size="lg" variant="outline" asChild>
-                      <Link href="/templates">View Templates</Link>
+                      <Link href={roles.isSuperAdmin ? "/templates" : "/events"}>
+                        {roles.isSuperAdmin ? "View Templates" : "View Events"}
+                      </Link>
                     </Button>
                   </div>
                 </>

@@ -52,9 +52,14 @@ export function SidebarMenu() {
       // Host sees limited menu items (Templates removed - admin only)
       return [
         {
+          title: 'Home',
+          icon: MENU_SIDEBAR.find((item) => item.title === 'Home')?.icon,
+          path: '/',
+        },
+        {
           title: 'Dashboard',
           icon: MENU_SIDEBAR.find((item) => item.title === 'Dashboard')?.icon,
-          path: '/',
+          path: '/dashboard',
         },
         {
           title: 'Events',
@@ -71,9 +76,14 @@ export function SidebarMenu() {
       // Application Admin sees admin menu items
       return [
         {
+          title: 'Home',
+          icon: MENU_SIDEBAR.find((item) => item.title === 'Home')?.icon,
+          path: '/',
+        },
+        {
           title: 'Dashboard',
           icon: MENU_SIDEBAR.find((item) => item.title === 'Dashboard')?.icon,
-          path: '/',
+          path: '/dashboard',
         },
         {
           title: 'Events',
@@ -121,9 +131,14 @@ export function SidebarMenu() {
       // Attendee sees basic menu items
       return [
         {
+          title: 'Home',
+          icon: MENU_SIDEBAR.find((item) => item.title === 'Home')?.icon,
+          path: '/',
+        },
+        {
           title: 'Dashboard',
           icon: MENU_SIDEBAR.find((item) => item.title === 'Dashboard')?.icon,
-          path: '/',
+          path: '/dashboard',
         },
         {
           title: 'Events',
@@ -140,9 +155,14 @@ export function SidebarMenu() {
       // Default/Unknown roles see basic menu items
       return [
         {
+          title: 'Home',
+          icon: MENU_SIDEBAR.find((item) => item.title === 'Home')?.icon,
+          path: '/',
+        },
+        {
           title: 'Dashboard',
           icon: MENU_SIDEBAR.find((item) => item.title === 'Dashboard')?.icon,
-          path: '/',
+          path: '/dashboard',
         },
         {
           title: 'Events',
