@@ -2,12 +2,14 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { showCustomToast } from '@/components/common/custom-toast';
 import PixieEditor from '@/components/image-editor/PixieEditor';
+import { Moon, Sun } from 'lucide-react';
 
 const TemplateDesignLayout = ({
   initialFormData = null,
@@ -17,12 +19,18 @@ const TemplateDesignLayout = ({
   headerButtonText = 'Save Template',
 }) => {
   const router = useRouter();
+  const { theme, setTheme } = useTheme();
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
   const pixieEditorRef = useRef(null);
 
   // Toggle sidebar function
   const toggleSidebar = () => {
     setSidebarExpanded(!sidebarExpanded);
+  };
+
+  // Toggle theme function
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
   // Form state
@@ -164,13 +172,13 @@ const TemplateDesignLayout = ({
   };
 
   return (
-    <div className="h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex flex-col overflow-hidden">
+    <div className="h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex flex-col overflow-hidden">
       {/* Fixed Header */}
-      <div className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center p-4 bg-white/90 backdrop-blur-md border-b border-white/20 shadow-lg">
+      <div className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center p-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-white/20 dark:border-slate-700/20 shadow-lg">
         <Button
           variant="outline"
           onClick={() => router.back()}
-          className="bg-white/90 backdrop-blur-md border-white/20 shadow-lg hover:bg-white/95"
+          className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border-white/20 dark:border-slate-700/20 shadow-lg hover:bg-white/95 dark:hover:bg-slate-800/95 text-slate-700 dark:text-slate-300"
         >
           <svg
             className="w-4 h-4 mr-2"
@@ -188,53 +196,70 @@ const TemplateDesignLayout = ({
           Back
         </Button>
 
-        <Button
-          onClick={handleSaveTemplate}
-          disabled={loading}
-          className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-2 rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200"
-        >
-          {loading ? (
-            <>
-              <svg
-                className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
+        <div className="flex items-center gap-3">
+          {/* Theme Toggle Button */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={toggleTheme}
+            className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border-white/20 dark:border-slate-700/20 shadow-lg hover:bg-white/95 dark:hover:bg-slate-800/95 text-slate-700 dark:text-slate-300"
+            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {theme === 'dark' ? (
+              <Sun className="w-4 h-4" />
+            ) : (
+              <Moon className="w-4 h-4" />
+            )}
+          </Button>
+
+          <Button
+            onClick={handleSaveTemplate}
+            disabled={loading}
+            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-2 rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200"
+          >
+            {loading ? (
+              <>
+                <svg
+                  className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Saving...
+              </>
+            ) : (
+              <>
+                <svg
+                  className="w-4 h-4 mr-2"
+                  fill="none"
                   stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              Saving...
-            </>
-          ) : (
-            <>
-              <svg
-                className="w-4 h-4 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-              {headerButtonText}
-            </>
-          )}
-        </Button>
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+                {headerButtonText}
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
       {/* Main Content Area with Sidebar */}
@@ -251,13 +276,13 @@ const TemplateDesignLayout = ({
           {/* Toggle Button */}
           <button
             onClick={toggleSidebar}
-            className={`absolute top-4 z-50 p-2 rounded-lg bg-white/90 hover:bg-white shadow-lg border border-slate-200 transition-all duration-200 ${
+            className={`absolute top-4 z-50 p-2 rounded-lg bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-800 shadow-lg border border-slate-200 dark:border-slate-700 transition-all duration-200 ${
               sidebarExpanded ? 'right-4' : 'right-3'
             }`}
             title={sidebarExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
           >
             <svg
-              className={`w-4 h-4 text-slate-600 transition-transform duration-200 ${
+              className={`w-4 h-4 text-slate-600 dark:text-slate-300 transition-transform duration-200 ${
                 sidebarExpanded ? 'rotate-180' : ''
               }`}
               fill="none"
@@ -274,16 +299,16 @@ const TemplateDesignLayout = ({
           </button>
 
           {/* Sidebar Content */}
-          <div className="h-full bg-white/95 backdrop-blur-md border-r border-white/20 shadow-xl">
+          <div className="h-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-r border-white/20 dark:border-slate-700/20 shadow-xl">
             {sidebarExpanded ? (
               <div className="p-4 h-full overflow-y-auto">
                 <div className="space-y-4">
                   {/* Error Display */}
                   {error && (
-                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
                       <div className="flex items-center">
                         <svg
-                          className="w-4 h-4 text-red-500 mr-2"
+                          className="w-4 h-4 text-red-500 dark:text-red-400 mr-2"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -295,7 +320,7 @@ const TemplateDesignLayout = ({
                             d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                           />
                         </svg>
-                        <p className="text-red-700 text-sm font-medium">
+                        <p className="text-red-700 dark:text-red-300 text-sm font-medium">
                           {error}
                         </p>
                       </div>
@@ -320,7 +345,7 @@ const TemplateDesignLayout = ({
                           />
                         </svg>
                       </div>
-                      <h3 className="text-sm font-semibold text-slate-800">
+                      <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
                         Design Assets
                       </h3>
                     </div>
@@ -366,14 +391,14 @@ const TemplateDesignLayout = ({
                           />
                         </svg>
                       </div>
-                      <h3 className="text-sm font-semibold text-slate-800">
+                      <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
                         Template Details
                       </h3>
                     </div>
 
                     <div className="space-y-3">
                       <div>
-                        <Label className="text-xs font-medium text-slate-700 mb-1 block">
+                        <Label className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-1 block">
                           Template Name
                         </Label>
                         <Input
@@ -381,12 +406,12 @@ const TemplateDesignLayout = ({
                           value={formData.name}
                           onChange={handleTemplateNameChange}
                           placeholder="Enter template name"
-                          className="rounded-lg border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 text-sm"
+                          className="rounded-lg border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
                         />
                       </div>
 
                       <div>
-                        <Label className="text-xs font-medium text-slate-700 mb-1 block">
+                        <Label className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-1 block">
                           Category
                         </Label>
                         <Input
@@ -396,12 +421,12 @@ const TemplateDesignLayout = ({
                             handleInputChange('category', e.target.value)
                           }
                           placeholder="e.g., Birthday, Corporate, Wedding"
-                          className="rounded-lg border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 text-sm"
+                          className="rounded-lg border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
                         />
                       </div>
 
                       <div>
-                        <Label className="text-xs font-medium text-slate-700 mb-2 block">
+                        <Label className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-2 block">
                           Type
                         </Label>
                         <RadioGroup
@@ -409,7 +434,7 @@ const TemplateDesignLayout = ({
                           onValueChange={handleTypeChange}
                           className="space-y-2"
                         >
-                          <div className="flex items-center space-x-2 p-2 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
+                          <div className="flex items-center space-x-2 p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                             <RadioGroupItem
                               value="free"
                               id="free"
@@ -419,9 +444,9 @@ const TemplateDesignLayout = ({
                               htmlFor="free"
                               className="flex items-center space-x-2 cursor-pointer text-sm"
                             >
-                              <div className="w-4 h-4 bg-green-100 rounded-full flex items-center justify-center">
+                              <div className="w-4 h-4 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
                                 <svg
-                                  className="w-2 h-2 text-green-600"
+                                  className="w-2 h-2 text-green-600 dark:text-green-400"
                                   fill="currentColor"
                                   viewBox="0 0 20 20"
                                 >
@@ -432,10 +457,10 @@ const TemplateDesignLayout = ({
                                   />
                                 </svg>
                               </div>
-                              <span className="text-slate-700">Free</span>
+                              <span className="text-slate-700 dark:text-slate-300">Free</span>
                             </Label>
                           </div>
-                          <div className="flex items-center space-x-2 p-2 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
+                          <div className="flex items-center space-x-2 p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                             <RadioGroupItem
                               value="premium"
                               id="premium"
@@ -445,16 +470,16 @@ const TemplateDesignLayout = ({
                               htmlFor="premium"
                               className="flex items-center space-x-2 cursor-pointer text-sm"
                             >
-                              <div className="w-4 h-4 bg-amber-100 rounded-full flex items-center justify-center">
+                              <div className="w-4 h-4 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center">
                                 <svg
-                                  className="w-2 h-2 text-amber-600"
+                                  className="w-2 h-2 text-amber-600 dark:text-amber-400"
                                   fill="currentColor"
                                   viewBox="0 0 20 20"
                                 >
                                   <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                 </svg>
                               </div>
-                              <span className="text-slate-700">Premium</span>
+                              <span className="text-slate-700 dark:text-slate-300">Premium</span>
                             </Label>
                           </div>
                         </RadioGroup>
@@ -462,12 +487,12 @@ const TemplateDesignLayout = ({
 
                       {formData.isPremium && (
                         <div>
-                          <Label className="text-xs font-medium text-slate-700 mb-1 block">
+                          <Label className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-1 block">
                             Price (USD)
                           </Label>
                           <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                              <span className="text-slate-500 text-sm">$</span>
+                              <span className="text-slate-500 dark:text-slate-400 text-sm">$</span>
                             </div>
                             <Input
                               type="number"
@@ -478,7 +503,7 @@ const TemplateDesignLayout = ({
                               placeholder="0.00"
                               min="0"
                               step="0.01"
-                              className="pl-8 rounded-lg border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 text-sm"
+                              className="pl-8 rounded-lg border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
                             />
                           </div>
                         </div>
@@ -560,10 +585,10 @@ const TemplateDesignLayout = ({
             sidebarExpanded ? 'ml-80' : 'ml-16'
           }`}
         >
-          <div className="w-[1000px] h-[600px] bg-white/70 backdrop-blur-sm rounded-2xl border shadow-xl overflow-hidden relative">
+          <div className="w-[1000px] h-[600px] bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden relative">
             {!imageUrl && !formData?.s3ImageUrl ? (
               /* Empty State - No Image */
-              <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+              <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900">
                 <div className="text-center space-y-6">
                   {/* Upload Icon */}
                   <div className="mx-auto w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
@@ -584,10 +609,10 @@ const TemplateDesignLayout = ({
 
                   {/* Text Content */}
                   <div className="space-y-2">
-                    <h3 className="text-xl font-semibold text-slate-800">
+                    <h3 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
                       Start Your Design
                     </h3>
-                    <p className="text-slate-600 max-w-sm">
+                    <p className="text-slate-600 dark:text-slate-400 max-w-sm">
                       Upload an image or start with a blank canvas to create
                       your template
                     </p>
@@ -622,7 +647,7 @@ const TemplateDesignLayout = ({
                         // Start with blank canvas
                         setImageUrl('');
                       }}
-                      className="px-6 py-3 bg-white text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                      className="px-6 py-3 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                     >
                       <svg
                         className="w-4 h-4 inline mr-2"
@@ -642,7 +667,7 @@ const TemplateDesignLayout = ({
                   </div>
 
                   {/* Tips */}
-                  <div className="text-sm text-slate-500 space-y-1">
+                  <div className="text-sm text-slate-500 dark:text-slate-400 space-y-1">
                     <p>
                       💡 <strong>Tip:</strong> Supported formats: JPG, PNG, GIF
                     </p>
