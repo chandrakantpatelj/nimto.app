@@ -29,7 +29,7 @@ export default function Page() {
           setError(null);
           setMessage('Your email has been successfully verified!');
           setTimeout(() => {
-            router.push('/signin'); // Redirect to sign-in page or another page
+            router.push('/'); // Redirect to home page
           }, 2000);
         } else {
           setMessage(null);

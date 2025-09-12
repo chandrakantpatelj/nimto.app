@@ -24,7 +24,6 @@ import {
   Grid,
   Heart,
   HelpCircle,
-  Image,
   Kanban,
   Key,
   Layout,
@@ -56,7 +55,7 @@ export const MENU_SIDEBAR = [
   {
     title: 'Dashboard',
     icon: LayoutDashboard,
-    path: '/',
+    path: '/dashboard',
   },
   {
     title: 'Users',
@@ -157,7 +156,7 @@ export const MENU_SIDEBAR_COMPACT = [
   {
     title: 'Dashboards',
     icon: LayoutGrid,
-    path: '/',
+    path: '/dashboard',
   },
   {
     title: 'Public Profile',
@@ -445,6 +444,7 @@ export const MENU_SIDEBAR_COMPACT = [
 
 export const MENU_MEGA = [
   { title: 'Home', path: '/' },
+  { title: 'Dashboard', path: '/dashboard' },
   {
     title: 'Profiles',
     children: [
@@ -849,6 +849,7 @@ export const MENU_MEGA = [
 
 export const MENU_MEGA_MOBILE = [
   { title: 'Home', path: '/' },
+  { title: 'Dashboard', path: '/dashboard' },
   {
     title: 'Profiles',
     children: [

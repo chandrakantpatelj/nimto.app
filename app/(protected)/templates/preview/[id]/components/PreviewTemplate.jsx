@@ -24,30 +24,30 @@ function PreviewTemplate({ template }) {
           {/* Template Details */}
           <div className="flex justify-between items-start mb-8">
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
                 Template Details
               </h2>
               <div className="space-y-2">
-                <p className="text-gray-700">
+                <p className="text-gray-700 dark:text-gray-300">
                   <span className="font-medium">Name:</span> {template.name}
                 </p>
-                <p className="text-gray-700">
+                <p className="text-gray-700 dark:text-gray-300">
                   <span className="font-medium">Category:</span>{' '}
                   {template.category}
                 </p>
-                <p className="text-gray-700">
+                <p className="text-gray-700 dark:text-gray-300">
                   <span className="font-medium">Type:</span>{' '}
                   {template.isPremium ? 'Premium' : 'Free'}
                 </p>
                 {template.isPremium && (
-                  <p className="text-gray-700">
+                  <p className="text-gray-700 dark:text-gray-300">
                     <span className="font-medium">Price:</span> $
                     {template.price}
                   </p>
                 )}
               </div>
             </div>
-            <div className="text-right text-sm text-gray-500">
+            <div className="text-right text-sm text-gray-500 dark:text-gray-400">
               <p>
                 Last Updated:{' '}
                 {new Date(template.updatedAt).toLocaleDateString()}
@@ -57,13 +57,13 @@ function PreviewTemplate({ template }) {
 
           {/* Designed Content Preview */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
               Designed Content Preview:
             </h3>
 
             {/* Preview Canvas */}
             <div
-              className="relative w-full h-96 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden"
+              className="relative w-full h-96 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center overflow-hidden"
               style={{
                 background:
                   template.background || template.pageBackground || '#f3f4f6',
@@ -71,14 +71,14 @@ function PreviewTemplate({ template }) {
             >
               {/* Template Content Card */}
               <div
-                className="relative w-80 h-64 bg-white rounded-lg shadow-lg p-6 transform rotate-3"
+                className="relative w-80 h-64 bg-white dark:bg-gray-700 rounded-lg shadow-lg p-6 transform rotate-3"
                 style={{
                   background: template.pageBackground || 'white',
                 }}
               >
                 {/* Watermark */}
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="text-gray-200 text-4xl font-bold transform -rotate-45 opacity-20">
+                  <div className="text-gray-200 dark:text-gray-600 text-4xl font-bold transform -rotate-45 opacity-20">
                     nimto.app
                   </div>
                 </div>
@@ -88,7 +88,7 @@ function PreviewTemplate({ template }) {
                   <h2 className="text-3xl font-bold text-pink-500 mb-4">
                     It's a Party!
                   </h2>
-                  <div className="space-y-2 text-gray-700">
+                  <div className="space-y-2 text-gray-700 dark:text-gray-300">
                     <p className="text-sm">
                       You're invited to celebrate a special birthday!
                     </p>
@@ -110,7 +110,7 @@ function PreviewTemplate({ template }) {
             </div>
 
             {/* Disclaimer */}
-            <p className="text-xs text-gray-500 mt-4 text-center">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center">
               This is an image-based preview generated from the template design
               for copyright security.
             </p>

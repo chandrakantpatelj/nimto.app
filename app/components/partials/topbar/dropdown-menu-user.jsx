@@ -14,6 +14,7 @@ import {
   Users,
 } from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { toAbsoluteUrl } from '@/lib/helpers';
 import { useLanguage } from '@/providers/i18n-provider';
@@ -35,6 +36,7 @@ import { Switch } from '@/components/ui/switch';
 
 export function DropdownMenuUser({ trigger }) {
   const { data: session, status } = useSession();
+  const router = useRouter();
   const { changeLanguage, language } = useLanguage();
   const { theme, setTheme } = useTheme();
 
@@ -44,6 +46,21 @@ export function DropdownMenuUser({ trigger }) {
 
   const handleThemeToggle = (checked) => {
     setTheme(checked ? 'dark' : 'light');
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut({ 
+        redirect: false, // Prevent automatic redirect
+        callbackUrl: '/' // Set the callback URL to home page
+      });
+      // Manually redirect to home page
+      router.push('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Fallback: still redirect to home page even if logout fails
+      router.push('/');
+    }
   };
 
   // Don't render session-dependent content until session is loaded
@@ -261,7 +278,7 @@ export function DropdownMenuUser({ trigger }) {
             variant="outline"
             size="sm"
             className="w-full"
-            onClick={() => signOut()}
+            onClick={handleLogout}
           >
             Logout
           </Button>

@@ -37,9 +37,9 @@ const Events = () => {
     if (session?.user?.id) {
       fetchAllEvents().catch((err) => {
         console.error('Failed to fetch events:', err);
-        // Handle 401 errors by redirecting to signin
+        // Handle 401 errors by redirecting to home page
         if (err.message?.includes('Unauthorized')) {
-          router.push('/signin');
+          router.push('/');
         }
       });
     }
