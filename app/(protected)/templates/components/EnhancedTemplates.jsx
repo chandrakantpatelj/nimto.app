@@ -217,20 +217,20 @@ const EnhancedTemplates = ({
   const getOrientationColor = (orientation) => {
     switch (orientation) {
       case 'portrait':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-700 dark:text-white';
       case 'landscape':
-        return 'bg-purple-100 text-purple-800';
+        return 'bg-purple-100 text-purple-800 dark:bg-purple-700 dark:text-white';
       case 'square':
-        return 'bg-orange-100 text-orange-800';
+        return 'bg-orange-100 text-orange-800 dark:bg-orange-700 dark:text-white';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-white';
     }
   };
 
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600 dark:text-blue-400" />
       </div>
     );
   }
@@ -238,7 +238,7 @@ const EnhancedTemplates = ({
   if (error) {
     return (
       <div className="text-center py-12">
-        <p className="text-red-600 mb-4">{error}</p>
+        <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
         <Button onClick={loadTemplates}>Try Again</Button>
       </div>
     );
@@ -249,7 +249,7 @@ const EnhancedTemplates = ({
       {/* Templates Grid */}
       {allTemplates.length === 0 ? (
         <div className="text-center py-8 sm:py-12 px-4 sm:px-0">
-          <p className="text-gray-600 mb-4 text-sm sm:text-base">
+          <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm sm:text-base">
             No templates found.
           </p>
           <Button asChild className="w-full sm:w-auto">
@@ -259,7 +259,7 @@ const EnhancedTemplates = ({
       ) : (
         <>
           <div className="flex justify-between items-center mb-6 sm:mb-8 px-4 sm:px-0">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
               Templates ({allTemplates.length})
             </h2>
           </div>
@@ -268,7 +268,7 @@ const EnhancedTemplates = ({
             {allTemplates.map((template) => (
               <Card
                 key={template.id}
-                className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 border-0 shadow-md bg-white rounded-lg sm:rounded-xl overflow-hidden"
+                className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 border-0 shadow-md bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl overflow-hidden"
                 onClick={() => handleTemplateSelect(template)}
               >
                 <CardContent className="p-0">
@@ -312,7 +312,7 @@ const EnhancedTemplates = ({
                       {template.badge && (
                         <Badge
                           variant={getBadgeVariant(template.badge)}
-                          className="text-xs font-medium px-1 py-0"
+                          className="text-xs font-medium px-2 py-1 bg-white/90 dark:bg-slate-800/90 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-slate-600 shadow-sm"
                         >
                           {getBadgeIcon(template.badge)}
                           {template.badge}
@@ -321,7 +321,7 @@ const EnhancedTemplates = ({
                       {template.isTrending && (
                         <Badge
                           variant="default"
-                          className="text-xs font-medium px-1 py-0"
+                          className="text-xs font-medium px-2 py-1 bg-orange-500 text-white shadow-sm"
                         >
                           <Zap className="h-2 w-2 mr-1" />
                           Trending
@@ -330,7 +330,7 @@ const EnhancedTemplates = ({
                       {template.isFeatured && (
                         <Badge
                           variant="outline"
-                          className="text-xs font-medium px-1 py-0"
+                          className="text-xs font-medium px-2 py-1 bg-white/90 dark:bg-slate-800/90 text-gray-900 dark:text-gray-100 border border-yellow-300 dark:border-yellow-600 shadow-sm"
                         >
                           <Star className="h-2 w-2 mr-1" />
                           Featured
@@ -339,7 +339,7 @@ const EnhancedTemplates = ({
                       {template.isNew && (
                         <Badge
                           variant="secondary"
-                          className="text-xs font-medium px-1 py-0"
+                          className="text-xs font-medium px-2 py-1 bg-green-500 text-white shadow-sm"
                         >
                           <Sparkles className="h-2 w-2 mr-1" />
                           New
@@ -352,14 +352,14 @@ const EnhancedTemplates = ({
                       {template.isPremium ? (
                         <Badge
                           variant="destructive"
-                          className="text-xs font-medium px-1 py-0"
+                          className="text-xs font-medium px-2 py-1 bg-red-500 text-white shadow-sm"
                         >
                           ${template.price}
                         </Badge>
                       ) : (
                         <Badge
                           variant="secondary"
-                          className="text-xs font-medium px-1 py-0"
+                          className="text-xs font-medium px-2 py-1 bg-green-500 text-white shadow-sm"
                         >
                           Free
                         </Badge>
@@ -370,8 +370,7 @@ const EnhancedTemplates = ({
                     {template.orientation && (
                       <div className="absolute bottom-1 right-1">
                         <Badge
-                          variant="outline"
-                          className={`text-xs px-1 py-0 ${getOrientationColor(template.orientation)}`}
+                          className={`text-xs px-2 py-1 ${getOrientationColor(template.orientation)} border border-gray-300 dark:border-slate-500 shadow-lg font-semibold`}
                         >
                           {template.orientation.toUpperCase()}
                         </Badge>
@@ -381,7 +380,7 @@ const EnhancedTemplates = ({
                     {/* Popularity Indicator */}
                     {template.popularity > 0 && (
                       <div className="absolute bottom-1 left-1">
-                        <div className="flex items-center bg-black/70 text-white px-1 py-0 rounded text-xs">
+                        <div className="flex items-center bg-black/80 dark:bg-slate-900/90 text-white px-2 py-1 rounded text-xs shadow-sm border border-gray-600 dark:border-slate-500">
                           <Star className="h-2 w-2 mr-1 fill-yellow-400 text-yellow-400" />
                           {Math.round(template.popularity * 100)}%
                         </div>
@@ -391,10 +390,10 @@ const EnhancedTemplates = ({
 
                   {/* Template Info */}
                   <div className="p-2 sm:p-3">
-                    <h3 className="font-bold text-gray-900 mb-1 line-clamp-1 text-xs sm:text-sm">
+                    <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-1 line-clamp-1 text-xs sm:text-sm">
                       {template.name}
                     </h3>
-                    <p className="text-xs text-gray-600 mb-2 font-medium">
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-2 font-medium">
                       {template.category}
                     </p>
 
@@ -404,13 +403,13 @@ const EnhancedTemplates = ({
                         {template.colors.slice(0, 3).map((color, index) => (
                           <div
                             key={`${color}-${index}`}
-                            className="w-3 h-3 rounded-full border border-gray-200"
+                            className="w-3 h-3 rounded-full border border-gray-200 dark:border-slate-600"
                             style={{ backgroundColor: color.toLowerCase() }}
                             title={color}
                           />
                         ))}
                         {template.colors.length > 3 && (
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
                             +{template.colors.length - 3}
                           </span>
                         )}
@@ -432,7 +431,7 @@ const EnhancedTemplates = ({
                         <Button
                           variant="outline"
                           size="sm"
-                          className="flex-1 border border-gray-200 hover:border-purple-500 hover:text-purple-600 font-semibold py-1 rounded-md transition-all duration-300 text-xs"
+                          className="flex-1 border border-gray-200 dark:border-slate-600 hover:border-purple-500 hover:text-purple-600 dark:hover:text-purple-400 text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-700 font-semibold py-1 rounded-md transition-all duration-300 text-xs"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleEdit(template);
@@ -443,7 +442,7 @@ const EnhancedTemplates = ({
                         <Button
                           variant="outline"
                           size="sm"
-                          className="flex-1 border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 font-semibold py-1 rounded-md transition-all duration-300 text-xs"
+                          className="flex-1 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-300 dark:hover:border-red-700 bg-white dark:bg-slate-700 font-semibold py-1 rounded-md transition-all duration-300 text-xs"
                           onClick={(e) => {
                             e.stopPropagation();
                             confirmDelete(template);
