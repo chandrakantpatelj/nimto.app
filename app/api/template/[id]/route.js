@@ -9,8 +9,7 @@ export async function GET(request, { params }) {
   try {
     // Allow public access to read individual templates
     // No authentication required for viewing templates
-
-    const { id } = params;
+    const { id } = await params;    
 
     const template = await prisma.template.findFirst({
       where: {
@@ -67,7 +66,7 @@ export async function PUT(request, { params }) {
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const {
       name,
@@ -165,7 +164,7 @@ export async function DELETE(request, { params }) {
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     // Check if template exists
     const existingTemplate = await prisma.template.findFirst({

@@ -37,25 +37,15 @@ function createS3Client() {
   return new S3Client(config);
 }
 
-// GET /api/events/[id] - Get a specific event
+// GET /api/events/[id] - Get a specific event (public access for design pages)
 export async function GET(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
-    // Get user session for role-based access
-    const session = await getServerSession(authOptions);
-    const userRole = session?.user?.roleName;
-
-    // Define where clause based on user role
-    let whereClause = { id };
-
-    // If user is not authenticated or is an attendee, only show published events
-    if (!session || userRole === 'attendee') {
-      whereClause.status = 'PUBLISHED';
-    }
-
+    // Allow public access to all events for design pages
+    // No authentication required - all events are accessible
     const event = await prisma.event.findUnique({
-      where: whereClause,
+      where: { id },
       include: {
         guests: {
           select: {
@@ -120,7 +110,7 @@ export async function GET(request, { params }) {
 // PUT /api/events/[id] - Update an event
 export async function PUT(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
 
     // Check role-based access
@@ -474,7 +464,7 @@ export async function PUT(request, { params }) {
 // DELETE /api/events/[id] - Delete an event (hard delete)
 export async function DELETE(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     // Check role-based access
     const accessCheck = await checkEventManagementAccess('delete events');

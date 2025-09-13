@@ -19,9 +19,12 @@ export default withAuth(
     if (pathname === '/') return NextResponse.next();
     if (pathname === '/unauthorized') return NextResponse.next();
     
-    // Allow public access to templates and events routes
+    // Allow public access to templates routes
     if (pathname.startsWith('/templates')) return NextResponse.next();
-    if (pathname.startsWith('/events')) return NextResponse.next();
+    
+    // Allow public access to specific events routes, protect main events listing
+    if (pathname.startsWith('/events/design')) return NextResponse.next();
+    if (pathname.match(/^\/events\/[a-zA-Z0-9_-]+$/)) return NextResponse.next(); // Allow /events/[eventId]
     
     // Redirect authenticated users away from auth pages
     if (token && (pathname.startsWith('/signin') || pathname.startsWith('/signup') || pathname.startsWith('/reset-password'))) {
@@ -104,10 +107,12 @@ export default withAuth(
       authorized: ({ token, req }) => {
         // Allow public access to root route
         if (req.nextUrl.pathname === '/') return true;
-        // Allow public access to templates and events routes
+        // Allow public access to templates routes
         if (req.nextUrl.pathname.startsWith('/templates')) return true;
-        if (req.nextUrl.pathname.startsWith('/events')) return true;
-        // Require token for all other routes
+        // Allow public access to specific events routes, protect main events listing
+        if (req.nextUrl.pathname.startsWith('/events/design')) return true;
+        if (req.nextUrl.pathname.match(/^\/events\/[a-zA-Z0-9_-]+$/)) return true; // Allow /events/[eventId]
+        // Require token for all other routes including /events
         return !!token;
       }
     },
@@ -129,6 +134,6 @@ export const config = {
     '/network/:path*',
     '/public-profile/:path*',
     '/account/:path*',
-    '/((?!api|_next/static|_next/image|favicon.ico|signin|signup|verify-email|reset-password|unauthorized|templates|events|^/$).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|signin|signup|verify-email|reset-password|unauthorized|templates|events|pixie-assets|^/$).*)',
   ],
 };
