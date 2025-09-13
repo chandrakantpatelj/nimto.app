@@ -41,8 +41,12 @@ function NewEventFromTemplateContent() {
       try {
         // Check if user is authenticated
         if (!session?.user?.id) {
-          showCustomToast('Please sign in to create an event', 'error');
-          router.push('/signin');
+          // Store current path for redirect after sign in
+          const currentPath = '/events/design/new';
+          const returnUrl = encodeURIComponent(currentPath);
+          
+          // Redirect to sign in with return URL
+          router.push(`/signin?callbackUrl=${returnUrl}`);
           return;
         }
 
@@ -98,8 +102,12 @@ function NewEventFromTemplateContent() {
   const handleNext = async () => {
     // Check authentication before proceeding to next step
     if (!session?.user?.id) {
-      showCustomToast('Please sign in to continue', 'error');
-      router.push('/signin');
+      // Store current path for redirect after sign in
+      const currentPath = '/events/design/new';
+      const returnUrl = encodeURIComponent(currentPath);
+      
+      // Redirect to sign in with return URL
+      router.push(`/signin?callbackUrl=${returnUrl}`);
       return;
     }
 
@@ -146,7 +154,12 @@ function NewEventFromTemplateContent() {
 
     // Check if user is authenticated
     if (!session?.user?.id) {
-      showCustomToast('Please sign in to create an event', 'error');
+      // Store current path for redirect after sign in
+      const currentPath = '/events/design/new';
+      const returnUrl = encodeURIComponent(currentPath);
+      
+      // Redirect to sign in with return URL
+      router.push(`/signin?callbackUrl=${returnUrl}`);
       return;
     }
 

@@ -129,7 +129,12 @@ function EditEventContent() {
 
     // Check if user is authenticated
     if (!session?.user?.id) {
-      showCustomToast('Please sign in to create an event', 'error');
+      // Store current path for redirect after sign in
+      const currentPath = `/events/design/${templateId}`;
+      const returnUrl = encodeURIComponent(currentPath);
+      
+      // Redirect to sign in with return URL
+      router.push(`/signin?callbackUrl=${returnUrl}`);
       return;
     }
 

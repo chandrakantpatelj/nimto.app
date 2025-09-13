@@ -19,6 +19,10 @@ export default withAuth(
     if (pathname === '/') return NextResponse.next();
     if (pathname === '/unauthorized') return NextResponse.next();
     
+    // Allow public access to templates and events routes
+    if (pathname.startsWith('/templates')) return NextResponse.next();
+    if (pathname.startsWith('/events')) return NextResponse.next();
+    
     // Redirect authenticated users away from auth pages
     if (token && (pathname.startsWith('/signin') || pathname.startsWith('/signup') || pathname.startsWith('/reset-password'))) {
       return redirect('/templates', req);
@@ -39,7 +43,6 @@ export default withAuth(
       '/user-management': new Set(['super-admin', 'application-admin']),
       '/settings': new Set(['super-admin', 'application-admin']),
       '/reportings': new Set(['super-admin', 'application-admin']),
-      '/templates': new Set(['super-admin', 'application-admin']),
       '/messaging': new Set(['host', 'super-admin', 'application-admin']),
       '/store-admin': new Set(['super-admin', 'application-admin']),
       '/network': new Set([
@@ -61,12 +64,6 @@ export default withAuth(
         'application-admin',
       ]),
       '/my-profile': new Set([
-        'host',
-        'attendee',
-        'super-admin',
-        'application-admin',
-      ]),
-      '/events': new Set([
         'host',
         'attendee',
         'super-admin',
@@ -107,6 +104,9 @@ export default withAuth(
       authorized: ({ token, req }) => {
         // Allow public access to root route
         if (req.nextUrl.pathname === '/') return true;
+        // Allow public access to templates and events routes
+        if (req.nextUrl.pathname.startsWith('/templates')) return true;
+        if (req.nextUrl.pathname.startsWith('/events')) return true;
         // Require token for all other routes
         return !!token;
       }
@@ -116,7 +116,6 @@ export default withAuth(
 
 export const config = {
   matcher: [
-    '/events/:path*',
     '/host/:path*',
     '/admin/:path*',
     '/settings/:path*',
@@ -130,6 +129,6 @@ export const config = {
     '/network/:path*',
     '/public-profile/:path*',
     '/account/:path*',
-    '/((?!api|_next/static|_next/image|favicon.ico|signin|signup|verify-email|reset-password|unauthorized|^/$).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|signin|signup|verify-email|reset-password|unauthorized|templates|events|^/$).*)',
   ],
 };

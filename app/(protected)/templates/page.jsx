@@ -22,8 +22,8 @@ import {
   ToolbarDescription,
   ToolbarPageTitle,
 } from '@/app/components/partials/common/toolbar';
-import { RouteGuard } from '@/components/common/route-guard';
 import { useRoleBasedAccess } from '@/hooks/use-role-based-access';
+import { useSession } from 'next-auth/react';
 import { PageNavbar } from '../account/page-navbar';
 import CreatewithAIpopup from './components/CreatewithAIpopup';
 import { EnhancedTemplateManagement } from './content';
@@ -31,45 +31,47 @@ import { EnhancedTemplateManagement } from './content';
 function TemplateManagementPage() {
   const router = useRouter();
   const [showAIDialog, setShowAIDialog] = useState(false);
+  const { data: session } = useSession();
   const { roles } = useRoleBasedAccess();
   const isSuperAdmin = roles.isSuperAdmin;
+  const isAuthenticated = !!session;
 
   const handleCategoryManagement = () => {
     router.push('/templates/categories');
   };
 
   return (
-    <RouteGuard 
-      requiredRoles={['host', 'super-admin', 'application-admin']}
-      redirectTo="/unauthorized"
-    >
-      <Fragment>
-        <PageNavbar />
-        
-        {/* Hero Section */}
-        <Container>
-          <Toolbar>
-            <ToolbarHeading>
-              <ToolbarPageTitle />
-              <ToolbarDescription>Browse and manage templates</ToolbarDescription>
-            </ToolbarHeading>
-            <ToolbarActions>
-              {isSuperAdmin && (
-                <Button variant="outline" onClick={handleCategoryManagement}>
-                  <Settings /> Manage Categories
-                </Button>
-              )}
+    <Fragment>
+      {isAuthenticated && <PageNavbar />}
+      
+      {/* Hero Section */}
+      <Container>
+        <Toolbar>
+          <ToolbarHeading>
+            <ToolbarPageTitle />
+            <ToolbarDescription>Browse and manage templates</ToolbarDescription>
+          </ToolbarHeading>
+          <ToolbarActions>
+            {isAuthenticated && isSuperAdmin && (
+              <Button variant="outline" onClick={handleCategoryManagement}>
+                <Settings /> Manage Categories
+              </Button>
+            )}
+            {isAuthenticated && (
               <Button variant="secondary" onClick={() => setShowAIDialog(true)}>
                 <Sparkles /> Create With AI
               </Button>
+            )}
+            {isAuthenticated && (
               <Button variant="primary" asChild>
                 <Link href="/templates/design">
                   <CirclePlus /> Create New Template
                 </Link>
               </Button>
-            </ToolbarActions>
-          </Toolbar>
-        </Container>
+            )}
+          </ToolbarActions>
+        </Toolbar>
+      </Container>
         <div className="relative bg-gradient-to-br from-purple-600 via-pink-500 to-red-500 text-white overflow-hidden">
           <div className="absolute inset-0 bg-black/10"></div>
           <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-pink-500/20"></div>
@@ -151,9 +153,8 @@ function TemplateManagementPage() {
             </div>
           </div>
         </Container>
-        <CreatewithAIpopup show={showAIDialog} setShow={setShowAIDialog} />
+        {isAuthenticated && <CreatewithAIpopup show={showAIDialog} setShow={setShowAIDialog} />}
       </Fragment>
-    </RouteGuard>
   );
 }
 

@@ -18,9 +18,7 @@ export function HomeTemplatesPreview() {
       try {
         setLoading(true);
         setError(null);
-        
         const response = await apiFetch('/api/template?limit=6');
-        
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}: Failed to fetch templates`);
         }
@@ -106,7 +104,6 @@ export function HomeTemplatesPreview() {
                     </div>
                   </div>
                 )}
-                
                 {/* Overlay with action buttons */}
                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                   <div className="flex gap-2">
@@ -118,7 +115,7 @@ export function HomeTemplatesPreview() {
                     >
                       <Link href={`/templates/preview/${template.id}`}>
                         <Eye className="h-4 w-4 mr-1" />
-                        Preview
+                        Preview 
                       </Link>
                     </Button>
                     <Button
@@ -126,7 +123,7 @@ export function HomeTemplatesPreview() {
                       onClick={() => handleTemplateSelect(template)}
                       asChild
                     >
-                      <Link href="/events/design/new">
+                      <Link href={`/events/design/${template.id}`}>
                         Use Template
                       </Link>
                     </Button>
@@ -153,7 +150,7 @@ export function HomeTemplatesPreview() {
                     )}
                   </div>
                 </div>
-                
+
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
                   {template.category || 'Event Template'}
                 </p>
@@ -169,7 +166,7 @@ export function HomeTemplatesPreview() {
                     asChild
                     className="text-xs"
                   >
-                    <Link href="/events/design/new">
+                    <Link href={`/events/design/${template.id}`}>
                       Create Event
                     </Link>
                   </Button>
