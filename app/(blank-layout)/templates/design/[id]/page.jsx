@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useSelectedTemplate, useTemplateActions } from '@/store/hooks';
 import { apiFetch } from '@/lib/api';
 import { useTemplateImage } from '@/hooks/use-template-image';
-import { showCustomToast } from '@/components/common/custom-toast';
+import { useToast } from '@/providers/toast-provider';
 import TemplateDesignLayout from '../components/TemplateDesignLayout';
 
 function EditTemplate() {
@@ -43,7 +43,7 @@ function EditTemplate() {
       console.log('selectedTemplate222', selectedTemplate);
     } catch (err) {
       setError(err.message);
-      showCustomToast('Failed to load template', 'error');
+      toastError('Failed to load template');
     } finally {
       setFetchingTemplate(false);
     }
@@ -90,7 +90,7 @@ function EditTemplate() {
           await uploadTemplateImage(templateId, uploadedImageFile);
         }
 
-        showCustomToast('Template updated successfully', 'success');
+        toastSuccess('Template updated successfully');
         router.push('/templates');
       } else {
         throw new Error(result.error || 'Failed to update template');

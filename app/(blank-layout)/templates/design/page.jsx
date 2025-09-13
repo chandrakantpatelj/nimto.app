@@ -4,11 +4,12 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiFetch } from '@/lib/api';
 import { useTemplateImage } from '@/hooks/use-template-image';
-import { showCustomToast } from '@/components/common/custom-toast';
+import { useToast } from '@/providers/toast-provider';
 import TemplateDesignLayout from './components/TemplateDesignLayout';
 
 function CreateTemplate() {
   const router = useRouter();
+  const { toastSuccess, toastWarning, toastInfo } = useToast();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -41,18 +42,15 @@ function CreateTemplate() {
         // Upload image if one was selected
         if (uploadedImageFile) {
           try {
-            showCustomToast('Uploading image to S3...', 'info');
+            toastInfo('Uploading image to S3...');
             await uploadTemplateImage(result.data.id, uploadedImageFile);
-            showCustomToast('Image uploaded successfully!', 'success');
+            toastSuccess('Image uploaded successfully!');
           } catch (uploadError) {
-            showCustomToast(
-              'Template created but image upload failed',
-              'warning',
-            );
+            toastWarning('Template created but image upload failed');
           }
         }
 
-        showCustomToast('Template created successfully', 'success');
+        toastSuccess('Template created successfully');
         router.push('/templates');
       } else {
         throw new Error(result.error || 'Failed to create template');

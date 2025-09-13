@@ -14,7 +14,7 @@ import DialogContent, {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { showCustomToast } from '@/components/common/custom-toast';
+import { useToast } from '@/providers/toast-provider';
 
 function DeleteEvent({
   show,
@@ -26,10 +26,11 @@ function DeleteEvent({
   onDeleteFailed,
 }) {
   const [isDeleting, setIsDeleting] = useState(false);
+  const { toastSuccess, toastError } = useToast();
 
   const handleDelete = async () => {
     if (!eventId) {
-      showCustomToast('Event ID is required', 'error');
+      toastError('Event ID is required');
       return;
     }
 
@@ -51,14 +52,14 @@ function DeleteEvent({
       const data = await response.json();
 
       if (data.success) {
-        showCustomToast('Event deleted successfully', 'success');
+        toastSuccess('Event deleted successfully');
 
         // Call the callback to refresh the events list
         if (onEventDeleted) {
           onEventDeleted();
         }
       } else {
-        showCustomToast(data.error || 'Failed to delete event', 'error');
+        toastError(data.error || 'Failed to delete event');
 
         // Notify parent that delete failed so it can stop the loading state
         if (onDeleteFailed) {
@@ -67,7 +68,7 @@ function DeleteEvent({
       }
     } catch (error) {
       console.error('Error deleting event:', error);
-      showCustomToast('An error occurred while deleting the event', 'error');
+      toastError('An error occurred while deleting the event');
 
       // Notify parent that delete failed so it can stop the loading state
       if (onDeleteFailed) {

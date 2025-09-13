@@ -11,7 +11,7 @@ import {
 } from '@/store/hooks';
 import { fetchTemplateById as fetchTemplateByIdThunk } from '@/store/slices/templatesSlice';
 import { useSession } from 'next-auth/react';
-import { showCustomToast } from '@/components/common/custom-toast';
+import { useToast } from '@/providers/toast-provider';
 import { TemplateHeader } from '../../components';
 import InvitationConfirmationPopup from '../../components/InvitationConfirmationPopup';
 import Step1 from '../../components/Step1';
@@ -20,6 +20,7 @@ import Step3 from '../../components/Step3';
 
 function EditEventContent() {
   const router = useRouter();
+  const { toastSuccess, toastError, toastWarning } = useToast();
   const params = useParams();
   const templateId = params.id;
   const { data: session } = useSession();
@@ -71,7 +72,7 @@ function EditEventContent() {
           newImageBase64: null,
         });
       } catch (error) {
-        showCustomToast('Failed to load template. Please try again.', 'error');
+        toastError('Failed to load template. Please try again.');
       }
     };
 
@@ -89,7 +90,7 @@ function EditEventContent() {
     // Only check Pixie editor readiness if we're on step 0 (design step)
     if (activeStep === 0) {
       if (!pixieEditorRef.current?.save) {
-        showCustomToast('Editor not ready. Please try again.', 'error');
+        toastError('Editor not ready. Please try again.');
         return;
       }
 
@@ -104,10 +105,7 @@ function EditEventContent() {
           });
         }
       } catch (err) {
-        showCustomToast(
-          'There was a problem saving your design. Please try again.',
-          'error',
-        );
+        toastError('There was a problem saving your design. Please try again.');
         return;
       }
     }
@@ -120,25 +118,19 @@ function EditEventContent() {
   const handlePublishEvent = () => {
     // Validate required fields
     if (!eventData.title || !eventData.date) {
-      showCustomToast(
-        'Please fill in all required fields (title and date)',
-        'error',
-      );
+      toastError('Please fill in all required fields (title and date)');
       return;
     }
 
     // Check if user is authenticated
     if (!session?.user?.id) {
-      showCustomToast('Please sign in to create an event', 'error');
+      toastError('Please sign in to create an event');
       return;
     }
 
     // Validate that at least one guest is selected
     if (!eventData.guests || eventData.guests.length === 0) {
-      showCustomToast(
-        'Please add at least one guest to create an event',
-        'error',
-      );
+      toastError('Please add at least one guest to create an event');
       return;
     }
 
@@ -179,11 +171,10 @@ function EditEventContent() {
       const result = await response.json();
 
       if (result.success) {
-        showCustomToast(
+        toastSuccess(
           sendInvitations
             ? 'Event created and invitations sent successfully!'
             : 'Event created successfully!',
-          'success',
         );
 
         addEventToStore(result.data.event);
@@ -194,7 +185,7 @@ function EditEventContent() {
         throw new Error(result.error || 'Failed to create event');
       }
     } catch (error) {
-      showCustomToast('Failed to create event. Please try again.', 'error');
+      toastError('Failed to create event. Please try again.');
     } finally {
       setIsCreating(false);
       setShowInvitationPopup(false);

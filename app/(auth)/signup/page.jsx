@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
+import { useToast } from '@/providers/toast-provider';
 import { apiFetch } from '@/lib/api';
 import { Alert, AlertIcon, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -33,6 +33,7 @@ import { getSignupSchema } from '../forms/signup-schema';
 
 export default function Page() {
   const router = useRouter();
+  const { toastSuccess } = useToast();
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [passwordConfirmationVisible, setPasswordConfirmationVisible] =
     useState(false);
@@ -83,19 +84,9 @@ export default function Page() {
         setError(message);
       } else {
         const { message } = await response.json();
-        toast.success(
+        toastSuccess(
           message ||
-            'You have successfully signed up! Please check your email to verify your account.',
-          {
-            duration: 6000,
-            style: {
-              fontSize: '16px',
-              fontWeight: '500',
-              padding: '16px 20px',
-              borderRadius: '8px',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-            },
-          },
+            'You have successfully signed up! Please check your email to verify your account.'
         );
         router.push('/templates');
       }

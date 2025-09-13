@@ -1,10 +1,16 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Edit, Trash2, Image as ImageIcon, Eye, EyeOff, Star } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
+import React, { useEffect, useState } from 'react';
+import {
+  Edit,
+  Eye,
+  EyeOff,
+  Image as ImageIcon,
+  Star,
+  Trash2,
+} from 'lucide-react';
+import { apiFetch } from '@/lib/api';
+import { useToast } from '@/providers/toast-provider';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,14 +21,19 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { apiFetch } from '@/lib/api';
-import { showCustomToast } from '@/components/common/custom-toast';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import LazyImage from '../../components/LazyImage';
 
 export function CategoryList({ onEditCategory }) {
+  const { toastSuccess, toastError } = useToast();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [deleteDialog, setDeleteDialog] = useState({ open: false, category: null });
+  const [deleteDialog, setDeleteDialog] = useState({
+    open: false,
+    category: null,
+  });
 
   useEffect(() => {
     fetchCategories();
@@ -32,7 +43,7 @@ export function CategoryList({ onEditCategory }) {
     try {
       setLoading(true);
       const response = await apiFetch('/api/template-categories');
-      
+
       if (response.ok) {
         const result = await response.json();
         if (result.success) {
@@ -41,7 +52,7 @@ export function CategoryList({ onEditCategory }) {
       }
     } catch (error) {
       console.error('Error fetching categories:', error);
-      showCustomToast('Failed to fetch categories', 'error');
+      toastError('Failed to fetch categories');
     } finally {
       setLoading(false);
     }
@@ -49,20 +60,23 @@ export function CategoryList({ onEditCategory }) {
 
   const handleDelete = async (category) => {
     try {
-      const response = await apiFetch(`/api/template-categories/${category.id}`, {
-        method: 'DELETE',
-      });
+      const response = await apiFetch(
+        `/api/template-categories/${category.id}`,
+        {
+          method: 'DELETE',
+        },
+      );
 
       if (response.ok) {
-        showCustomToast('Category deleted successfully', 'success');
+        toastSuccess('Category deleted successfully');
         fetchCategories();
       } else {
         const result = await response.json();
-        showCustomToast(result.error || 'Failed to delete category', 'error');
+        toastError(result.error || 'Failed to delete category');
       }
     } catch (error) {
       console.error('Error deleting category:', error);
-      showCustomToast('Failed to delete category', 'error');
+      toastError('Failed to delete category');
     }
     setDeleteDialog({ open: false, category: null });
   };
@@ -82,9 +96,16 @@ export function CategoryList({ onEditCategory }) {
           <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
             <ImageIcon className="h-8 w-8 text-gray-400 dark:text-gray-500" />
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">No Categories Found</h3>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">Create your first template category to get started.</p>
-          <Button onClick={() => onEditCategory(null)} className="bg-purple-600 hover:bg-purple-700 dark:bg-purple-600 dark:hover:bg-purple-700">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+            No Categories Found
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            Create your first template category to get started.
+          </p>
+          <Button
+            onClick={() => onEditCategory(null)}
+            className="bg-purple-600 hover:bg-purple-700 dark:bg-purple-600 dark:hover:bg-purple-700"
+          >
             <ImageIcon className="h-4 w-4 mr-2" />
             Create First Category
           </Button>
@@ -95,7 +116,7 @@ export function CategoryList({ onEditCategory }) {
             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               Categories ({categories.length})
             </h3>
-            <Button 
+            <Button
               onClick={() => onEditCategory(null)}
               size="sm"
               className="bg-purple-600 hover:bg-purple-700 dark:bg-purple-600 dark:hover:bg-purple-700"
@@ -104,10 +125,10 @@ export function CategoryList({ onEditCategory }) {
               Add Category
             </Button>
           </div>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-            {categories.map(category => (
-              <Card 
+            {categories.map((category) => (
+              <Card
                 key={category.id}
                 className="group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg bg-white dark:bg-gray-800 rounded-2xl overflow-hidden"
               >
@@ -126,7 +147,9 @@ export function CategoryList({ onEditCategory }) {
                                 {category.name.charAt(0).toUpperCase()}
                               </span>
                             </div>
-                            <span className="text-sm text-gray-500 dark:text-gray-400">Loading...</span>
+                            <span className="text-sm text-gray-500 dark:text-gray-400">
+                              Loading...
+                            </span>
                           </div>
                         }
                       />
@@ -137,15 +160,19 @@ export function CategoryList({ onEditCategory }) {
                         </span>
                       </div>
                     )}
-                    
+
                     {/* Dark Gradient Overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                    
+
                     {/* Overlay Text */}
                     <div className="absolute bottom-4 left-4 right-4">
                       <div className="text-white">
-                        <p className="text-sm font-medium opacity-90 mb-1">Template Category</p>
-                        <h3 className="text-xl font-bold leading-tight">{category.name}</h3>
+                        <p className="text-sm font-medium opacity-90 mb-1">
+                          Template Category
+                        </p>
+                        <h3 className="text-xl font-bold leading-tight">
+                          {category.name}
+                        </h3>
                       </div>
                     </div>
 
@@ -157,7 +184,10 @@ export function CategoryList({ onEditCategory }) {
                           Active
                         </Badge>
                       ) : (
-                        <Badge variant="secondary" className="bg-gray-500 text-white border-0 shadow-lg">
+                        <Badge
+                          variant="secondary"
+                          className="bg-gray-500 text-white border-0 shadow-lg"
+                        >
                           <EyeOff className="h-3 w-3 mr-1" />
                           Inactive
                         </Badge>
@@ -172,8 +202,12 @@ export function CategoryList({ onEditCategory }) {
                       <div className="flex items-center gap-2">
                         <div className="flex items-center">
                           <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                          <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 ml-1">4.8</span>
-                          <span className="text-sm text-gray-500 dark:text-gray-400 ml-1">(24 reviews)</span>
+                          <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 ml-1">
+                            4.8
+                          </span>
+                          <span className="text-sm text-gray-500 dark:text-gray-400 ml-1">
+                            (24 reviews)
+                          </span>
                         </div>
                       </div>
                       <div className="text-sm text-purple-600 dark:text-purple-400 font-medium">
@@ -188,12 +222,14 @@ export function CategoryList({ onEditCategory }) {
                       </p>
                     ) : (
                       <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-2 leading-relaxed">
-                        Beautiful templates for {category.name.toLowerCase()} events. Perfect for creating memorable invitations and celebrations.
+                        Beautiful templates for {category.name.toLowerCase()}{' '}
+                        events. Perfect for creating memorable invitations and
+                        celebrations.
                       </p>
                     )}
 
                     {/* Action Button */}
-                    <Button 
+                    <Button
                       className="w-full bg-purple-600 hover:bg-purple-700 dark:bg-purple-600 dark:hover:bg-purple-700 text-white font-semibold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 mb-3"
                       onClick={() => onEditCategory(category)}
                     >
@@ -216,7 +252,9 @@ export function CategoryList({ onEditCategory }) {
                         variant="outline"
                         size="sm"
                         className="border-red-200 dark:border-red-600 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-300 dark:hover:border-red-500 rounded-lg"
-                        onClick={() => setDeleteDialog({ open: true, category })}
+                        onClick={() =>
+                          setDeleteDialog({ open: true, category })
+                        }
                       >
                         <Trash2 className="h-3 w-3" />
                       </Button>
@@ -230,21 +268,21 @@ export function CategoryList({ onEditCategory }) {
       )}
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog 
-        open={deleteDialog.open} 
+      <AlertDialog
+        open={deleteDialog.open}
         onOpenChange={(open) => setDeleteDialog({ open, category: null })}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Category</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete the category "{deleteDialog.category?.name}"? 
-              This action cannot be undone.
+              Are you sure you want to delete the category "
+              {deleteDialog.category?.name}"? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={() => handleDelete(deleteDialog.category)}
               className="bg-red-600 hover:bg-red-700"
             >
