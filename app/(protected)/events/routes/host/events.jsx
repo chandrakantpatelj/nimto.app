@@ -45,6 +45,12 @@ const Events = () => {
     }
   }, [session?.user?.id, fetchAllEvents, router]);
 
+  const totalConfirmedGuests = events.reduce((acc, event) => {
+    return (
+      acc + event.guests.filter((guest) => guest.status === 'CONFIRMED').length
+    );
+  }, 0);
+
   const filteredEvents = events.filter((event) => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
@@ -185,7 +191,8 @@ const Events = () => {
             <div className="flex items-center  mt-1">
               <Users className="w-5 h-5  mr-2 " />
               <span className="text-sm font-medium text-secondary-foreground">
-                0 Accepted / {event.guests?.length || 0} Invited
+                {totalConfirmedGuests} Accepted / {event.guests?.length || 0}{' '}
+                Invited
               </span>
             </div>
             <div className="flex gap-2 items-center justify-between mt-3">

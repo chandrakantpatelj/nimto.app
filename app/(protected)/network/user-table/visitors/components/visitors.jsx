@@ -517,9 +517,12 @@ function ActionsCell({ row }) {
       </DropdownMenuTrigger>
       <DropdownMenuContent side="bottom" align="end">
         <DropdownMenuItem
-          onClick={() =>
-            alert(`Clicked on action button for row ${row.original.user.name}`)
-          }
+          onClick={() => {
+            // TODO: Implement visitor action functionality
+            console.log(
+              `Clicked on action button for row ${row.original.user.name}`,
+            );
+          }}
         >
           Action
         </DropdownMenuItem>

@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import { getServerSession } from 'next-auth';
 import { checkGuestManagementAccess } from '@/lib/auth-utils';
-import authOptions from '@/app/api/auth/[...nextauth]/auth-options';
 
 const prisma = new PrismaClient();
 
@@ -14,8 +12,6 @@ export async function GET(request, { params }) {
     if (accessCheck.error) {
       return accessCheck.error;
     }
-
-    const { session } = accessCheck;
 
     const { id } = params;
 
@@ -76,8 +72,6 @@ export async function PUT(request, { params }) {
       return accessCheck.error;
     }
 
-    const { session } = accessCheck;
-
     const { id } = params;
     const body = await request.json();
 
@@ -126,8 +120,6 @@ export async function DELETE(request, { params }) {
     if (accessCheck.error) {
       return accessCheck.error;
     }
-
-    const { session } = accessCheck;
 
     const { id } = params;
 

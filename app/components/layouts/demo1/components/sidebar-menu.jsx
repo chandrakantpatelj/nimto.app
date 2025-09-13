@@ -4,6 +4,7 @@ import { useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { MENU_SIDEBAR } from '@/config/menu.config';
+import { getRoleBasedMenuItems } from '@/config/role-based-menu.config';
 import { cn } from '@/lib/utils';
 import { useRoleBasedAccess } from '@/hooks/use-role-based-access';
 import {
@@ -19,7 +20,7 @@ import { Badge } from '@/components/ui/badge';
 
 export function SidebarMenu() {
   const pathname = usePathname();
-  const { roles } = useRoleBasedAccess();
+  const { roles, user } = useRoleBasedAccess();
 
   // Memoize matchPath to prevent unnecessary re-renders
   const matchPath = useCallback(
@@ -43,139 +44,9 @@ export function SidebarMenu() {
     indicator: '',
   };
 
-  // Role-based menu configuration
+  // Get role-based menu items
   const getMenuItems = () => {
-    if (roles.isSuperAdmin) {
-      // Super Admin sees all menu items
-      return MENU_SIDEBAR;
-    } else if (roles.isHost) {
-      // Host sees limited menu items (Templates removed - admin only)
-      return [
-        {
-          title: 'Home',
-          icon: MENU_SIDEBAR.find((item) => item.title === 'Home')?.icon,
-          path: '/',
-        },
-        {
-          title: 'Dashboard',
-          icon: MENU_SIDEBAR.find((item) => item.title === 'Dashboard')?.icon,
-          path: '/dashboard',
-        },
-        {
-          title: 'Events',
-          icon: MENU_SIDEBAR.find((item) => item.title === 'Events')?.icon,
-          path: '/events',
-        },
-        {
-          title: 'My Profile',
-          icon: MENU_SIDEBAR.find((item) => item.title === 'My Profile')?.icon,
-          path: '/my-profile',
-        },
-      ];
-    } else if (roles.isApplicationAdmin) {
-      // Application Admin sees admin menu items
-      return [
-        {
-          title: 'Home',
-          icon: MENU_SIDEBAR.find((item) => item.title === 'Home')?.icon,
-          path: '/',
-        },
-        {
-          title: 'Dashboard',
-          icon: MENU_SIDEBAR.find((item) => item.title === 'Dashboard')?.icon,
-          path: '/dashboard',
-        },
-        {
-          title: 'Events',
-          icon: MENU_SIDEBAR.find((item) => item.title === 'Events')?.icon,
-          path: '/events',
-        },
-        {
-          title: 'Templates',
-          icon: MENU_SIDEBAR.find((item) => item.title === 'Templates')?.icon,
-          path: '/templates',
-        },
-        {
-          title: 'Users',
-          icon: MENU_SIDEBAR.find((item) => item.title === 'Users')?.icon,
-          path: '/user-management/users',
-        },
-        {
-          title: 'Roles',
-          icon: MENU_SIDEBAR.find((item) => item.title === 'Roles')?.icon,
-          path: '/user-management/roles',
-        },
-        {
-          title: 'App Settings',
-          icon: MENU_SIDEBAR.find((item) => item.title === 'App Settings')
-            ?.icon,
-          path: '/settings',
-        },
-        {
-          title: 'Reporting',
-          icon: MENU_SIDEBAR.find((item) => item.title === 'Reporting')?.icon,
-          path: '/reportings',
-        },
-        {
-          title: 'Messaging',
-          icon: MENU_SIDEBAR.find((item) => item.title === 'Messaging')?.icon,
-          path: '/messaging',
-        },
-        {
-          title: 'My Profile',
-          icon: MENU_SIDEBAR.find((item) => item.title === 'My Profile')?.icon,
-          path: '/my-profile',
-        },
-      ];
-    } else if (roles.isAttendee) {
-      // Attendee sees basic menu items
-      return [
-        {
-          title: 'Home',
-          icon: MENU_SIDEBAR.find((item) => item.title === 'Home')?.icon,
-          path: '/',
-        },
-        {
-          title: 'Dashboard',
-          icon: MENU_SIDEBAR.find((item) => item.title === 'Dashboard')?.icon,
-          path: '/dashboard',
-        },
-        {
-          title: 'Events',
-          icon: MENU_SIDEBAR.find((item) => item.title === 'Events')?.icon,
-          path: '/events',
-        },
-        {
-          title: 'My Profile',
-          icon: MENU_SIDEBAR.find((item) => item.title === 'My Profile')?.icon,
-          path: '/my-profile',
-        },
-      ];
-    } else {
-      // Default/Unknown roles see basic menu items
-      return [
-        {
-          title: 'Home',
-          icon: MENU_SIDEBAR.find((item) => item.title === 'Home')?.icon,
-          path: '/',
-        },
-        {
-          title: 'Dashboard',
-          icon: MENU_SIDEBAR.find((item) => item.title === 'Dashboard')?.icon,
-          path: '/dashboard',
-        },
-        {
-          title: 'Events',
-          icon: MENU_SIDEBAR.find((item) => item.title === 'Events')?.icon,
-          path: '/events',
-        },
-        {
-          title: 'My Profile',
-          icon: MENU_SIDEBAR.find((item) => item.title === 'My Profile')?.icon,
-          path: '/my-profile',
-        },
-      ];
-    }
+    return getRoleBasedMenuItems(user?.roleName);
   };
 
   const buildMenu = (items) => {

@@ -114,7 +114,7 @@ const authOptions = {
                   name: existingUser.name || 'Anonymous',
                   status: existingUser.status,
                   roleId: existingUser.roleId,
-                  roleName: existingUser.role.name,
+                  roleName: existingUser.role.slug,
                   avatar: existingUser.avatar,
                 };
               }
@@ -149,7 +149,7 @@ const authOptions = {
                 status: newUser.status,
                 avatar: newUser.avatar,
                 roleId: newUser.roleId,
-                roleName: defaultRole.name,
+                roleName: defaultRole.slug,
               };
             },
           }),

@@ -547,7 +547,13 @@ export function RecentOrders() {
                 </Button>
               )}
             </div>
-            <Button variant="outline" onClick={() => alert('Export CSV')}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                // TODO: Implement CSV export functionality
+                console.log('Export CSV functionality not implemented yet');
+              }}
+            >
               Export CSV
             </Button>
           </CardToolbar>
