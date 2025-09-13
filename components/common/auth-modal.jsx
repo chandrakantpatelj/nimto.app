@@ -1,19 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { signIn } from 'next-auth/react';
 import { useForm } from 'react-hook-form';
-import { Eye, EyeOff, LoaderCircleIcon } from 'lucide-react';
+import { AlertCircle, Eye, EyeOff, LoaderCircleIcon } from 'lucide-react';
+import { apiFetch } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
@@ -24,7 +23,9 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertIcon, AlertTitle } from '@/components/ui/alert';
+import { Icons } from '@/components/common/icons';
+import { RecaptchaPopover } from '@/components/common/recaptcha-popover';
 import { getSigninSchema } from '@/app/(auth)/forms/signin-schema';
 import { getSignupSchema } from '@/app/(auth)/forms/signup-schema';
 
@@ -32,10 +33,22 @@ export function AuthModal({ isOpen, onClose, mode = 'signin' }) {
   const router = useRouter();
   const [currentMode, setCurrentMode] = useState(mode);
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [passwordConfirmationVisible, setPasswordConfirmationVisible] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState(null);
+  const [showRecaptcha, setShowRecaptcha] = useState(false);
 
   const isSignin = currentMode === 'signin';
+
+  // Cleanup effect to handle component unmounting
+  useEffect(() => {
+    return () => {
+      // Reset processing state when component unmounts
+      setIsProcessing(false);
+      setError(null);
+      setShowRecaptcha(false);
+    };
+  }, []);
   const schema = isSignin ? getSigninSchema() : getSignupSchema();
 
   const form = useForm({
@@ -44,9 +57,10 @@ export function AuthModal({ isOpen, onClose, mode = 'signin' }) {
       email: '',
       password: '',
       name: '',
-      confirmPassword: '',
+      passwordConfirmation: '',
       rememberMe: false,
-      agreeToTerms: false,
+      accept: false,
+      isHost: false,
     },
   });
 
@@ -55,20 +69,27 @@ export function AuthModal({ isOpen, onClose, mode = 'signin' }) {
     const result = await form.trigger();
     if (!result) return;
 
-    setIsProcessing(true);
-    setError(null);
+    if (isSignin) {
+      // Handle signin directly
+      setIsProcessing(true);
+      setError(null);
 
-    try {
-      const values = form.getValues();
-
-      if (isSignin) {
-        // Handle signin
-        const response = await signIn('credentials', {
+      try {
+        const values = form.getValues();
+        
+        // Add timeout to signIn call
+        const signInPromise = signIn('credentials', {
           redirect: false,
           email: values.email,
           password: values.password,
           rememberMe: values.rememberMe,
         });
+
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Request timeout. Please try again.')), 30000)
+        );
+
+        const response = await Promise.race([signInPromise, timeoutPromise]);
 
         if (response?.error) {
           try {
@@ -84,43 +105,62 @@ export function AuthModal({ isOpen, onClose, mode = 'signin' }) {
         } else {
           setError('Authentication failed. Please try again.');
         }
+      } catch (err) {
+        console.error('SignIn error:', err);
+        setError(
+          err instanceof Error
+            ? err.message
+            : 'An unexpected error occurred. Please try again.',
+        );
+      } finally {
+        setIsProcessing(false);
+      }
+    } else {
+      // For signup, show reCAPTCHA
+      setShowRecaptcha(true);
+    }
+  };
+
+  const handleVerifiedSubmit = async (token) => {
+    try {
+      const values = form.getValues();
+
+      setIsProcessing(true);
+      setError(null);
+      setShowRecaptcha(false);
+
+      // Add timeout to apiFetch call
+      const fetchPromise = apiFetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-recaptcha-token': token,
+        },
+        body: JSON.stringify(values),
+      });
+
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout. Please try again.')), 30000)
+      );
+
+      const response = await Promise.race([fetchPromise, timeoutPromise]);
+
+      if (!response.ok) {
+        const { message } = await response.json();
+        setError(message);
       } else {
-        // Handle signup
-        const signupResponse = await fetch('/api/auth/signup', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            name: values.name,
-            email: values.email,
-            password: values.password,
-            agreeToTerms: values.agreeToTerms,
-          }),
-        });
-
-        const signupData = await signupResponse.json();
-
-        if (signupResponse.ok && signupData.success) {
-          // Auto signin after successful signup
-          const signinResponse = await signIn('credentials', {
-            redirect: false,
-            email: values.email,
-            password: values.password,
-          });
-
-          if (signinResponse?.ok) {
-            onClose();
-            router.refresh();
-          } else {
-            setError('Account created successfully! Please sign in.');
-            setCurrentMode('signin');
-          }
-        } else {
-          setError(signupData.error || 'Failed to create account. Please try again.');
-        }
+        // Account created successfully, show success message and switch to signin
+        setError(null);
+        setCurrentMode('signin');
+        form.setValue('email', values.email);
+        form.setValue('password', '');
+        form.setValue('passwordConfirmation', '');
+        form.setValue('name', '');
+        form.setValue('accept', false);
+        form.setValue('isHost', false);
       }
     } catch (err) {
+      console.error('SignUp error:', err);
       setError(
         err instanceof Error
           ? err.message
@@ -139,39 +179,80 @@ export function AuthModal({ isOpen, onClose, mode = 'signin' }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-center">
-            {isSignin ? 'Sign In' : 'Create Account'}
-          </DialogTitle>
-          <DialogDescription className="text-center">
-            {isSignin
-              ? 'Sign in to continue with your design'
-              : 'Create an account to save your design'}
-          </DialogDescription>
-        </DialogHeader>
-
+      <DialogContent 
+        className="sm:max-w-md"
+        onInteractOutside={(e) => {
+          // Prevent closing when clicking outside
+          e.preventDefault();
+        }}
+      >
+        <DialogTitle className="sr-only">
+          {isSignin ? 'Sign in to Nimto' : 'Create an Account with Nimto'}
+        </DialogTitle>
         <Form {...form}>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="block w-full space-y-5">
+            {/* Header */}
+            <div className="space-y-1.5 pb-3">
+              <h1 className="text-2xl font-semibold tracking-tight text-center">
+                {isSignin ? 'Sign in to Nimto' : 'Create an Account with Nimto'}
+              </h1>
+              <p className="mt-2 text-sm text-slate-600 text-center">
+                {isSignin 
+                  ? 'Manage your events seamlessly.' 
+                  : 'Join us to start planning and attending amazing events!'
+                }
+              </p>
+            </div>
+
+            {/* Social Login */}
+            <div className="flex flex-col gap-3.5">
+              <Button
+                variant="outline"
+                type="button"
+                onClick={async () => {
+                  try {
+                    await signIn('google', { callbackUrl: window.location.pathname });
+                  } catch (err) {
+                    console.error('Google SignIn error:', err);
+                    setError('Google sign-in failed. Please try again.');
+                  }
+                }}
+              >
+                <Icons.googleColorful className="size-5 opacity-100" /> 
+                {isSignin ? 'Sign in with Google' : 'Sign up with Google'}
+              </Button>
+            </div>
+
+            {/* Divider */}
+            <div className="relative py-1.5">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">or</span>
+              </div>
+            </div>
+
+            {/* Error Alert */}
             {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
+              <Alert variant="destructive" onClose={() => setError(null)}>
+                <AlertIcon>
+                  <AlertCircle />
+                </AlertIcon>
+                <AlertTitle>{error}</AlertTitle>
               </Alert>
             )}
 
+            {/* Name field for signup */}
             {!isSignin && (
               <FormField
                 control={form.control}
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Full Name</FormLabel>
+                    <FormLabel>Name</FormLabel>
                     <FormControl>
-                      <Input
-                        type="text"
-                        placeholder="Enter your full name"
-                        {...field}
-                      />
+                      <Input placeholder="Your Name" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -179,6 +260,7 @@ export function AuthModal({ isOpen, onClose, mode = 'signin' }) {
               />
             )}
 
+            {/* Email */}
             <FormField
               control={form.control}
               name="email"
@@ -186,148 +268,205 @@ export function AuthModal({ isOpen, onClose, mode = 'signin' }) {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input
-                      type="email"
-                      placeholder="Enter your email"
-                      {...field}
-                    />
+                    <Input placeholder="Your email" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
+            {/* Password */}
             <FormField
               control={form.control}
               name="password"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Input
-                        type={passwordVisible ? 'text' : 'password'}
-                        placeholder="Enter your password"
-                        {...field}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() => setPasswordVisible(!passwordVisible)}
-                      >
-                        {passwordVisible ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
-                  </FormControl>
+                  <div className="relative">
+                    <Input
+                      placeholder="Your password"
+                      type={passwordVisible ? 'text' : 'password'}
+                      {...field}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      mode="icon"
+                      size="sm"
+                      onClick={() => setPasswordVisible(!passwordVisible)}
+                      className="absolute end-0 top-1/2 -translate-y-1/2 h-7 w-7 me-1.5"
+                      aria-label={passwordVisible ? 'Hide password' : 'Show password'}
+                    >
+                      {passwordVisible ? (
+                        <EyeOff className="text-muted-foreground" />
+                      ) : (
+                        <Eye className="text-muted-foreground" />
+                      )}
+                    </Button>
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
+            {/* Password Confirmation for signup */}
             {!isSignin && (
               <FormField
                 control={form.control}
-                name="confirmPassword"
+                name="passwordConfirmation"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Confirm Password</FormLabel>
-                    <FormControl>
+                    <div className="relative">
                       <Input
-                        type="password"
-                        placeholder="Confirm your password"
+                        type={passwordConfirmationVisible ? 'text' : 'password'}
                         {...field}
+                        placeholder="Confirm your password"
                       />
-                    </FormControl>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        mode="icon"
+                        size="sm"
+                        onClick={() => setPasswordConfirmationVisible(!passwordConfirmationVisible)}
+                        className="absolute end-0 top-1/2 -translate-y-1/2 h-7 w-7 me-1.5 bg-transparent!"
+                        aria-label={passwordConfirmationVisible ? 'Hide password confirmation' : 'Show password confirmation'}
+                      >
+                        {passwordConfirmationVisible ? (
+                          <EyeOff className="text-muted-foreground" />
+                        ) : (
+                          <Eye className="text-muted-foreground" />
+                        )}
+                      </Button>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             )}
 
-            {isSignin && (
-              <FormField
-                control={form.control}
-                name="rememberMe"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel className="text-sm font-normal">
-                        Remember me
-                      </FormLabel>
-                    </div>
-                  </FormItem>
-                )}
-              />
-            )}
-
+            {/* Host checkbox for signup */}
             {!isSignin && (
               <FormField
                 control={form.control}
-                name="agreeToTerms"
+                name="isHost"
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                  <FormItem>
                     <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
+                      <div className="flex items-start gap-2.5">
+                        <Checkbox
+                          id="isHost"
+                          checked={field.value}
+                          onCheckedChange={(checked) => field.onChange(!!checked)}
+                        />
+                        <div className="flex flex-col gap-1">
+                          <label htmlFor="isHost" className="text-sm">
+                            I'm interested in hosting events.
+                          </label>
+                          <label htmlFor="isHost" className="text-xs text-muted-foreground">
+                            Sign up as a host to create and manage your own events.
+                          </label>
+                        </div>
+                      </div>
                     </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel className="text-sm font-normal">
-                        I agree to the{' '}
-                        <a href="/terms" className="underline hover:text-primary">
-                          Terms of Service
-                        </a>{' '}
-                        and{' '}
-                        <a href="/privacy" className="underline hover:text-primary">
-                          Privacy Policy
-                        </a>
-                      </FormLabel>
-                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             )}
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isProcessing}
-            >
-              {isProcessing ? (
-                <>
-                  <LoaderCircleIcon className="mr-2 h-4 w-4 animate-spin" />
-                  {isSignin ? 'Signing In...' : 'Creating Account...'}
-                </>
-              ) : (
-                isSignin ? 'Sign In' : 'Create Account'
-              )}
-            </Button>
+            {/* Terms acceptance for signup */}
+            {!isSignin && (
+              <FormField
+                control={form.control}
+                name="accept"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <div className="flex items-center gap-2.5">
+                        <Checkbox
+                          id="accept"
+                          checked={field.value}
+                          onCheckedChange={(checked) => field.onChange(!!checked)}
+                        />
+                        <label htmlFor="accept" className="text-sm text-black">
+                          I agree to the{' '}
+                          <a href="/privacy-policy" target="_blank" className="text-sm font-semibold text-orange-500 hover:text-primary">
+                            Privacy Policy
+                          </a>
+                        </label>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
-            <div className="text-center text-sm">
+            {/* Remember Me for signin */}
+            {isSignin && (
+              <div className="flex items-center space-x-2">
+                <FormField
+                  control={form.control}
+                  name="rememberMe"
+                  render={({ field }) => (
+                    <>
+                      <Checkbox
+                        id="remember-me"
+                        checked={field.value}
+                        onCheckedChange={(checked) => field.onChange(!!checked)}
+                      />
+                      <label htmlFor="remember-me" className="text-sm leading-none text-muted-foreground">
+                        Remember me
+                      </label>
+                    </>
+                  )}
+                />
+              </div>
+            )}
+
+            {/* Submit Button */}
+            <div className="flex flex-col gap-2.5">
+              {isSignin ? (
+                <Button type="submit" disabled={isProcessing}>
+                  {isProcessing && (
+                    <LoaderCircleIcon className="size-4 animate-spin mr-2" />
+                  )}
+                  Continue
+                </Button>
+              ) : (
+                <RecaptchaPopover
+                  open={showRecaptcha}
+                  onOpenChange={(open) => {
+                    if (!open) {
+                      setShowRecaptcha(false);
+                    }
+                  }}
+                  onVerify={handleVerifiedSubmit}
+                  trigger={
+                    <Button type="submit" disabled={isProcessing}>
+                      {isProcessing ? (
+                        <LoaderCircleIcon className="size-4 animate-spin mr-2" />
+                      ) : null}
+                      Continue
+                    </Button>
+                  }
+                />
+              )}
+            </div>
+
+            {/* Switch Mode Link */}
+            <div className="text-sm text-muted-foreground text-center">
               {isSignin ? (
                 <>
-                  Don't have an account?{' '}
+                  Don&apos;t have an account?{' '}
                   <Button
                     type="button"
                     variant="link"
-                    className="p-0 h-auto"
+                    className="p-0 h-auto text-sm font-semibold text-foreground hover:text-primary"
                     onClick={switchMode}
                   >
-                    Sign up
+                    Sign Up
                   </Button>
                 </>
               ) : (
@@ -336,10 +475,10 @@ export function AuthModal({ isOpen, onClose, mode = 'signin' }) {
                   <Button
                     type="button"
                     variant="link"
-                    className="p-0 h-auto"
+                    className="p-0 h-auto text-sm font-semibold text-foreground hover:text-primary"
                     onClick={switchMode}
                   >
-                    Sign in
+                    Sign In
                   </Button>
                 </>
               )}
