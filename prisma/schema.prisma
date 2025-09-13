@@ -159,26 +159,27 @@ model SystemSetting {
 }
 
 model Template {
-  id               String   @id @default(cuid())
-  name             String
-  category         String
-  jsonContent      String?
-  backgroundStyle  String?
-  htmlContent      String?
-  background       String?
-  pageBackground   String?
-  previewImageUrl  String?
-  isPremium        Boolean  @default(false)
-  price            Float    @default(0)
-  isSystemTemplate Boolean  @default(false)
-  createdByUserId  String?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-  isTrashed        Boolean  @default(false)
-  imagePath        String?
-  badge            String?
-  colors           String[]
-  isFeatured       Boolean  @default(false)
+  id                    String   @id @default(cuid())
+  name                  String
+  category              String
+  jsonContent           String?
+  backgroundStyle       String?
+  htmlContent           String?
+  background            String?
+  pageBackground        String?
+  previewImageUrl       String?
+  templateImageThumbnail String? // S3 key for exported template thumbnail
+  isPremium             Boolean  @default(false)
+  price                 Float    @default(0)
+  isSystemTemplate      Boolean  @default(false)
+  createdByUserId       String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  isTrashed             Boolean  @default(false)
+  imagePath             String?
+  badge                 String?
+  colors                String[]
+  isFeatured            Boolean  @default(false)
   isNew            Boolean  @default(false)
   isTrending       Boolean  @default(false)
   keywords         String[]

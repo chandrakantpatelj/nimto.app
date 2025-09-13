@@ -10,7 +10,7 @@ const Toaster = ({ ...props }) => {
   return (
     <Sonner
       theme={theme}
-      position="top-center"
+      position="bottom-right"
       duration={5000}
       className="group toaster [&_[data-type=success]>[data-icon]]:text-success [&_[data-type=success]_[data-title]]:text-success [&_[data-type=info]_[data-title]]:text-info [&_[data-type=error]>[data-icon]]:text-destructive [&_[data-type=error]_[data-title]]:text-destructive"
       toastOptions={{

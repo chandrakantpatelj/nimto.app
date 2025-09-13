@@ -18,7 +18,7 @@ import {
   Search,
   X,
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { useToast } from '@/providers/toast-provider';
 import { toAbsoluteUrl } from '@/lib/helpers';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 import { Alert, AlertIcon, AlertTitle } from '@/components/ui/alert';

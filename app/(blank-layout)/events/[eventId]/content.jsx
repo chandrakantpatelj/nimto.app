@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useEventActions, useEvents } from '@/store/hooks';
-import { showCustomToast } from '@/components/common/custom-toast';
+import { useToast } from '@/providers/toast-provider';
 import { TemplateHeader } from '../components';
 import InvitationPopup from '../components/InvitationPopup';
 import Step1 from '../components/Step1';
@@ -13,6 +13,7 @@ import Step3 from '../components/Step3';
 function EditEventContent() {
   const params = useParams();
   const router = useRouter();
+  const { toastSuccess, toastError } = useToast();
   const eventId = params.eventId;
   const { selectedEvent: eventData } = useEvents();
   const {
@@ -49,7 +50,7 @@ function EditEventContent() {
     } catch (err) {
       const errorMessage = err.message || 'Error loading event data';
       setError(errorMessage);
-      showCustomToast(errorMessage, 'error');
+      toastError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -59,7 +60,7 @@ function EditEventContent() {
     // Only check Pixie editor readiness if we're on step 0 (design step)
     if (activeStep === 0) {
       if (!pixieEditorRef.current?.save) {
-        showCustomToast('Editor not ready. Please try again.', 'error');
+        toastError('Editor not ready. Please try again.');
         return;
       }
 
@@ -74,10 +75,7 @@ function EditEventContent() {
           });
         }
       } catch (err) {
-        showCustomToast(
-          'There was a problem saving your design. Please try again.',
-          'error',
-        );
+        toastError('There was a problem saving your design. Please try again.');
         return;
       }
     }
@@ -151,13 +149,13 @@ function EditEventContent() {
         // Clear selectedEvent from store after successful update
         resetEventCreation();
 
-        showCustomToast(message, 'success');
+        toastSuccess(message);
         router.push('/events');
       } else {
-        showCustomToast(data.error || 'Failed to update event', 'error');
+        toastError(data.error || 'Failed to update event');
       }
     } catch (error) {
-      showCustomToast('An error occurred while updating the event', 'error');
+      toastError('An error occurred while updating the event');
     } finally {
       setIsUpdating(false);
       setShowInvitationPopup(false);

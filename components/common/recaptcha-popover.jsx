@@ -45,7 +45,7 @@ export function RecaptchaPopover({
           ),
 
           {
-            position: 'top-center',
+            position: 'bottom-right',
           },
         );
         return;
@@ -64,7 +64,7 @@ export function RecaptchaPopover({
         ),
 
         {
-          position: 'top-center',
+          position: 'bottom-right',
         },
       );
       return;

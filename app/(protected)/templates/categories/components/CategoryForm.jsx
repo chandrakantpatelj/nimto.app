@@ -1,22 +1,23 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { X, Save, Upload, Image as ImageIcon } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Image as ImageIcon, Save, Upload, X } from 'lucide-react';
+import { apiFetch } from '@/lib/api';
+import { useS3Upload } from '@/hooks/use-s3-upload';
+import { useToast } from '@/providers/toast-provider';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { apiFetch } from '@/lib/api';
-import { showCustomToast } from '@/components/common/custom-toast';
-import { useS3Upload } from '@/hooks/use-s3-upload';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 export function CategoryForm({ category, onClose, onSuccess }) {
+  const { toastSuccess, toastError, toastWarning } = useToast();
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
@@ -45,7 +46,7 @@ export function CategoryForm({ category, onClose, onSuccess }) {
   }, [category]);
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
@@ -58,7 +59,7 @@ export function CategoryForm({ category, onClose, onSuccess }) {
         .replace(/\s+/g, '-')
         .replace(/-+/g, '-')
         .trim();
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         slug: slug,
       }));
@@ -71,34 +72,34 @@ export function CategoryForm({ category, onClose, onSuccess }) {
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      showCustomToast('Please select a valid image file', 'error');
+      toastError('Please select a valid image file');
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      showCustomToast('Image size must be less than 5MB', 'error');
+      toastError('Image size must be less than 5MB');
       return;
     }
 
     try {
       setUploadingImage(true);
       const result = await uploadFile(file, 'category-thumbnails');
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         thumbnailUrl: result.url,
       }));
-      showCustomToast('Image uploaded successfully', 'success');
+      toastSuccess('Image uploaded successfully');
     } catch (error) {
       console.error('Error uploading image:', error);
-      showCustomToast('Failed to upload image', 'error');
+      toastError('Failed to upload image');
     } finally {
       setUploadingImage(false);
     }
   };
 
   const removeImage = () => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       thumbnailUrl: '',
     }));
@@ -106,26 +107,26 @@ export function CategoryForm({ category, onClose, onSuccess }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!formData.name.trim()) {
-      showCustomToast('Name is required', 'error');
+      toastError('Name is required');
       return;
     }
 
     if (!formData.slug.trim()) {
-      showCustomToast('Slug is required', 'error');
+      toastError('Slug is required');
       return;
     }
 
     try {
       setLoading(true);
-      
-      const url = category 
+
+      const url = category
         ? `/api/template-categories/${category.id}`
         : '/api/template-categories';
-      
+
       const method = category ? 'PUT' : 'POST';
-      
+
       const response = await apiFetch(url, {
         method,
         headers: {
@@ -135,18 +136,19 @@ export function CategoryForm({ category, onClose, onSuccess }) {
       });
 
       if (response.ok) {
-        showCustomToast(
-          category ? 'Category updated successfully' : 'Category created successfully',
-          'success'
+        toastSuccess(
+          category
+            ? 'Category updated successfully'
+            : 'Category created successfully',
         );
         onSuccess();
       } else {
         const result = await response.json();
-        showCustomToast(result.error || 'Failed to save category', 'error');
+        toastError(result.error || 'Failed to save category');
       }
     } catch (error) {
       console.error('Error saving category:', error);
-      showCustomToast('Failed to save category', 'error');
+      toastError('Failed to save category');
     } finally {
       setLoading(false);
     }
@@ -269,7 +271,9 @@ export function CategoryForm({ category, onClose, onSuccess }) {
                 id="sortOrder"
                 type="number"
                 value={formData.sortOrder}
-                onChange={(e) => handleInputChange('sortOrder', parseInt(e.target.value) || 0)}
+                onChange={(e) =>
+                  handleInputChange('sortOrder', parseInt(e.target.value) || 0)
+                }
                 min="0"
               />
             </div>
@@ -295,7 +299,7 @@ export function CategoryForm({ category, onClose, onSuccess }) {
             </Button>
             <Button type="submit" disabled={loading}>
               <Save className="h-4 w-4 mr-2" />
-              {loading ? 'Saving...' : (category ? 'Update' : 'Create')}
+              {loading ? 'Saving...' : category ? 'Update' : 'Create'}
             </Button>
           </div>
         </form>

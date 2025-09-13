@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { LoaderCircleIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
+import { useToast } from '@/providers/toast-provider';
 import { apiFetch } from '@/lib/api';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -63,12 +63,12 @@ const ChangeEmailDialog = ({ open, closeDialog }) => {
       return response.json();
     },
     onSuccess: () => {
-      toast.success('Email updated successfully', { position: 'top-center' });
+      toastSuccess('Email updated successfully', { position: 'bottom-right' });
       queryClient.invalidateQueries({ queryKey: ['user-account'] });
       closeDialog();
     },
     onError: (error) => {
-      toast.error(error.message, { position: 'top-center' });
+      toastError(error.message, { position: 'bottom-right' });
     },
   });
 

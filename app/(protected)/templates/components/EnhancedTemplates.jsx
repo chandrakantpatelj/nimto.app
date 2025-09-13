@@ -26,7 +26,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { showCustomToast } from '@/components/common/custom-toast';
+import { useToast } from '@/providers/toast-provider';
 import TemplateImageDisplay from '@/components/template-image-display';
 import LazyImage from './LazyImage';
 
@@ -36,6 +36,7 @@ const EnhancedTemplates = ({
   filters = {},
 }) => {
   const router = useRouter();
+  const { toastSuccess, toastError } = useToast();
 
   // Redux state and actions
   const allTemplates = useAllTemplates();
@@ -168,11 +169,11 @@ const EnhancedTemplates = ({
 
       await deleteTemplate(template.id);
 
-      showCustomToast('Template deleted successfully', 'success');
+      toastSuccess('Template deleted successfully');
       setShowDeleteDialog(false);
       setTemplateToDelete(null);
     } catch (err) {
-      showCustomToast(`Failed to delete template: ${err.message}`, 'error');
+      toastError(`Failed to delete template: ${err.message}`);
     } finally {
       setDeleteLoading(false);
       setDeletingTemplateId(null);

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Loader2, Search, Trash2 } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { toAbsoluteUrl } from '@/lib/helpers';
+import { useToast } from '@/providers/toast-provider';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,11 +20,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import {   } from '@/components/common/custom-toast';
 import TemplateImageDisplay from '@/components/template-image-display';
 
 const Templates = () => {
   const router = useRouter();
+  const { toastSuccess } = useToast();
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -87,7 +88,7 @@ const Templates = () => {
           prevTemplates.filter((template) => template.id !== templateId),
         );
         setShowDeleteDialog(false);
-        showCustomToast('Template deleted successfully', 'success');
+        toastSuccess('Template deleted successfully');
 
         setTemplateToDelete(null);
       } else {

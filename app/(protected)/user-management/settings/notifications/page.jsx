@@ -12,7 +12,7 @@ import {
   Users,
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
+import { useToast } from '@/providers/toast-provider';
 import { apiFetch } from '@/lib/api';
 import { Alert, AlertIcon, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -137,7 +137,7 @@ const NotificationSettingsPage = () => {
         ),
 
         {
-          position: 'top-center',
+          position: 'bottom-right',
         },
       );
 
@@ -155,7 +155,7 @@ const NotificationSettingsPage = () => {
         ),
 
         {
-          position: 'top-center',
+          position: 'bottom-right',
         },
       );
     },

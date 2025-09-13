@@ -364,15 +364,15 @@ export async function PUT(request, { params }) {
     }
 
     // Handle invitation sending if requested
-    if (invitationType && event.guests.length > 0) {
+    if (invitationType && event.guests && event.guests.length > 0) {
       try {
         let guestsToInvite = [];
 
         console.log('Invitation Debug:', {
           invitationType,
-          totalGuests: event.guests.length,
+          totalGuests: event.guests?.length || 0,
           newlyCreatedGuestIds,
-          guests: event.guests.map((g) => ({
+          guests: (event.guests || []).map((g) => ({
             id: g.id,
             name: g.name,
             email: g.email,
@@ -381,12 +381,12 @@ export async function PUT(request, { params }) {
 
         if (invitationType === 'all') {
           // Send to all guests
-          guestsToInvite = event.guests;
+          guestsToInvite = event.guests || [];
           console.log('Sending to all guests:', guestsToInvite.length);
         } else if (invitationType === 'new') {
           // Send only to newly created guests
           if (newlyCreatedGuestIds.length > 0) {
-            guestsToInvite = event.guests.filter((guest) =>
+            guestsToInvite = (event.guests || []).filter((guest) =>
               newlyCreatedGuestIds.includes(guest.id),
             );
             console.log(
