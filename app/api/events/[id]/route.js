@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { PrismaClient } from '@prisma/client';
 import { getServerSession } from 'next-auth';
 import { checkEventManagementAccess } from '@/lib/auth-utils';
 import { uid } from '@/lib/helpers';
 import {
+  createS3Client,
   deleteImageFromS3,
   generateDirectS3Url,
   getS3Config,

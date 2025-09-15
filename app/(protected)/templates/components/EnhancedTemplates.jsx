@@ -12,6 +12,7 @@ import {
   useTemplateLoading,
 } from '@/store/hooks';
 import { Crown, Loader2, Sparkles, Star, Trash2, Zap } from 'lucide-react';
+import { useToast } from '@/providers/toast-provider';
 // Removed import - now using standardized s3ImageUrl from API
 import {
   AlertDialog,
@@ -26,7 +27,6 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { useToast } from '@/providers/toast-provider';
 import TemplateImageDisplay from '@/components/template-image-display';
 import LazyImage from './LazyImage';
 
@@ -276,12 +276,12 @@ const EnhancedTemplates = ({
                   {/* Template Image */}
                   <div className="relative aspect-[3/4] overflow-hidden">
                     {template.s3ImageUrl ||
-                    template.thumbnailUrl ||
+                    template.templateThumbnailUrl ||
                     template.previewImageUrl ? (
                       <LazyImage
                         src={
                           template.s3ImageUrl ||
-                          template.thumbnailUrl ||
+                          template.templateThumbnailUrl ||
                           template.previewImageUrl
                         }
                         alt={template.name}

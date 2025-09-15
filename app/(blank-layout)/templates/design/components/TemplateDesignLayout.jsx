@@ -113,7 +113,6 @@ const TemplateDesignLayout = ({
       setUploadedImageFile(file);
       const previewUrl = URL.createObjectURL(file);
       setImageUrl(previewUrl);
-      toastSuccess('Image selected successfully!');
     } catch (error) {
       toastError('Failed to process selected image');
     }
@@ -139,7 +138,7 @@ const TemplateDesignLayout = ({
     }
   };
 
-  // Handle save - call the parent's onSave function
+  // Handle save - create template and upload thumbnail
   const handleSaveTemplate = async () => {
     try {
       // Validate required fields
@@ -166,7 +165,20 @@ const TemplateDesignLayout = ({
       };
 
       // Call the parent's save function with template data and uploaded file
-      await onSave(templateData, uploadedImageFile);
+      const thumbnailData = await pixieEditorRef.current.getThumbnailData();
+
+      // Temporarily open thumbnail image in new tab
+      if (thumbnailData.objectUrl) {
+        const newTab = window.open(thumbnailData.objectUrl, '_blank');
+        if (newTab) {
+          newTab.focus();
+          // Clean up the object URL after a delay to free memory
+          setTimeout(() => {
+            URL.revokeObjectURL(thumbnailData.objectUrl);
+          }, 10000); // 10 seconds delay
+        }
+      }
+      await onSave(templateData, uploadedImageFile, thumbnailData);
     } catch (err) {
       toastError(err.message || 'Failed to save template');
     }
