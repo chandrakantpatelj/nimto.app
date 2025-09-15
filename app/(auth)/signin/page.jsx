@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { RiErrorWarningFill } from '@remixicon/react';
 import { AlertCircle, Eye, EyeOff, LoaderCircleIcon } from 'lucide-react';
@@ -25,9 +25,13 @@ import { getSigninSchema } from '../forms/signin-schema';
 
 export default function Page() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState(null);
+  
+  // Get callback URL from search params, default to templates
+  const callbackUrl = searchParams.get('callbackUrl') || '/templates';
 
   const form = useForm({
     resolver: zodResolver(getSigninSchema()),
@@ -53,7 +57,7 @@ export default function Page() {
         email: values.email,
         password: values.password,
         rememberMe: values.rememberMe,
-        callbackUrl: '/templates', // redirect to templates after login
+        callbackUrl: callbackUrl, // redirect to callback URL after login
       });
 
       console.log('SignIn Response:', response);
@@ -102,7 +106,7 @@ export default function Page() {
           <Button
             variant="outline"
             type="button"
-            onClick={() => signIn('google', { callbackUrl: '/templates' })}
+            onClick={() => signIn('google', { callbackUrl: callbackUrl })}
           >
             <Icons.googleColorful className="size-5 opacity-100" /> Sign in with
             Google
@@ -225,7 +229,7 @@ export default function Page() {
         <p className="text-sm text-muted-foreground text-center">
           Don&apos;t have an account?{' '}
           <Link
-            href="/signup"
+            href={callbackUrl !== '/templates' ? `/signup?callbackUrl=${encodeURIComponent(callbackUrl)}` : '/signup'}
             className="text-sm font-semibold text-foreground hover:text-primary"
           >
             Sign Up

@@ -1,36 +1,15 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import { getServerSession } from 'next-auth';
 import { generateDirectS3Url } from '@/lib/s3-utils';
-import authOptions from '../../auth/[...nextauth]/auth-options';
-
-// Helper function to check if user has admin role
-function hasAdminRole(userRole) {
-  return (
-    userRole === 'super-admin' ||
-    userRole === 'host' ||
-    userRole === 'application-admin'
-  );
-}
 
 const prisma = new PrismaClient();
 
-// GET /api/template/[id] - Get a specific template
+// GET /api/template/[id] - Get a specific template (public access)
 export async function GET(request, { params }) {
   try {
-    // Check authentication and role
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.roleName || !hasAdminRole(session.user.roleName)) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Unauthorized - Admin or Host access required',
-        },
-        { status: 403 },
-      );
-    }
-
-    const { id } = params;
+    // Allow public access to read individual templates
+    // No authentication required for viewing templates
+    const { id } = await params;    
 
     const template = await prisma.template.findFirst({
       where: {
@@ -87,7 +66,7 @@ export async function PUT(request, { params }) {
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const {
       name,
@@ -185,7 +164,7 @@ export async function DELETE(request, { params }) {
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     // Check if template exists
     const existingTemplate = await prisma.template.findFirst({

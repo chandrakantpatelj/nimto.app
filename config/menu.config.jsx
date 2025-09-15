@@ -49,9 +49,15 @@ import {
   Users,
   Briefcase as WorkIcon,
   Zap,
+  Home
 } from 'lucide-react';
 
 export const MENU_SIDEBAR = [
+  {
+    title: 'Home',
+    icon: Home,
+    path: '/',
+  },
   {
     title: 'Dashboard',
     icon: LayoutDashboard,

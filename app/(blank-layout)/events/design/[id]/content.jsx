@@ -12,6 +12,7 @@ import {
 import { fetchTemplateById as fetchTemplateByIdThunk } from '@/store/slices/templatesSlice';
 import { useSession } from 'next-auth/react';
 import { useToast } from '@/providers/toast-provider';
+import { AuthModal } from '@/components/common/auth-modal';
 import { TemplateHeader } from '../../components';
 import InvitationConfirmationPopup from '../../components/InvitationConfirmationPopup';
 import Step1 from '../../components/Step1';
@@ -37,6 +38,7 @@ function EditEventContent() {
 
   const [activeStep, setActiveStep] = useState(0);
   const [showInvitationPopup, setShowInvitationPopup] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const pixieEditorRef = useRef(null);
@@ -78,7 +80,7 @@ function EditEventContent() {
 
     loadTemplate();
   }, [
-    eventData,
+    eventData?.id, // Only depend on eventData.id instead of the entire object
     templateId,
     fetchTemplateById,
     setSelectedEvent,
@@ -89,6 +91,13 @@ function EditEventContent() {
   const handleNext = async () => {
     // Only check Pixie editor readiness if we're on step 0 (design step)
     if (activeStep === 0) {
+      // Check if user is authenticated when moving from step 0 to step 1
+      if (!session?.user?.id) {
+        // Show auth modal instead of redirecting
+        setShowAuthModal(true);
+        return;
+      }
+
       if (!pixieEditorRef.current?.save) {
         toastError('Editor not ready. Please try again.');
         return;
@@ -104,6 +113,7 @@ function EditEventContent() {
             imageThumbnail: pixieState.exportedImage || null,
           });
         }
+        
       } catch (err) {
         toastError('There was a problem saving your design. Please try again.');
         return;
@@ -124,7 +134,12 @@ function EditEventContent() {
 
     // Check if user is authenticated
     if (!session?.user?.id) {
-      toastError('Please sign in to create an event');
+      // Store current path for redirect after sign in
+      const currentPath = `/events/design/${templateId}`;
+      const returnUrl = encodeURIComponent(currentPath);
+      
+      // Redirect to sign in with return URL
+      router.push(`/signin?callbackUrl=${returnUrl}`);
       return;
     }
 
@@ -235,6 +250,12 @@ function EditEventContent() {
         onCancel={handleInvitationCancel}
         guests={eventData.guests || []}
         loading={isCreating}
+      />
+
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        mode="signin"
       />
     </>
   );

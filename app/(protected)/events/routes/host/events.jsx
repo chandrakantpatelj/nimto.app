@@ -45,15 +45,15 @@ const Events = () => {
     }
   }, [session?.user?.id, fetchAllEvents, router]);
 
-  const totalConfirmedGuests = events.reduce((acc, event) => {
+  const totalConfirmedGuests = (events || []).reduce((acc, event) => {
     return (
       acc +
-      (event.guests || []).filter((guest) => guest.status === 'CONFIRMED')
+      ((event.guests || []) || []).filter((guest) => guest.status === 'CONFIRMED')
         .length
     );
   }, 0);
 
-  const filteredEvents = events.filter((event) => {
+  const filteredEvents = (events || []).filter((event) => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
     return (

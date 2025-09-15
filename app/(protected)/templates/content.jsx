@@ -5,9 +5,10 @@ import {
   useActiveFilters,
   useTemplateActions,
   useTemplateCategories,
+  useTemplateCategoriesLoading,
+  useTemplateCategoriesError,
 } from '@/store/hooks';
 import { Filter, Search, X } from 'lucide-react';
-import { apiFetch } from '@/lib/api';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -34,6 +35,8 @@ export function EnhancedTemplateManagement() {
   // Redux state
   const activeFilters = useActiveFilters();
   const categories = useTemplateCategories();
+  const categoriesLoading = useTemplateCategoriesLoading();
+  const categoriesError = useTemplateCategoriesError();
   const { setActiveFilters, clearActiveFilters, fetchTemplateCategories } =
     useTemplateActions();
 
@@ -140,12 +143,52 @@ export function EnhancedTemplateManagement() {
         <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-8 sm:mb-12 text-center font-serif">
           Browse Invitation Categories
         </h2>
-        {categories.length > 0 ? (
+        {categoriesLoading ? (
+          <div className="flex justify-center items-center py-8">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
+              <p className="text-gray-600 dark:text-gray-400">Loading categories...</p>
+            </div>
+          </div>
+        ) : categoriesError ? (
+          <div className="flex justify-center items-center py-8">
+            <div className="text-center">
+              <div className="text-red-500 mb-4">
+                <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <p className="text-red-600 dark:text-red-400 font-semibold mb-2">Failed to load categories</p>
+              <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">{categoriesError}</p>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => fetchTemplateCategories()}
+                className="text-purple-600 border-purple-600 hover:bg-purple-50"
+              >
+                Try Again
+              </Button>
+            </div>
+          </div>
+        ) : categories.length === 0 ? (
+          <div className="flex justify-center items-center py-8">
+            <div className="text-center">
+              <div className="text-gray-400 mb-4">
+                <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+              </div>
+              <p className="text-gray-600 dark:text-gray-400 font-semibold mb-2">No categories found</p>
+              <p className="text-gray-500 dark:text-gray-500 text-sm">Categories are not available at the moment.</p>
+            </div>
+          </div>
+        ) : (
           <div className="flex flex-wrap justify-center gap-8 sm:gap-10 md:gap-12">
             {/* All Templates */}
-            <div
-              className="flex flex-col items-center cursor-pointer group"
+            <button
+              className="flex flex-col items-center cursor-pointer group bg-transparent border-none p-0"
               onClick={() => handleCategorySelect(null)}
+              type="button"
             >
               <div
                 className={`w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full shadow-lg transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl flex items-center justify-center overflow-hidden ${
@@ -171,7 +214,7 @@ export function EnhancedTemplateManagement() {
               >
                 All Templates
               </span>
-            </div>
+            </button>
 
             {/* Category Items */}
             {categories.map((category, index) => {
@@ -188,10 +231,11 @@ export function EnhancedTemplateManagement() {
               const bgColor = colors[index % colors.length];
 
               return (
-                <div
+                <button
                   key={category.id}
-                  className="flex flex-col items-center cursor-pointer group"
+                  className="flex flex-col items-center cursor-pointer group bg-transparent border-none p-0"
                   onClick={() => handleCategorySelect(category.slug)}
+                  type="button"
                 >
                   <div
                     className={`w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full shadow-lg transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl flex items-center justify-center overflow-hidden ${
@@ -227,16 +271,9 @@ export function EnhancedTemplateManagement() {
                   >
                     {category.name}
                   </span>
-                </div>
+                </button>
               );
             })}
-          </div>
-        ) : (
-          <div className="flex justify-center items-center py-8">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
-              <p className="text-gray-600 dark:text-gray-400">Loading categories...</p>
-            </div>
           </div>
         )}
       </div>
