@@ -89,18 +89,26 @@ export async function GET(request) {
       skip: offset,
     });
 
-    // Generate S3 URLs for templates with imagePath
+    // Generate S3 URLs for templates with imagePath and templateThumbnailPath
     const templatesWithUrls = templates.map((template) => {
+      const result = { ...template };
+
       if (template.imagePath) {
         // Use image proxy to avoid CORS and permission issues
         const s3ImageUrl = `/api/image-proxy?url=${generateDirectS3Url(template.imagePath)}`;
-
-        return {
-          ...template,
-          s3ImageUrl: s3ImageUrl,
-        };
+        result.s3ImageUrl = s3ImageUrl;
       }
-      return template;
+
+      if (template.templateThumbnailPath) {
+        // Generate thumbnail URL
+        const thumbnailUrl = generateDirectS3Url(
+          template.templateThumbnailPath,
+        );
+        result.templateThumbnailPath = template.templateThumbnailPath;
+        result.templateThumbnailUrl = thumbnailUrl;
+      }
+
+      return result;
     });
 
     return NextResponse.json({

@@ -1,0 +1,2 @@
+-- This migration was already applied manually
+-- No changes needed
