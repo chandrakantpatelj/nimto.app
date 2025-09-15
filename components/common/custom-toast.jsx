@@ -1,16 +1,15 @@
-import { toast } from 'sonner';
-import { Toast } from '../ui/toast';
+import { showToast } from './unified-toast';
 
 export const showCustomToast = (message, type = 'info') => {
-  const toastData = {
-    id: Date.now().toString(),
-    title: message,
-    type,
-    duration: type === 'error' ? 7000 : 5000,
-  };
-
-  toast.custom(
-    (t) => <Toast toast={toastData} onRemove={() => toast.dismiss(t)} />,
-    { position: 'top-center' },
-  );
+  switch (type) {
+    case 'success':
+      return showToast.success(message);
+    case 'error':
+      return showToast.error(message);
+    case 'warning':
+      return showToast.warning(message);
+    case 'info':
+    default:
+      return showToast.info(message);
+  }
 };

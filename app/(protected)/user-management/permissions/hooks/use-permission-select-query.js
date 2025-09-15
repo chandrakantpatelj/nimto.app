@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { useToast } from '@/providers/toast-provider';
 import { apiFetch } from '@/lib/api';
 
 // Custom hook to use roles for selection
@@ -9,7 +9,7 @@ export const usePermissionSelectQuery = () => {
     const response = await apiFetch('/api/user-management/permissions/select');
 
     if (!response.ok) {
-      toast.error(
+      toastError(
         'Something went wrong while loading the records. Please try again.',
         {
           position: 'top-center',

@@ -47,7 +47,9 @@ const Events = () => {
 
   const totalConfirmedGuests = (events || []).reduce((acc, event) => {
     return (
-      acc + (event.guests || []).filter((guest) => guest.status === 'CONFIRMED').length
+      acc +
+      ((event.guests || []) || []).filter((guest) => guest.status === 'CONFIRMED')
+        .length
     );
   }, 0);
 
@@ -191,7 +193,7 @@ const Events = () => {
             <div className="flex items-center  mt-1">
               <Users className="w-5 h-5  mr-2 " />
               <span className="text-sm font-medium text-secondary-foreground">
-                {totalConfirmedGuests} Accepted / {event.guests?.length || 0}{' '}
+                {totalConfirmedGuests} Accepted / {(event.guests || []).length}{' '}
                 Invited
               </span>
             </div>

@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { showCustomToast } from '@/components/common/custom-toast';
+import { useToast } from '@/providers/toast-provider';
 import { TemplateHeader } from '../components';
 
 function Design() {
@@ -99,7 +99,7 @@ function Design() {
       const result = await response.json();
 
       if (result.success) {
-        showCustomToast('Template created successfully', 'success');
+        toastSuccess('Template created successfully');
 
         router.push('/templates');
       } else {

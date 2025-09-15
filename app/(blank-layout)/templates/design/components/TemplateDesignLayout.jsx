@@ -2,14 +2,14 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import { useToast } from '@/providers/toast-provider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { showCustomToast } from '@/components/common/custom-toast';
 import PixieEditor from '@/components/image-editor/PixieEditor';
-import { Moon, Sun } from 'lucide-react';
 
 const TemplateDesignLayout = ({
   initialFormData = null,
@@ -20,6 +20,7 @@ const TemplateDesignLayout = ({
 }) => {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
+  const { toastSuccess, toastError, toastWarning } = useToast();
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
   const pixieEditorRef = useRef(null);
 
@@ -88,15 +89,15 @@ const TemplateDesignLayout = ({
   // Validate image file
   const validateImageFile = (file) => {
     if (!file) {
-      showCustomToast('No file selected', 'error');
+      toastError('No file selected');
       return false;
     }
     if (!file.type.startsWith('image/')) {
-      showCustomToast('Please select a valid image file', 'error');
+      toastError('Please select a valid image file');
       return false;
     }
     if (file.size > 5 * 1024 * 1024) {
-      showCustomToast('Image size should be less than 5MB', 'error');
+      toastError('Image size should be less than 5MB');
       return false;
     }
     return true;
@@ -112,16 +113,16 @@ const TemplateDesignLayout = ({
       setUploadedImageFile(file);
       const previewUrl = URL.createObjectURL(file);
       setImageUrl(previewUrl);
-      showCustomToast('Image selected successfully!', 'success');
+      toastSuccess('Image selected successfully!');
     } catch (error) {
-      showCustomToast('Failed to process selected image', 'error');
+      toastError('Failed to process selected image');
     }
   };
 
   // Handle image replacement while preserving content
   const handleReplaceImage = (file) => {
     if (!pixieEditorRef?.current?.replaceImage) {
-      showCustomToast('Editor not ready. Please try again.', 'error');
+      toastError('Editor not ready. Please try again.');
       return;
     }
 
@@ -132,9 +133,9 @@ const TemplateDesignLayout = ({
       setImageUrl(previewUrl);
       setUploadedImageFile(file);
       pixieEditorRef.current.replaceImage(previewUrl);
-      showCustomToast('Image replaced successfully!', 'success');
+      toastSuccess('Image replaced successfully!');
     } catch (error) {
-      showCustomToast('Failed to replace image', 'error');
+      toastError('Failed to replace image');
     }
   };
 
@@ -167,7 +168,7 @@ const TemplateDesignLayout = ({
       // Call the parent's save function with template data and uploaded file
       await onSave(templateData, uploadedImageFile);
     } catch (err) {
-      showCustomToast(err.message || 'Failed to save template', 'error');
+      toastError(err.message || 'Failed to save template');
     }
   };
 
@@ -203,7 +204,9 @@ const TemplateDesignLayout = ({
             size="sm"
             onClick={toggleTheme}
             className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border-white/20 dark:border-slate-700/20 shadow-lg hover:bg-white/95 dark:hover:bg-slate-800/95 text-slate-700 dark:text-slate-300"
-            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            title={
+              theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
+            }
           >
             {theme === 'dark' ? (
               <Sun className="w-4 h-4" />
@@ -457,7 +460,9 @@ const TemplateDesignLayout = ({
                                   />
                                 </svg>
                               </div>
-                              <span className="text-slate-700 dark:text-slate-300">Free</span>
+                              <span className="text-slate-700 dark:text-slate-300">
+                                Free
+                              </span>
                             </Label>
                           </div>
                           <div className="flex items-center space-x-2 p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
@@ -479,7 +484,9 @@ const TemplateDesignLayout = ({
                                   <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                 </svg>
                               </div>
-                              <span className="text-slate-700 dark:text-slate-300">Premium</span>
+                              <span className="text-slate-700 dark:text-slate-300">
+                                Premium
+                              </span>
                             </Label>
                           </div>
                         </RadioGroup>
@@ -492,7 +499,9 @@ const TemplateDesignLayout = ({
                           </Label>
                           <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                              <span className="text-slate-500 dark:text-slate-400 text-sm">$</span>
+                              <span className="text-slate-500 dark:text-slate-400 text-sm">
+                                $
+                              </span>
                             </div>
                             <Input
                               type="number"
