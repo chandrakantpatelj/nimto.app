@@ -107,17 +107,7 @@ export function HomeTemplatesPreview() {
                 {/* Overlay with action buttons */}
                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                   <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      asChild
-                      className="bg-white/90 hover:bg-white text-gray-900"
-                    >
-                      <Link href={`/templates/preview/${template.id}`}>
-                        <Eye className="h-4 w-4 mr-1" />
-                        Preview 
-                      </Link>
-                    </Button>
+                    
                     <Button
                       size="sm"
                       onClick={() => handleTemplateSelect(template)}
