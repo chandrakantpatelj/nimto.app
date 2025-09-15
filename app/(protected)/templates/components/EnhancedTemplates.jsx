@@ -275,14 +275,10 @@ const EnhancedTemplates = ({
                 <CardContent className="p-0">
                   {/* Template Image */}
                   <div className="relative aspect-[3/4] overflow-hidden">
-                    {template.s3ImageUrl ||
-                    template.templateThumbnailUrl ||
-                    template.previewImageUrl ? (
+                    {template.templateThumbnailUrl || template.s3ImageUrl ? (
                       <LazyImage
                         src={
-                          template.s3ImageUrl ||
-                          template.templateThumbnailUrl ||
-                          template.previewImageUrl
+                          template.templateThumbnailUrl || template.s3ImageUrl
                         }
                         alt={template.name}
                         className="w-full h-full group-hover:scale-110 transition-transform duration-300"
