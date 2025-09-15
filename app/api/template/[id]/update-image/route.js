@@ -3,12 +3,11 @@ import {
   DeleteObjectCommand,
   HeadObjectCommand,
   PutObjectCommand,
-  S3Client,
 } from '@aws-sdk/client-s3';
 import { PrismaClient } from '@prisma/client';
 import { getServerSession } from 'next-auth';
 import { uid } from '@/lib/helpers';
-import { generateProxyUrl } from '@/lib/s3-utils';
+import { createS3Client, generateProxyUrl, getS3Config } from '@/lib/s3-utils';
 import authOptions from '../../../auth/[...nextauth]/auth-options';
 
 // Helper function to check if user has admin role
@@ -17,29 +16,6 @@ function hasAdminRole(userRole) {
 }
 
 const prisma = new PrismaClient();
-
-// S3 Client configuration
-function createS3Client() {
-  const config = {
-    region: process.env.AWS_REGION || process.env.STORAGE_REGION || 'us-east-1',
-    credentials: {
-      accessKeyId:
-        process.env.AWS_ACCESS_KEY_ID || process.env.STORAGE_ACCESS_KEY_ID,
-      secretAccessKey:
-        process.env.AWS_SECRET_ACCESS_KEY ||
-        process.env.STORAGE_SECRET_ACCESS_KEY,
-    },
-  };
-
-  if (process.env.AWS_ENDPOINT || process.env.STORAGE_ENDPOINT) {
-    config.endpoint = process.env.AWS_ENDPOINT || process.env.STORAGE_ENDPOINT;
-    config.forcePathStyle = true;
-  } else {
-    config.forcePathStyle = false;
-  }
-
-  return new S3Client(config);
-}
 
 // Check if image exists in S3
 async function checkImageExists(s3Client, bucket, key) {

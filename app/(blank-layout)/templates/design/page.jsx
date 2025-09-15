@@ -17,7 +17,11 @@ function CreateTemplate() {
   const { uploadTemplateImage } = useTemplateImage();
 
   // Handle save template - CREATE API logic
-  const handleSaveTemplate = async (templateData, uploadedImageFile) => {
+  const handleSaveTemplate = async (
+    templateData,
+    uploadedImageFile,
+    thumbnailData,
+  ) => {
     try {
       setLoading(true);
       setError(null);
@@ -47,6 +51,41 @@ function CreateTemplate() {
             toastSuccess('Image uploaded successfully!');
           } catch (uploadError) {
             toastWarning('Template created but image upload failed');
+          }
+        }
+
+        // Upload thumbnail if thumbnail data is available
+        if (thumbnailData) {
+          try {
+            toastInfo('Uploading thumbnail...');
+            const thumbnailResponse = await apiFetch(
+              `/api/template/${result.data.id}/upload-thumbnail`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  imageBlob: thumbnailData.base64Data,
+                  imageFormat: 'png',
+                }),
+              },
+            );
+
+            if (!thumbnailResponse.ok) {
+              const errorData = await thumbnailResponse.json();
+              throw new Error(errorData.error || 'Failed to upload thumbnail');
+            }
+
+            const thumbnailResult = await thumbnailResponse.json();
+            console.log('Thumbnail upload successful:', thumbnailResult);
+            toastSuccess('Thumbnail uploaded successfully!');
+          } catch (thumbnailError) {
+            console.error('Thumbnail upload failed:', thumbnailError);
+            toastWarning(
+              'Template created but thumbnail upload failed: ' +
+                thumbnailError.message,
+            );
           }
         }
 

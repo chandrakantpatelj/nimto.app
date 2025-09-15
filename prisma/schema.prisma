@@ -159,33 +159,32 @@ model SystemSetting {
 }
 
 model Template {
-  id                    String   @id @default(cuid())
-  name                  String
-  category              String
-  jsonContent           String?
-  backgroundStyle       String?
-  htmlContent           String?
-  background            String?
-  pageBackground        String?
-  previewImageUrl       String?
-  templateImageThumbnail String? // S3 key for exported template thumbnail
-  isPremium             Boolean  @default(false)
-  price                 Float    @default(0)
-  isSystemTemplate      Boolean  @default(false)
-  createdByUserId       String?
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-  isTrashed             Boolean  @default(false)
-  imagePath             String?
-  badge                 String?
-  colors                String[]
-  isFeatured            Boolean  @default(false)
+  id               String   @id @default(cuid())
+  name             String
+  category         String
+  jsonContent      String?
+  backgroundStyle  String?
+  htmlContent      String?
+  background       String?
+  pageBackground   String?
+  previewImageUrl  String?
+  isPremium        Boolean  @default(false)
+  price            Float    @default(0)
+  isSystemTemplate Boolean  @default(false)
+  createdByUserId  String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  isTrashed        Boolean  @default(false)
+  imagePath        String?
+  badge            String?
+  colors           String[]
+  isFeatured       Boolean  @default(false)
   isNew            Boolean  @default(false)
   isTrending       Boolean  @default(false)
   keywords         String[]
   orientation      String   @default("portrait")
   popularity       Float    @default(0)
-  thumbnailUrl     String?
+  templateThumbnailPath String? // S3 key for exported template thumbnail
 
   @@index([category])
   @@index([isPremium])
@@ -198,52 +197,49 @@ model Template {
 }
 
 model TemplateCategory {
-  id          String   @id @default(cuid())
-  name        String
-  slug        String   @unique
-  description String?
-  icon        String?
+  id           String   @id @default(cuid())
+  name         String
+  slug         String   @unique
+  description  String?
+  icon         String?
+  color        String?
+  isActive     Boolean  @default(true)
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
   thumbnailUrl String?
-  color       String?
-  isActive    Boolean  @default(true)
-  sortOrder   Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
 
   @@index([isActive])
 }
 
 model Event {
-  id              String      @id @default(cuid())
-  title           String
-  description     String?
-  date            DateTime
-  time            String?
-  location        String?
-  templateId      String?
-  jsonContent     String?
-  backgroundStyle String?
-  htmlContent     String?
-  background      String?
-  pageBackground  String?
-  imagePath       String?
-  status          EventStatus @default(DRAFT)
-  createdByUserId String
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  isTrashed       Boolean     @default(false)
-  
-  // Guest Settings
-  privateGuestList     Boolean @default(false)
-  allowPlusOnes        Boolean @default(false)
-  maxPlusOnes          Int     @default(0)
-  allowMaybeRSVP       Boolean @default(true)
-  allowFamilyHeadcount Boolean @default(false)
-  limitEventCapacity   Boolean @default(false)
-  maxEventCapacity     Int     @default(0)
-  
-  User            User        @relation(fields: [createdByUserId], references: [id])
-  guests          Guest[]
+  id                   String      @id @default(cuid())
+  title                String
+  description          String?
+  date                 DateTime
+  time                 String?
+  location             String?
+  templateId           String?
+  jsonContent          String?
+  backgroundStyle      String?
+  htmlContent          String?
+  background           String?
+  pageBackground       String?
+  imagePath            String?
+  status               EventStatus @default(DRAFT)
+  createdByUserId      String
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+  isTrashed            Boolean     @default(false)
+  allowFamilyHeadcount Boolean     @default(false)
+  allowMaybeRSVP       Boolean     @default(true)
+  allowPlusOnes        Boolean     @default(false)
+  limitEventCapacity   Boolean     @default(false)
+  maxEventCapacity     Int         @default(0)
+  maxPlusOnes          Int         @default(0)
+  privateGuestList     Boolean     @default(false)
+  User                 User        @relation(fields: [createdByUserId], references: [id])
+  guests               Guest[]
 
   @@index([createdByUserId])
   @@index([templateId])
@@ -260,9 +256,9 @@ model Guest {
   invitedAt   DateTime       @default(now())
   respondedAt DateTime?
   response    GuestResponse?
-  plusOnes    Int            @default(0)
   adults      Int            @default(1)
   children    Int            @default(0)
+  plusOnes    Int            @default(0)
   event       Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   @@index([eventId])

@@ -80,6 +80,75 @@ const PixieEditor = forwardRef(
         return JSON.stringify(cleanedState);
       },
 
+      export: async () => {
+        try {
+          // Try different ways to access the canvas
+          let canvas = null;
+
+          // Method 1: Try to get canvas from fabric instance (most likely to work)
+          if (pixieRef.current?.fabric) {
+            canvas = pixieRef.current.fabric;
+          }
+
+          // Method 2: Try to get canvas from tools (but validate it has toDataURL)
+          if (!canvas && pixieRef.current?.tools?.canvas) {
+            const toolsCanvas = pixieRef.current.tools.canvas;
+            if (typeof toolsCanvas.toDataURL === 'function') {
+              canvas = toolsCanvas;
+            }
+          }
+
+          // Method 3: Try to get canvas from the main instance
+          if (!canvas && pixieRef.current?.canvas) {
+            const mainCanvas = pixieRef.current.canvas;
+            if (typeof mainCanvas.toDataURL === 'function') {
+              canvas = mainCanvas;
+            }
+          }
+
+          // Method 4: Try to get the HTML canvas element
+          if (!canvas && pixieRef.current?.getCanvas) {
+            const htmlCanvas = pixieRef.current.getCanvas();
+            if (typeof htmlCanvas.toDataURL === 'function') {
+              canvas = htmlCanvas;
+            }
+          }
+
+          if (!canvas) {
+            return null;
+          }
+
+          // Check if canvas has toDataURL method
+          if (typeof canvas.toDataURL !== 'function') {
+            return null;
+          }
+
+          // Export as data URL with high quality
+          const dataUrl = canvas.toDataURL({
+            format: 'png',
+            quality: 1.0,
+            multiplier: 2,
+          });
+
+          // Convert Data URL → Blob
+          const response = await fetch(dataUrl);
+          const blob = await response.blob();
+
+          // Create object URL for preview
+          const objectUrl = URL.createObjectURL(blob);
+
+          return {
+            blob,
+            url: dataUrl,
+            objectUrl,
+            size: blob.size,
+            type: blob.type,
+          };
+        } catch (err) {
+          return null;
+        }
+      },
+
       // Replace image while preserving existing content
       replaceImage: async (newImageUrl) => {
         if (!pixieRef.current?.getState) return;
@@ -147,6 +216,120 @@ const PixieEditor = forwardRef(
           return pixieRef.current.canvas.toDataURL('image/png');
         }
         return null;
+      },
+
+      // Get thumbnail data for upload (without making API call)
+      getThumbnailData: async () => {
+        try {
+          console.log('Exporting thumbnail data from Pixie');
+
+          // Export the image using the export function defined above
+          const exportResult = await (async () => {
+            try {
+              // Try different ways to access the canvas
+              let canvas = null;
+
+              // Method 1: Try to get canvas from fabric instance (most likely to work)
+              if (pixieRef.current?.fabric) {
+                canvas = pixieRef.current.fabric;
+              }
+
+              // Method 2: Try to get canvas from tools (but validate it has toDataURL)
+              if (!canvas && pixieRef.current?.tools?.canvas) {
+                const toolsCanvas = pixieRef.current.tools.canvas;
+                if (typeof toolsCanvas.toDataURL === 'function') {
+                  canvas = toolsCanvas;
+                }
+              }
+
+              // Method 3: Try to get canvas from the main instance
+              if (!canvas && pixieRef.current?.canvas) {
+                const mainCanvas = pixieRef.current.canvas;
+                if (typeof mainCanvas.toDataURL === 'function') {
+                  canvas = mainCanvas;
+                }
+              }
+
+              // Method 4: Try to get the HTML canvas element
+              if (!canvas && pixieRef.current?.getCanvas) {
+                const htmlCanvas = pixieRef.current.getCanvas();
+                if (typeof htmlCanvas.toDataURL === 'function') {
+                  canvas = htmlCanvas;
+                }
+              }
+
+              if (!canvas) {
+                return null;
+              }
+
+              // Check if canvas has toDataURL method
+              if (typeof canvas.toDataURL !== 'function') {
+                return null;
+              }
+
+              // Export as data URL with high quality
+              const dataUrl = canvas.toDataURL({
+                format: 'png',
+                quality: 1.0,
+                multiplier: 2,
+              });
+
+              // Convert Data URL → Blob
+              const response = await fetch(dataUrl);
+              const blob = await response.blob();
+
+              // Create object URL for preview
+              const objectUrl = URL.createObjectURL(blob);
+
+              return {
+                blob,
+                url: dataUrl,
+                objectUrl,
+                size: blob.size,
+                type: blob.type,
+              };
+            } catch (err) {
+              return null;
+            }
+          })();
+
+          if (!exportResult || !exportResult.blob) {
+            console.error('Failed to export image from Pixie:', {
+              exportResult,
+            });
+            throw new Error('Failed to export image from Pixie');
+          }
+
+          console.log('Image exported successfully:', {
+            blobSize: exportResult.blob.size,
+            blobType: exportResult.blob.type,
+          });
+
+          // Convert blob to base64 for API
+          const reader = new FileReader();
+          const base64Promise = new Promise((resolve, reject) => {
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(exportResult.blob);
+          });
+
+          const base64Data = await base64Promise;
+          console.log('Converted blob to base64:', {
+            base64Length: base64Data.length,
+          });
+
+          return {
+            base64Data,
+            blob: exportResult.blob,
+            url: exportResult.url,
+            objectUrl: exportResult.objectUrl,
+            size: exportResult.size,
+            type: exportResult.type,
+          };
+        } catch (error) {
+          console.error('Error getting thumbnail data:', error);
+          throw error;
+        }
       },
     }));
 

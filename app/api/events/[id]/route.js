@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { PrismaClient } from '@prisma/client';
 import { getServerSession } from 'next-auth';
 import { checkEventManagementAccess } from '@/lib/auth-utils';
 import { uid } from '@/lib/helpers';
 import {
+  createS3Client,
   deleteImageFromS3,
   generateDirectS3Url,
   getS3Config,
@@ -13,29 +14,6 @@ import { sendBulkEventInvitations } from '@/services/send-event-invitation.js';
 import authOptions from '@/app/api/auth/[...nextauth]/auth-options';
 
 const prisma = new PrismaClient();
-
-// Create S3 client function
-function createS3Client() {
-  const { region, endpoint } = getS3Config();
-
-  const config = {
-    region,
-    credentials: {
-      accessKeyId:
-        process.env.AWS_ACCESS_KEY_ID || process.env.STORAGE_ACCESS_KEY_ID,
-      secretAccessKey:
-        process.env.AWS_SECRET_ACCESS_KEY ||
-        process.env.STORAGE_SECRET_ACCESS_KEY,
-    },
-  };
-
-  if (endpoint) {
-    config.endpoint = endpoint;
-    config.forcePathStyle = true;
-  }
-
-  return new S3Client(config);
-}
 
 // GET /api/events/[id] - Get a specific event
 export async function GET(request, { params }) {
