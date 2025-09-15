@@ -15,7 +15,7 @@ export default withAuth(
     const token = req.nextauth.token;
     const { pathname } = req.nextUrl;
 
-    // Allow public access to root route (coming soon page)
+    // Allow public access to root route (homepage)
     if (pathname === '/') return NextResponse.next();
     if (pathname === '/unauthorized') return NextResponse.next();
     

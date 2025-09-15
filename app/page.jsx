@@ -112,14 +112,13 @@ export default function ComingSoonPage() {
               ) : (
                 <>
                   <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white">
-                    Coming{' '}
+                    Create{' '}
                     <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                      Soon
+                      Amazing Events
                     </span>
                   </h1>
                   <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-                    We're building something amazing for event management. 
-                    Stay tuned for the launch!
+                    Design stunning invitations, manage RSVPs, and host unforgettable events with our all-in-one platform.
                   </p>
                 </>
               )}
@@ -208,14 +207,14 @@ export default function ComingSoonPage() {
               ) : (
                 <>
                   <p className="text-lg text-gray-600 dark:text-gray-300">
-                    Be the first to know when we launch!
+                    Join thousands of event organizers creating memorable experiences!
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                     <Button size="lg" variant="primary" asChild>
-                      <Link href="/signup">Get Early Access</Link>
+                      <Link href="/signup">Start Creating Events</Link>
                     </Button>
                     <Button size="lg" variant="outline" asChild>
-                      <Link href="/signin">Already have an account?</Link>
+                      <Link href="/signin">Sign In to Continue</Link>
                     </Button>
                   </div>
                 </>
