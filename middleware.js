@@ -15,9 +15,18 @@ export default withAuth(
     const token = req.nextauth.token;
     const { pathname } = req.nextUrl;
 
-    // Allow public access to root route (coming soon page)
+    // Allow public access to root route (homepage)
     if (pathname === '/') return NextResponse.next();
     if (pathname === '/unauthorized') return NextResponse.next();
+    
+    // Allow public access to specific events routes, protect main events listing
+    if (pathname.startsWith('/events/design')) return NextResponse.next();
+    if (pathname.match(/^\/events\/[a-zA-Z0-9_-]+$/)) return NextResponse.next(); // Allow /events/[eventId]
+    
+    // Redirect non-logged-in users from /events to home page
+    if (pathname === '/events' && !token) {
+      return redirect('/', req);
+    }
     
     // Redirect authenticated users away from auth pages
     if (token && (pathname.startsWith('/signin') || pathname.startsWith('/signup') || pathname.startsWith('/reset-password'))) {
@@ -39,7 +48,7 @@ export default withAuth(
       '/user-management': new Set(['super-admin', 'application-admin']),
       '/settings': new Set(['super-admin', 'application-admin']),
       '/reportings': new Set(['super-admin', 'application-admin']),
-      '/templates': new Set(['super-admin', 'application-admin']),
+      '/templates': new Set(['host', 'super-admin', 'application-admin']),
       '/messaging': new Set(['host', 'super-admin', 'application-admin']),
       '/store-admin': new Set(['super-admin', 'application-admin']),
       '/network': new Set([
@@ -61,12 +70,6 @@ export default withAuth(
         'application-admin',
       ]),
       '/my-profile': new Set([
-        'host',
-        'attendee',
-        'super-admin',
-        'application-admin',
-      ]),
-      '/events': new Set([
         'host',
         'attendee',
         'super-admin',
@@ -107,7 +110,12 @@ export default withAuth(
       authorized: ({ token, req }) => {
         // Allow public access to root route
         if (req.nextUrl.pathname === '/') return true;
-        // Require token for all other routes
+        // Allow public access to specific events routes, protect main events listing
+        if (req.nextUrl.pathname.startsWith('/events/design')) return true;
+        if (req.nextUrl.pathname.match(/^\/events\/[a-zA-Z0-9_-]+$/)) return true; // Allow /events/[eventId]
+        // Allow /events route to be processed by middleware (for redirect logic)
+        if (req.nextUrl.pathname === '/events') return true;
+        // Require token for all other routes including /templates
         return !!token;
       }
     },
@@ -116,21 +124,21 @@ export default withAuth(
 
 export const config = {
   matcher: [
-    '/events/:path*',
     '/host/:path*',
     '/admin/:path*',
     '/settings/:path*',
     '/dashboard/:path*',
     '/user-management/:path*',
     '/reportings/:path*',
-    '/my-profile/:path*',
     '/templates/:path*',
+    '/my-profile/:path*',
     '/image-editor/:path*',
     '/messaging/:path*',
     '/store-admin/:path*',
     '/network/:path*',
     '/public-profile/:path*',
     '/account/:path*',
-    '/((?!api|_next/static|_next/image|favicon.ico|signin|signup|verify-email|reset-password|unauthorized|^/$).*)',
+    '/events', // Add /events to matcher to handle authentication
+    '/((?!api|_next/static|_next/image|favicon.ico|signin|signup|verify-email|reset-password|unauthorized|events/design|events/[a-zA-Z0-9_-]+|pixie-assets|^/$).*)',
   ],
 };

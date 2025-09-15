@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { useEventActions, useEvents } from '@/store/hooks';
 import { useToast } from '@/providers/toast-provider';
+import { AuthModal } from '@/components/common/auth-modal';
 import { TemplateHeader } from '../components';
 import InvitationPopup from '../components/InvitationPopup';
 import Step1 from '../components/Step1';
@@ -15,6 +17,7 @@ function EditEventContent() {
   const router = useRouter();
   const { toastSuccess, toastError } = useToast();
   const eventId = params.eventId;
+  const { data: session } = useSession();
   const { selectedEvent: eventData } = useEvents();
   const {
     updateSelectedEvent,
@@ -27,19 +30,15 @@ function EditEventContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showInvitationPopup, setShowInvitationPopup] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const pixieEditorRef = useRef(null);
+  const hasLoadedRef = useRef(false);
 
-  // Load existing event data
-  useEffect(() => {
-    if (eventId && !eventData) {
-      fetchEventData();
-    } else if (eventData) {
-      setLoading(false);
-    }
-  }, [eventId, eventData]);
-
-  const fetchEventData = async () => {
+  const fetchEventData = useCallback(async () => {
+    if (hasLoadedRef.current) return;
+    hasLoadedRef.current = true;
+    
     try {
       setLoading(true);
       setError(null);
@@ -54,11 +53,27 @@ function EditEventContent() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [eventId, fetchEventById, setSelectedEvent]);
+
+  // Load existing event data
+  useEffect(() => {
+    if (eventId && !eventData && !hasLoadedRef.current) {
+      fetchEventData();
+    } else if (eventData) {
+      setLoading(false);
+    }
+  }, [eventId, eventData?.id, fetchEventData]);
 
   const handleNext = async () => {
     // Only check Pixie editor readiness if we're on step 0 (design step)
     if (activeStep === 0) {
+      // Check if user is authenticated when moving from step 0 to step 1
+      if (!session?.user?.id) {
+        // Show auth modal instead of redirecting
+        setShowAuthModal(true);
+        return;
+      }
+
       if (!pixieEditorRef.current?.save) {
         toastError('Editor not ready. Please try again.');
         return;
@@ -225,6 +240,12 @@ function EditEventContent() {
         newGuestsCount={getNewGuestsCount()}
         totalGuestsCount={eventData.guests?.length || 0}
         isLoading={isUpdating}
+      />
+
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        mode="signin"
       />
     </>
   );

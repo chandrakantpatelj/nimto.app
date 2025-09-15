@@ -5,11 +5,14 @@ import { useSession } from 'next-auth/react';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { FileText, ArrowRight, Moon, Sun } from 'lucide-react';
+import { FileText, ArrowRight, Moon, Sun, LayoutDashboard } from 'lucide-react';
+import { useRoleBasedAccess } from '@/hooks/use-role-based-access';
+import { HomeTemplatesPreview } from '@/app/components/home-templates-preview';
 
 export default function ComingSoonPage() {
   const { data: session, status } = useSession();
   const { theme, setTheme } = useTheme();
+  const { roles } = useRoleBasedAccess();
   const isAuthenticated = status === 'authenticated' && session;
   const isLoading = status === 'loading';
 
@@ -55,12 +58,21 @@ export default function ComingSoonPage() {
               <Moon className="h-4 w-4 text-gray-600 dark:text-gray-400" />
             </div>
 
-            {/* Auth Buttons or Go to Templates */}
+            {/* Auth Buttons or Role-based Navigation */}
             {isAuthenticated ? (
               <Button variant="primary" asChild className="flex items-center gap-2">
-                <Link href="/dashboard">
-                  <FileText className="h-4 w-4" />
-                  Go to Dashboard
+                <Link href={roles.isSuperAdmin ? "/dashboard" : "/templates"}>
+                  {roles.isSuperAdmin ? (
+                    <>
+                      <LayoutDashboard className="h-4 w-4" />
+                      Go to Dashboard
+                    </>
+                  ) : (
+                    <>
+                      <FileText className="h-4 w-4" />
+                      Go to Templates
+                    </>
+                  )}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
@@ -100,14 +112,13 @@ export default function ComingSoonPage() {
               ) : (
                 <>
                   <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white">
-                    Coming{' '}
+                    Create{' '}
                     <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                      Soon
+                      Amazing Events
                     </span>
                   </h1>
                   <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-                    We're building something amazing for event management. 
-                    Stay tuned for the launch!
+                    Design stunning invitations, manage RSVPs, and host unforgettable events with our all-in-one platform.
                   </p>
                 </>
               )}
@@ -158,6 +169,10 @@ export default function ComingSoonPage() {
               </div>
             </div>
 
+            {/* Templates Preview Section */}
+            <div className="mt-16">
+              <HomeTemplatesPreview />
+            </div>
             {/* CTA Section */}
             <div className="mt-16 space-y-6">
               {isAuthenticated ? (
@@ -167,28 +182,39 @@ export default function ComingSoonPage() {
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                     <Button size="lg" variant="primary" asChild className="flex items-center gap-2">
-                      <Link href="/dashboard">
-                        <FileText className="h-5 w-5" />
-                        Go to Dashboard
+                      <Link href={roles.isSuperAdmin ? "/dashboard" : "/templates"}>
+                        {roles.isSuperAdmin ? (
+                          <>
+                            <LayoutDashboard className="h-5 w-5" />
+                            Go to Dashboard
+                          </>
+                        ) : (
+                          <>
+                            <FileText className="h-5 w-5" />
+                            Go to Templates
+                          </>
+                        )}
                         <ArrowRight className="h-5 w-5" />
                       </Link>
                     </Button>
                     <Button size="lg" variant="outline" asChild>
-                      <Link href="/templates">View Templates</Link>
+                      <Link href={roles.isSuperAdmin ? "/templates" : "/events"}>
+                        {roles.isSuperAdmin ? "View Templates" : "View Events"}
+                      </Link>
                     </Button>
                   </div>
                 </>
               ) : (
                 <>
                   <p className="text-lg text-gray-600 dark:text-gray-300">
-                    Be the first to know when we launch!
+                    Join thousands of event organizers creating memorable experiences!
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                     <Button size="lg" variant="primary" asChild>
-                      <Link href="/signup">Get Early Access</Link>
+                      <Link href="/signup">Start Creating Events</Link>
                     </Button>
                     <Button size="lg" variant="outline" asChild>
-                      <Link href="/signin">Already have an account?</Link>
+                      <Link href="/signin">Sign In to Continue</Link>
                     </Button>
                   </div>
                 </>

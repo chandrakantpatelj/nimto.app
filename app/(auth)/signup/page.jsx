@@ -2,7 +2,7 @@
 
 import { Suspense, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   AlertCircle,
@@ -33,8 +33,12 @@ import { getSignupSchema } from '../forms/signup-schema';
 
 export default function Page() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toastSuccess } = useToast();
   const [passwordVisible, setPasswordVisible] = useState(false);
+  
+  // Get callback URL from search params, default to templates
+  const callbackUrl = searchParams.get('callbackUrl') || '/templates';
   const [passwordConfirmationVisible, setPasswordConfirmationVisible] =
     useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -88,7 +92,7 @@ export default function Page() {
           message ||
             'You have successfully signed up! Please check your email to verify your account.'
         );
-        router.push('/templates');
+        router.push(callbackUrl);
       }
     } catch (err) {
       setError(
@@ -111,7 +115,7 @@ export default function Page() {
           You have successfully signed up! Please check your email to verify
           your account and then{' '}
           <Link
-            href="/signin/"
+            href={callbackUrl !== '/templates' ? `/signin?callbackUrl=${encodeURIComponent(callbackUrl)}` : '/signin'}
             className="text-primary hover:text-primary-darker"
           >
             Log in
@@ -137,7 +141,7 @@ export default function Page() {
             <Button
               variant="outline"
               type="button"
-              onClick={() => signIn('google', { callbackUrl: '/templates' })}
+              onClick={() => signIn('google', { callbackUrl: callbackUrl })}
             >
               <Icons.googleColorful className="size-4!" /> Sign up with Google
             </Button>
@@ -352,7 +356,7 @@ export default function Page() {
           <div className="text-sm text-muted-foreground text-center">
             Already have an account?{' '}
             <Link
-              href="/signin"
+              href={callbackUrl !== '/templates' ? `/signin?callbackUrl=${encodeURIComponent(callbackUrl)}` : '/signin'}
               className="text-sm text-sm font-semibold text-foreground hover:text-primary"
             >
               Sign In

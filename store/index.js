@@ -13,7 +13,7 @@ import uiSlice from './slices/uiSlice';
 const persistConfig = {
   key: 'root',
   storage,
-  whitelist: ['auth', 'ui'], // Temporarily exclude events to debug
+  whitelist: ['auth', 'ui', 'events'], // Include events to preserve design state
 };
 
 // Root reducer

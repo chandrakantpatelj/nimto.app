@@ -25,7 +25,7 @@ function Step3() {
 
   const removeGuest = (guestId) => {
     updateSelectedEvent({
-      guests: (eventData?.guests || []).filter((guest) => guest.id !== guestId),
+      guests: (eventData?.guests || []).filter((guest) => (guest.id || guest.tempId) !== guestId),
     });
   };
 
@@ -64,7 +64,7 @@ function Step3() {
     clearGuests();
   };
 
-  const filteredGuests = eventData.guests.filter(
+  const filteredGuests = (eventData?.guests || []).filter(
     (guest) =>
       guest.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (guest.email &&
@@ -87,10 +87,11 @@ function Step3() {
                 </h2>
                 <div className="flex gap-4">
                   <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="guest-name" className="block text-sm font-medium text-gray-700 mb-2">
                       Guest Name
                     </label>
                     <Input
+                      id="guest-name"
                       type="text"
                       placeholder="e.g., Jane Doe"
                       value={newGuest.name}
@@ -100,10 +101,11 @@ function Step3() {
                     />
                   </div>
                   <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="guest-email" className="block text-sm font-medium text-gray-700 mb-2">
                       Email
                     </label>
                     <Input
+                      id="guest-email"
                       type="email"
                       placeholder="jane.doe@example.com"
                       value={newGuest.email}
@@ -113,10 +115,11 @@ function Step3() {
                     />
                   </div>
                   <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="guest-phone" className="block text-sm font-medium text-gray-700 mb-2">
                       Phone
                     </label>
                     <Input
+                      id="guest-phone"
                       type="tel"
                       placeholder="+1234567890"
                       value={newGuest.phone}
@@ -138,12 +141,12 @@ function Step3() {
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-semibold text-gray-900">
-                    Invited Guests ({eventData.guests.length})
+                    Invited Guests ({(eventData?.guests || []).length})
                   </h2>
                 </div>
 
                 {/* Guest Requirement Notice */}
-                {eventData.guests.length === 0 && (
+                {(eventData?.guests || []).length === 0 && (
                   <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
                     <div className="flex items-start gap-3">
                       <div className="w-5 h-5 bg-amber-100 rounded-full flex items-center justify-center mt-0.5">

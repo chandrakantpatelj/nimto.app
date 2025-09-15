@@ -7,7 +7,7 @@ import {
 import { PrismaClient } from '@prisma/client';
 import { getServerSession } from 'next-auth';
 import { uid } from '@/lib/helpers';
-import { createS3Client, generateProxyUrl, getS3Config } from '@/lib/s3-utils';
+import { createS3Client, generateProxyUrl } from '@/lib/s3-utils';
 import authOptions from '../../../auth/[...nextauth]/auth-options';
 
 // Helper function to check if user has admin role

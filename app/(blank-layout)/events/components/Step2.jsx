@@ -21,11 +21,10 @@ function Step2() {
   const { selectedEvent: eventData } = useEvents();
   const { updateSelectedEvent: updateEventData } = useEventActions();
   const [datePickerOpen, setDatePickerOpen] = useState(false);
-
-  // Format the date for display
-  const formattedDate = eventData.date
-    ? format(new Date(eventData.date), 'EEEE, MMMM d, yyyy')
-    : 'TBD';
+  
+  // Get today's date to disable past dates
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Set to start of day
 
   return (
     <div className="flex min-h-[calc(100vh-var(--header-height))] h-full bg-gray-50">
@@ -235,6 +234,7 @@ function Step2() {
                         });
                         setDatePickerOpen(false);
                       }}
+                      disabled={[{ before: today }]}
                       initialFocus
                     />
                   </PopoverContent>

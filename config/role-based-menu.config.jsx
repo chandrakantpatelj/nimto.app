@@ -51,10 +51,16 @@ import {
   Users,
   Briefcase as WorkIcon,
   Zap,
+  Home
 } from 'lucide-react';
 
 // Base menu items that are common to all roles
 const BASE_MENU_ITEMS = [
+  {
+    title: 'Home',
+    icon: Home,
+    path: '/',
+  },
   {
     title: 'Dashboard',
     icon: LayoutDashboard,
@@ -69,6 +75,11 @@ const BASE_MENU_ITEMS = [
 
 // Menu items for Super Admin and Application Admin
 const ADMIN_MENU_ITEMS = [
+  {
+    title: 'Home',
+    icon: Home,
+    path: '/',
+  },
   {
     title: 'Users',
     icon: UserCog,
@@ -108,6 +119,11 @@ const ADMIN_MENU_ITEMS = [
 
 // Menu items for Host users
 const HOST_MENU_ITEMS = [
+  {
+    title: 'Home',
+    icon: Home,
+    path: '/',
+  },
   {
     title: 'Events',
     icon: CalendarCheck,

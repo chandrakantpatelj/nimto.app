@@ -1,34 +1,14 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import { getServerSession } from 'next-auth';
 import { generateDirectS3Url } from '@/lib/s3-utils';
-import authOptions from '../auth/[...nextauth]/auth-options';
 
 const prisma = new PrismaClient();
 
-// Helper function to check if user has admin role
-function hasAdminRole(userRole) {
-  return (
-    userRole === 'super-admin' ||
-    userRole === 'host' ||
-    userRole === 'application-admin'
-  );
-}
-
-// GET /api/template - Get all templates
+// GET /api/template - Get all templates (public access)
 export async function GET(request) {
   try {
-    // Check authentication and role
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.roleName || !hasAdminRole(session.user.roleName)) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Unauthorized - Admin or Host access required',
-        },
-        { status: 403 },
-      );
-    }
+    // Allow public access to read templates
+    // No authentication required for browsing templates
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
     const isPremium = searchParams.get('isPremium');
