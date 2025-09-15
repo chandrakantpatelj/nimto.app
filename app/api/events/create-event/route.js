@@ -7,7 +7,7 @@ import {
 import { PrismaClient } from '@prisma/client';
 import { checkEventManagementAccess } from '@/lib/auth-utils';
 import { uid } from '@/lib/helpers';
-import { createS3Client, getS3Config } from '@/lib/s3-utils';
+import { createS3Client } from '@/lib/s3-utils';
 import { sendEmail } from '@/services/send-email';
 
 // Create a singleton Prisma client
@@ -118,7 +118,7 @@ export async function POST(request) {
         background,
         pageBackground,
         imagePath: templateImagePath, // Initially use template imagePath
-        status: status.toUpperCase() || 'DRAFT',
+        status: (status && typeof status === 'string' ? status.toUpperCase() : 'DRAFT'),
         createdByUserId: session.user.id, // This is correct - it's setting from session
         isTrashed: false,
       },

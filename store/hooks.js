@@ -99,6 +99,11 @@ export const useAllTemplates = () =>
   useAppSelector((state) => state.templates.templates || []);
 export const useTemplateCategories = () =>
   useAppSelector((state) => state.templates.categories || []);
+
+    export const useTemplateCategoriesLoading = () =>
+  useAppSelector((state) => state.templates.categoriesLoading);
+export const useTemplateCategoriesError = () =>
+  useAppSelector((state) => state.templates.categoriesError);
 export const useCustomTemplates = () =>
   useAppSelector((state) => state.templates.customTemplates || []);
 export const useTemplateSearchQuery = () =>
@@ -319,6 +324,10 @@ export const useTemplateActions = () => {
 
     clearError: useCallback(() => {
       dispatch({ type: 'templates/clearError' });
+    }, [dispatch]),
+
+    clearCategoriesError: useCallback(() => {
+      dispatch({ type: 'templates/clearCategoriesError' });
     }, [dispatch]),
 
     // Async thunks - API calls

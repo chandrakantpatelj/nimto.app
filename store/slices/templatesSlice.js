@@ -7,6 +7,8 @@ const initialState = {
   isLoading: false,
   error: null,
   categories: [],
+  categoriesLoading: false,
+  categoriesError: null,
   searchQuery: '',
   selectedCategory: null,
   customTemplates: [],
@@ -191,6 +193,9 @@ const templatesSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
+    clearCategoriesError: (state) => {
+      state.categoriesError = null;
+    },
     setLoading: (state, action) => {
       state.isLoading = action.payload;
     },
@@ -266,17 +271,17 @@ const templatesSlice = createSlice({
       })
       // Fetch categories
       .addCase(fetchTemplateCategories.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
+        state.categoriesLoading = true;
+        state.categoriesError = null;
       })
       .addCase(fetchTemplateCategories.fulfilled, (state, action) => {
-        state.isLoading = false;
+        state.categoriesLoading = false;
         state.categories = action.payload;
-        state.error = null;
+        state.categoriesError = null;
       })
       .addCase(fetchTemplateCategories.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload;
+        state.categoriesLoading = false;
+        state.categoriesError = action.payload;
       })
       // Create custom template
       .addCase(createCustomTemplate.pending, (state) => {
@@ -342,6 +347,7 @@ export const {
   setSelectedCategory,
   clearSelectedTemplate,
   clearError,
+  clearCategoriesError,
   setLoading,
   setActiveFilters,
   clearActiveFilters,
