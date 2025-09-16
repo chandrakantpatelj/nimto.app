@@ -3,11 +3,13 @@
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useTheme } from 'next-themes';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { FileText, ArrowRight, Moon, Sun, LayoutDashboard } from 'lucide-react';
+import { FileText, ArrowRight, Moon, Sun, LayoutDashboard, Calendar, Mail } from 'lucide-react';
 import { useRoleBasedAccess } from '@/hooks/use-role-based-access';
 import { HomeTemplatesPreview } from '@/app/components/home-templates-preview';
+import { apiFetch } from '@/lib/api';
 
 export default function ComingSoonPage() {
   const { data: session, status } = useSession();
@@ -15,10 +17,34 @@ export default function ComingSoonPage() {
   const { roles } = useRoleBasedAccess();
   const isAuthenticated = status === 'authenticated' && session;
   const isLoading = status === 'loading';
+  const [invitedEvents, setInvitedEvents] = useState([]);
+  const [eventsLoading, setEventsLoading] = useState(false);
 
   const handleThemeToggle = (checked) => {
     setTheme(checked ? 'dark' : 'light');
   };
+
+  // Fetch invited events for attendees
+  useEffect(() => {
+    const fetchInvitedEvents = async () => {
+      if (isAuthenticated && roles.isAttendee && session?.user?.email) {
+        try {
+          setEventsLoading(true);
+          const response = await apiFetch(`/api/attendee/events?email=${session.user.email}`);
+          if (response.ok) {
+            const data = await response.json();
+            setInvitedEvents(data?.data || []);
+          }
+        } catch (error) {
+          console.error('Error fetching invited events:', error);
+        } finally {
+          setEventsLoading(false);
+        }
+      }
+    };
+
+    fetchInvitedEvents();
+  }, [isAuthenticated, roles.isAttendee, session?.user?.email]);
 
   // Show loading state while checking authentication
   if (isLoading) {
@@ -61,11 +87,20 @@ export default function ComingSoonPage() {
             {/* Auth Buttons or Role-based Navigation */}
             {isAuthenticated ? (
               <Button variant="primary" asChild className="flex items-center gap-2">
-                <Link href={roles.isSuperAdmin ? "/dashboard" : "/templates"}>
+                <Link href={
+                  roles.isSuperAdmin ? "/dashboard" : 
+                  roles.isAttendee ? "/invited-events" : 
+                  "/templates"
+                }>
                   {roles.isSuperAdmin ? (
                     <>
                       <LayoutDashboard className="h-4 w-4" />
                       Go to Dashboard
+                    </>
+                  ) : roles.isAttendee ? (
+                    <>
+                      <Calendar className="h-4 w-4" />
+                      Go to Events
                     </>
                   ) : (
                     <>
@@ -105,8 +140,17 @@ export default function ComingSoonPage() {
                     </span>
                   </h1>
                   <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-                    Ready to create stunning templates and manage your events? 
-                    Let's get started!
+                    {roles.isAttendee ? (
+                      <>
+                        Check out your invited events and manage your RSVPs. 
+                        Let's see what's coming up!
+                      </>
+                    ) : (
+                      <>
+                        Ready to create stunning templates and manage your events? 
+                        Let's get started!
+                      </>
+                    )}
                   </p>
                 </>
               ) : (
@@ -169,24 +213,128 @@ export default function ComingSoonPage() {
               </div>
             </div>
 
+            {/* Invited Events Section for Attendees */}
+            {isAuthenticated && roles.isAttendee && (
+              <div className="mt-16">
+                <div className="text-center mb-8">
+                  <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                    Your Invited Events
+                  </h2>
+                  <p className="text-lg text-gray-600 dark:text-gray-300">
+                    Events you've been invited to attend
+                  </p>
+                </div>
+                
+                {eventsLoading ? (
+                  <div className="flex justify-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  </div>
+                ) : invitedEvents.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {invitedEvents.slice(0, 3).map((event) => {
+                      const userGuest = event.guests?.[0];
+                      return (
+                        <div key={event.id} className="p-6 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-200/50 dark:border-gray-700/50 hover:shadow-lg transition-shadow">
+                          <div className="flex items-center justify-between mb-4">
+                            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                              <Calendar className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                            </div>
+                            {userGuest && (
+                              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                userGuest.status === 'CONFIRMED' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                                userGuest.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                                'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
+                              }`}>
+                                {userGuest.status}
+                              </span>
+                            )}
+                          </div>
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
+                            {event.title}
+                          </h3>
+                          {event.date && (
+                            <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                              {new Date(event.date).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                              })}
+                            </p>
+                          )}
+                          {event.location && (
+                            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-1">
+                              📍 {event.location}
+                            </p>
+                          )}
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            asChild 
+                            className="w-full"
+                          >
+                            <Link href={`/events/${event.id}/invitation/${userGuest?.id}`}>
+                              View Event
+                            </Link>
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <Mail className="h-16 w-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                      No Events Yet
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-300">
+                      You haven't been invited to any events yet. Check back later!
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Templates Preview Section */}
-            <div className="mt-16">
-              <HomeTemplatesPreview />
-            </div>
+            {(!isAuthenticated || !roles.isAttendee) && (
+              <div className="mt-16">
+                <HomeTemplatesPreview />
+              </div>
+            )}
             {/* CTA Section */}
             <div className="mt-16 space-y-6">
               {isAuthenticated ? (
                 <>
                   <p className="text-lg text-gray-600 dark:text-gray-300">
-                    Welcome back! Ready to create amazing templates?
+                    {roles.isAttendee ? (
+                      <>
+                        Ready to manage your event invitations and RSVPs?
+                      </>
+                    ) : roles.isSuperAdmin ? (
+                      <>
+                        Welcome back! Ready to create amazing templates?
+                      </>
+                    ) : (
+                      <>
+                        Welcome back! Ready to create amazing templates?
+                      </>
+                    )}
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                     <Button size="lg" variant="primary" asChild className="flex items-center gap-2">
-                      <Link href={roles.isSuperAdmin ? "/dashboard" : "/templates"}>
+                      <Link href={
+                        roles.isSuperAdmin ? "/dashboard" : 
+                        roles.isAttendee ? "/invited-events" : 
+                        "/templates"
+                      }>
                         {roles.isSuperAdmin ? (
                           <>
                             <LayoutDashboard className="h-5 w-5" />
                             Go to Dashboard
+                          </>
+                        ) : roles.isAttendee ? (
+                          <>
+                            <Calendar className="h-5 w-5" />
+                            Go to Events
                           </>
                         ) : (
                           <>
@@ -198,8 +346,14 @@ export default function ComingSoonPage() {
                       </Link>
                     </Button>
                     <Button size="lg" variant="outline" asChild>
-                      <Link href={roles.isSuperAdmin ? "/templates" : "/events"}>
-                        {roles.isSuperAdmin ? "View Templates" : "View Events"}
+                      <Link href={
+                        roles.isSuperAdmin ? "/templates" : 
+                        roles.isAttendee ? "/dashboard" : 
+                        "/events"
+                      }>
+                        {roles.isSuperAdmin ? "View Templates" : 
+                         roles.isAttendee ? "View Dashboard" : 
+                         "View Events"}
                       </Link>
                     </Button>
                   </div>

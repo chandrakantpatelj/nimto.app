@@ -30,6 +30,11 @@ export default withAuth(
     
     // Redirect authenticated users away from auth pages
     if (token && (pathname.startsWith('/signin') || pathname.startsWith('/signup') || pathname.startsWith('/reset-password'))) {
+      // Redirect based on user role
+      const userRole = getRoleSlug(token.roleName);
+      if (userRole === 'attendee') {
+        return redirect('/invited-events', req);
+      }
       return redirect('/templates', req);
     }
     
@@ -51,6 +56,13 @@ export default withAuth(
       '/templates': new Set(['host', 'super-admin', 'application-admin']),
       '/messaging': new Set(['host', 'super-admin', 'application-admin']),
       '/store-admin': new Set(['super-admin', 'application-admin']),
+      '/invited-events': new Set(['attendee', 'super-admin', 'application-admin']),
+      '/dashboard': new Set([
+        'host',
+        'attendee',
+        'super-admin',
+        'application-admin',
+      ]),
       '/network': new Set([
         'host',
         'attendee',
@@ -76,6 +88,11 @@ export default withAuth(
         'application-admin',
       ]),
     };
+
+    // Special redirect for attendees trying to access templates
+    if (userRole === 'attendee' && pathname === '/templates') {
+      return redirect('/invited-events', req);
+    }
 
     const sortedRoutes = Object.keys(routePermissions).sort(
       (a, b) => b.length - a.length,
@@ -131,6 +148,7 @@ export const config = {
     '/user-management/:path*',
     '/reportings/:path*',
     '/templates/:path*',
+    '/invited-events/:path*',
     '/my-profile/:path*',
     '/image-editor/:path*',
     '/messaging/:path*',

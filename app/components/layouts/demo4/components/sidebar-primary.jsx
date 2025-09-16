@@ -34,7 +34,7 @@ import {
 } from '@/components/ui/tooltip';
 
 const menuItems = [
-  { icon: BarChart3, tooltip: 'Dashboard', path: '/', rootPath: '/' },
+  { icon: BarChart3, tooltip: 'Dashboard', path: '/dashboard', rootPath: '/dashboard' },
   {
     icon: UserCircle,
     tooltip: 'Profile',

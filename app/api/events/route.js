@@ -31,11 +31,16 @@ export async function GET(request) {
     const status = searchParams.get('status');
     const search = searchParams.get('search');
     const date = searchParams.get('date');
+    const admin = searchParams.get('admin'); // Admin flag to get all events
 
     const where = {
       isTrashed: false,
-      createdByUserId: session.user.id, // Only return events created by the logged-in user
     };
+
+    // Super Admin and Application Admin can see all events, others see only their own
+    if (!admin || (session.user.roleName !== 'super-admin' && session.user.roleName !== 'application-admin')) {
+      where.createdByUserId = session.user.id;
+    }
 
     if (status) {
       where.status = status;

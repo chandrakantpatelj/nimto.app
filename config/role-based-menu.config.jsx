@@ -1,57 +1,15 @@
 import {
-  AlertCircle,
-  Award,
-  Badge,
-  Bell,
-  Bitcoin,
-  Book,
-  Briefcase,
-  Building,
   CalendarCheck,
-  Captions,
-  CheckCircle,
-  Code,
-  Coffee,
-  File as DocumentIcon,
-  Euro,
-  Eye,
-  File,
-  FileQuestion,
   FileText,
-  Flag,
-  Ghost,
-  Gift,
-  Grid,
-  Heart,
-  HelpCircle,
-  Image,
-  Kanban,
-  Key,
-  Layout,
   LayoutDashboard,
-  LayoutGrid,
-  LifeBuoy,
   Mail,
   MessageSquare,
-  Monitor,
-  Network,
-  Users as PeopleIcon,
-  Plug,
   Settings,
-  Share2,
-  Shield,
-  ShieldUser,
-  ShoppingCart,
-  SquareMousePointer,
-  Star,
-  TrendingUp,
-  UserCheck,
   UserCircle,
   UserCog,
-  Users,
-  Briefcase as WorkIcon,
-  Zap,
-  Home
+  Home,
+  Shield,
+  BarChart3
 } from 'lucide-react';
 
 // Base menu items that are common to all roles
@@ -64,7 +22,7 @@ const BASE_MENU_ITEMS = [
   {
     title: 'Dashboard',
     icon: LayoutDashboard,
-    path: '/',
+    path: '/dashboard',
   },
   {
     title: 'My Profile',
@@ -76,18 +34,13 @@ const BASE_MENU_ITEMS = [
 // Menu items for Super Admin and Application Admin
 const ADMIN_MENU_ITEMS = [
   {
-    title: 'Home',
-    icon: Home,
-    path: '/',
-  },
-  {
     title: 'Users',
     icon: UserCog,
     path: '/user-management/users',
   },
   {
     title: 'Roles',
-    icon: Settings,
+    icon: Shield,
     path: '/user-management/roles',
   },
   {
@@ -107,7 +60,7 @@ const ADMIN_MENU_ITEMS = [
   },
   {
     title: 'Reporting',
-    icon: FileText,
+    icon: BarChart3,
     path: '/reportings',
   },
   {
@@ -119,11 +72,6 @@ const ADMIN_MENU_ITEMS = [
 
 // Menu items for Host users
 const HOST_MENU_ITEMS = [
-  {
-    title: 'Home',
-    icon: Home,
-    path: '/',
-  },
   {
     title: 'Events',
     icon: CalendarCheck,
