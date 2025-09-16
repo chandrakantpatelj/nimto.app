@@ -58,6 +58,18 @@ function EditEventContent() {
 
         const templateData = template.data || template;
 
+        // Debug: Log template data to see what we're getting
+        console.log('Template data loaded:', {
+          id: templateData.id,
+          name: templateData.name,
+          hasJsonContent: !!templateData.jsonContent,
+          hasContent: !!templateData.content,
+          jsonContentType: typeof templateData.jsonContent,
+          contentType: typeof templateData.content,
+          jsonContentPreview: templateData.jsonContent ? templateData.jsonContent.substring(0, 100) : null,
+          contentPreview: templateData.content ? JSON.stringify(templateData.content).substring(0, 100) : null,
+        });
+
         setSelectedEvent({
           title: templateData.name,
           templateId: templateData.id,
@@ -67,10 +79,10 @@ function EditEventContent() {
           location: '',
           status: 'DRAFT',
           guests: [],
-          jsonContent: templateData.jsonContent,
-          backgroundStyle: null,
-          htmlContent: null,
-          background: null,
+          jsonContent: templateData.content || templateData.jsonContent,
+          backgroundStyle: templateData.backgroundStyle,
+          htmlContent: templateData.htmlContent,
+          background: templateData.background,
           pageBackground: templateData.pageBackground,
           imagePath: templateData.imagePath,
           s3ImageUrl: templateData.s3ImageUrl,

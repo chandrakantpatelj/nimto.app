@@ -39,7 +39,31 @@ export function TemplateHeader({
     if (isEditMode) {
       router.push('/events');
     } else {
-      setShowExitPopup(true);
+      // Get navigation source to determine redirect destination
+      const navigationSource = localStorage.getItem('navigationSource');
+      
+      // Clear the navigation source after using it
+      localStorage.removeItem('navigationSource');
+      
+      // Smart redirect based on how user arrived
+      switch (navigationSource) {
+        case 'create-event':
+          // User came from "Create Event" button -> redirect to events page
+          router.push('/events');
+          break;
+        case 'home':
+        case 'templates':
+        case 'select-template':
+        default:
+          // User came from template selection -> redirect to previous route
+          // Use browser history to go back, or fallback to home
+          if (window.history.length > 1) {
+            router.back();
+          } else {
+            router.push('/');
+          }
+          break;
+      }
     }
   };
 

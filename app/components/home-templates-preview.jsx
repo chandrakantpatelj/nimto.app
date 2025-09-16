@@ -8,16 +8,98 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, Calendar } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 
+// Cache management utilities
+const CACHE_KEY = 'homeTemplatesCache';
+const CACHE_TIMESTAMP_KEY = 'homeTemplatesCacheTimestamp';
+const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+
+const clearTemplatesCache = () => {
+  localStorage.removeItem(CACHE_KEY);
+  localStorage.removeItem(CACHE_TIMESTAMP_KEY);
+};
+
+const getCachedTemplates = () => {
+  const cachedTemplates = localStorage.getItem(CACHE_KEY);
+  const cacheTimestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY);
+  const now = Date.now();
+
+  if (cachedTemplates && cacheTimestamp && (now - parseInt(cacheTimestamp)) < CACHE_EXPIRY) {
+    try {
+      return JSON.parse(cachedTemplates);
+    } catch (parseError) {
+      console.warn('Failed to parse cached templates:', parseError);
+      return null;
+    }
+  }
+  return null;
+};
+
+const setCachedTemplates = (templates) => {
+  localStorage.setItem(CACHE_KEY, JSON.stringify(templates));
+  localStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString());
+};
+
+// Export cache utilities for use in other components
+export { clearTemplatesCache, getCachedTemplates, setCachedTemplates };
+
 export function HomeTemplatesPreview() {
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Force refresh function (useful for manual refresh or when templates are updated)
+  const refreshTemplates = async () => {
+    clearTemplatesCache();
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await apiFetch('/api/template?limit=6');
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: Failed to fetch templates`);
+      }
+
+      const result = await response.json();
+      if (result.success) {
+        const templateData = result.data || [];
+        setTemplates(templateData);
+        setCachedTemplates(templateData);
+      } else {
+        throw new Error(result.error || 'Failed to fetch templates');
+      }
+    } catch (err) {
+      console.error('Error refreshing templates:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchTemplates = async () => {
       try {
         setLoading(true);
         setError(null);
+
+        // Check if this is a page refresh (performance.navigation.type === 1)
+        const isPageRefresh = performance.navigation && performance.navigation.type === 1;
+        
+        // If it's a page refresh, clear cache and fetch fresh data
+        if (isPageRefresh) {
+          clearTemplatesCache();
+        }
+
+        // Check for cached templates first (only if not a page refresh)
+        if (!isPageRefresh) {
+          const cachedTemplates = getCachedTemplates();
+          if (cachedTemplates) {
+            setTemplates(cachedTemplates);
+            setLoading(false);
+            return;
+          }
+        }
+
+        // Fetch fresh data from API
         const response = await apiFetch('/api/template?limit=6');
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}: Failed to fetch templates`);
@@ -25,13 +107,27 @@ export function HomeTemplatesPreview() {
 
         const result = await response.json();
         if (result.success) {
-          setTemplates(result.data || []);
+          const templateData = result.data || [];
+          setTemplates(templateData);
+          setCachedTemplates(templateData);
         } else {
           throw new Error(result.error || 'Failed to fetch templates');
         }
       } catch (err) {
         console.error('Error fetching templates:', err);
         setError(err.message);
+        
+        // Try to use cached data as fallback even if expired
+        const fallbackTemplates = localStorage.getItem(CACHE_KEY);
+        if (fallbackTemplates) {
+          try {
+            const parsedTemplates = JSON.parse(fallbackTemplates);
+            setTemplates(parsedTemplates);
+            setError(null); // Clear error if we have fallback data
+          } catch (parseError) {
+            console.warn('Failed to parse fallback cached templates:', parseError);
+          }
+        }
       } finally {
         setLoading(false);
       }
@@ -40,9 +136,11 @@ export function HomeTemplatesPreview() {
     fetchTemplates();
   }, []);
 
-  const handleTemplateSelect = (template) => {
+  const handleTemplateSelect = (template, source = 'home') => {
     // Store template data in localStorage for the event creation flow
     localStorage.setItem('selectedTemplate', JSON.stringify(template));
+    // Store navigation source for smart redirect
+    localStorage.setItem('navigationSource', source);
     // Clear any existing event data to ensure fresh template loading
     localStorage.removeItem('selectedEvent');
   };
@@ -59,7 +157,7 @@ export function HomeTemplatesPreview() {
     return (
       <div className="text-center py-12">
         <p className="text-red-600 dark:text-red-400 mb-4">Error loading templates: {error}</p>
-        <Button onClick={() => window.location.reload()}>Try Again</Button>
+        <Button onClick={refreshTemplates}>Try Again</Button>
       </div>
     );
   }
@@ -112,7 +210,7 @@ export function HomeTemplatesPreview() {
                     
                     <Button
                       size="sm"
-                      onClick={() => handleTemplateSelect(template)}
+                      onClick={() => handleTemplateSelect(template, 'home')}
                       asChild
                     >
                       <Link href={`/events/design/${template.id}`}>
@@ -154,7 +252,7 @@ export function HomeTemplatesPreview() {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => handleTemplateSelect(template)}
+                    onClick={() => handleTemplateSelect(template, 'create-event')}
                     asChild
                     className="text-xs"
                   >

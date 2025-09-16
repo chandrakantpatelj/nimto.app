@@ -154,6 +154,8 @@ const EnhancedTemplates = ({
   const handleTemplateSelect = (template) => {
     // Clear any existing event data to ensure fresh template loading
     setSelectedEvent(null);
+    // Store navigation source for smart redirect
+    localStorage.setItem('navigationSource', 'templates');
     // Navigate to design page - the content.jsx will load the template data
     router.push(`/events/design/${template.id}`);
   };

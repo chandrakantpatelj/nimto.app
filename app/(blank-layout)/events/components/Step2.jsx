@@ -193,7 +193,7 @@ function Step2() {
                 id="title"
                 type="text"
                 placeholder="Your event title"
-                value={eventData.title}
+                value={eventData.title || ''}
                 onChange={(e) => updateEventData({ title: e.target.value })}
                 className="w-full"
               />
@@ -241,7 +241,7 @@ function Step2() {
                 </Popover>
 
                 <TimeField
-                  value={eventData.time}
+                  value={eventData.time || ''}
                   onChange={(time) => updateEventData({ time })}
                   placeholder="Pick a time"
                   className="w-full"
@@ -263,7 +263,7 @@ function Step2() {
                   id="location"
                   type="text"
                   placeholder="Add a location"
-                  value={eventData.location}
+                  value={eventData.location || ''}
                   onChange={(e) =>
                     updateEventData({ location: e.target.value })
                   }
@@ -283,7 +283,7 @@ function Step2() {
               <Textarea
                 id="description"
                 placeholder="Consider adding parking info, contact number, venue requirements, dress code, entertainment schedule, etc."
-                value={eventData.description}
+                value={eventData.description || ''}
                 onChange={(e) =>
                   updateEventData({ description: e.target.value })
                 }
