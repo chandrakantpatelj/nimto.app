@@ -21,7 +21,7 @@ import Step3 from '../../components/Step3';
 
 function EditEventContent() {
   const router = useRouter();
-  const { toastSuccess, toastError, toastWarning } = useToast();
+  const { toastSuccess, toastError } = useToast();
   const params = useParams();
   const templateId = params.id;
   const { data: session } = useSession();
@@ -47,7 +47,10 @@ function EditEventContent() {
   // Load template data
   useEffect(() => {
     const loadTemplate = async () => {
-      if (isRedirecting || eventData || !templateId) return;
+      if (isRedirecting || !templateId) return;
+      
+      // Only skip loading if we already have data for this specific template
+      if (eventData && eventData.templateId === templateId) return;
 
       try {
         const template = fetchTemplateById
@@ -55,6 +58,18 @@ function EditEventContent() {
           : await dispatch(fetchTemplateByIdThunk(templateId)).unwrap();
 
         const templateData = template.data || template;
+
+        // Debug: Log template data to see what we're getting
+        console.log('Template data loaded:', {
+          id: templateData.id,
+          name: templateData.name,
+          hasJsonContent: !!templateData.jsonContent,
+          hasContent: !!templateData.content,
+          jsonContentType: typeof templateData.jsonContent,
+          contentType: typeof templateData.content,
+          jsonContentPreview: templateData.jsonContent ? templateData.jsonContent.substring(0, 100) : null,
+          contentPreview: templateData.content ? JSON.stringify(templateData.content).substring(0, 100) : null,
+        });
 
         setSelectedEvent({
           title: templateData.name,
@@ -65,16 +80,17 @@ function EditEventContent() {
           location: '',
           status: 'DRAFT',
           guests: [],
-          jsonContent: templateData.jsonContent,
-          backgroundStyle: null,
-          htmlContent: null,
-          background: null,
+          jsonContent: templateData.content || templateData.jsonContent,
+          backgroundStyle: templateData.backgroundStyle,
+          htmlContent: templateData.htmlContent,
+          background: templateData.background,
           pageBackground: templateData.pageBackground,
           imagePath: templateData.imagePath,
           s3ImageUrl: templateData.s3ImageUrl,
           newImageBase64: null,
         });
       } catch (error) {
+        console.error('Error loading template:', error);
         toastError('Failed to load template. Please try again.');
       }
     };
@@ -121,6 +137,7 @@ function EditEventContent() {
           });
         }
       } catch (err) {
+        console.error('Error saving design:', err);
         toastError('There was a problem saving your design. Please try again.');
         return;
       }
@@ -250,6 +267,7 @@ function EditEventContent() {
         throw new Error(result.error || 'Failed to create event');
       }
     } catch (error) {
+      console.error('Error creating event:', error);
       toastError('Failed to create event. Please try again.');
     } finally {
       setIsCreating(false);

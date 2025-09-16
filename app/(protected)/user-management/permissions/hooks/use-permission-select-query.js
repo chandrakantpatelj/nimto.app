@@ -1,9 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api';
-import { toastError } from '@/providers/toast-provider';
+import { useToast } from '@/providers/toast-provider';
 
 // Custom hook to use roles for selection
 export const usePermissionSelectQuery = () => {
+  const { toastError } = useToast();
+  
   // Fetch roles for selection
   const fetchPermissionList = async () => {
     const response = await apiFetch('/api/user-management/permissions/select');

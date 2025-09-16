@@ -40,6 +40,8 @@ const SelectEvents = () => {
       guests: [],
     });
 
+    // Store navigation source for smart redirect
+    localStorage.setItem('navigationSource', 'select-template');
     // Navigate to design page
     router.push(`/events/design/${template.id}`);
   };

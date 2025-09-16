@@ -1,14 +1,8 @@
 'use client';
 
-import { StoreClientProvider } from '@/app/(protected)/store-client/components/context';
-import { StoreClientWrapper } from '@/app/(protected)/store-client/components/wrapper';
-
+// Temporarily simplified to avoid React hook context issues
 export function ModulesProvider({ children }) {
-  // StoreClientProvider is now just a passthrough since we use Redux
-  // The StoreClientWrapper can still be used for UI components
-  return (
-    <StoreClientProvider>
-      <StoreClientWrapper>{children}</StoreClientWrapper>
-    </StoreClientProvider>
-  );
+  // Simplified provider - just return children for now
+  // TODO: Re-enable store client functionality once hook issues are resolved
+  return children;
 }

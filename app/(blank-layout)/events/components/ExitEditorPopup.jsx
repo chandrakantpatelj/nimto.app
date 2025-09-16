@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { TriangleAlert } from 'lucide-react';
 import {
   Alert,
@@ -16,6 +16,38 @@ import DialogContent, {
 } from '@/components/ui/dialog';
 
 function ExitEditorPopup({ show, setShow }) {
+  const router = useRouter();
+
+  const handleExit = () => {
+    // Get navigation source to determine redirect destination
+    const navigationSource = localStorage.getItem('navigationSource');
+    
+    // Clear the navigation source after using it
+    localStorage.removeItem('navigationSource');
+    
+    // Smart redirect based on how user arrived
+    switch (navigationSource) {
+      case 'create-event':
+        // User came from "Create Event" button -> redirect to events page
+        router.push('/events');
+        break;
+      case 'home':
+      case 'templates':
+      case 'select-template':
+      default:
+        // User came from template selection -> redirect to previous route
+        // Use browser history to go back, or fallback to home
+        if (window.history.length > 1) {
+          router.back();
+        } else {
+          router.push('/');
+        }
+        break;
+    }
+    
+    setShow(false);
+  };
+
   return (
     <Dialog open={show} onOpenChange={setShow}>
       <DialogContent>
@@ -43,8 +75,8 @@ function ExitEditorPopup({ show, setShow }) {
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <Button variant="destructive" onClick={() => setShow(false)} asChild>
-            <Link href="/events"> Yes, Exit</Link>
+          <Button variant="destructive" onClick={handleExit}>
+            Yes, Exit
           </Button>
         </DialogFooter>
       </DialogContent>

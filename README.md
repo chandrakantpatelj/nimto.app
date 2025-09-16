@@ -1,51 +1,75 @@
-# Metronic 9 | All-in-One Tailwind based HTML/React/Next.js Template for Modern Web Applications
+# Nimto.app | Event Creation & Management Platform
+
+A modern, full-stack event creation and management platform built with Next.js, featuring template-based event design, image editing capabilities, and comprehensive event management tools.
+
+## Features
+
+- 🎨 **Template-Based Event Creation** - Choose from pre-designed templates or create custom events
+- 🖼️ **Advanced Image Editor** - Built-in Pixie editor for customizing event designs
+- 📅 **Event Management** - Complete event lifecycle management with guest tracking
+- 🎯 **Smart Navigation** - Context-aware routing and navigation
+- 💾 **Data Persistence** - Redux state management with local storage caching
+- 🔐 **User Authentication** - Secure user management and authorization
+- 📱 **Responsive Design** - Mobile-first design with Tailwind CSS
+
+## Tech Stack
+
+- **Frontend**: Next.js 15.3.x, React 19.x, Tailwind CSS 4.x
+- **State Management**: Redux Toolkit
+- **Database**: PostgreSQL 17.4.x with Prisma ORM
+- **Image Processing**: Pixie Editor integration
+- **Authentication**: NextAuth.js
+- **UI Components**: Custom components with Tailwind CSS
+- **File Storage**: AWS S3 integration
 
 ## Getting Started
-
-The official [Metronic Next.js Documentation](https://docs.keenthemes.com/metronic-nextjs) will be released soon,
-alongside the stable Metronic release, expected within the next week.
 
 ### Prerequisites
 
 - Node.js 16.x or higher
 - Npm or Yarn
-- Tailwind CSS 4.x
-- React 19.x
-- Next.js 15.3.x
 - PostgreSQL 17.4.x
-
-## ReUI Components
-
-Metronic now leverages [ReUI](https://reui.io), our open-source React component library.
-
-Star the [ReUI on GitHub](https://github.com/keenthemes/reui) to help us grow the project and stay updated on new features!
+- AWS S3 account (for file storage)
 
 ### Installation
 
-To set up the project dependencies, including those required for React 19, use the `--force` flag to resolve any dependency conflicts:
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd nimto.app
+```
 
+2. Install dependencies:
 ```bash
 npm install --force
 ```
 
-### Database Deployment
+3. Set up environment variables:
+```bash
+cp .env.example .env.local
+```
 
-This will create the necessary tables in database for user authorization and user management apps :
+Configure the following environment variables in `.env.local`:
+- Database connection string
+- AWS S3 credentials
+- NextAuth.js configuration
+- API endpoints
 
+4. Set up the database:
+
+Deploy the database schema:
 ```bash
 npx prisma db push
 ```
 
-Once your schema is deployed, you need to generate the Prisma Client:
-
-For development:
+Generate the Prisma Client:
 ```bash
 npx prisma generate
 ```
 
-For production (recommended for deployment):
+5. Run database migrations (if needed):
 ```bash
-npx prisma generate --no-engine
+npx prisma migrate dev
 ```
 
 ### Database Issues
@@ -58,7 +82,7 @@ npm run fix-verification-tokens
 
 This will add missing `id` values to existing verification tokens in the database.
 
-### Development
+## Development
 
 Start the development server:
 
@@ -66,17 +90,68 @@ Start the development server:
 npm run dev
 ```
 
-### Setting Up the Demo Layout
+Open [http://localhost:3000](http://localhost:3000) to view the application.
 
-Open `app/(protected)/layout.tsx` and change `Demo1Layout` to any demo, for example, `Demo5Layout` and you will switch entire app layout to the selected demo.
+## Project Structure
 
-```bash
-<Demo5Layout>
-	{children}
-</Demo5Layout>
+```
+nimto.app/
+├── app/                          # Next.js app directory
+│   ├── (blank-layout)/          # Layout without sidebar
+│   │   └── events/              # Event creation flow
+│   ├── (protected)/             # Protected routes
+│   │   ├── events/              # Event management
+│   │   └── templates/           # Template management
+│   ├── api/                     # API routes
+│   └── components/              # Shared components
+├── components/                   # Reusable UI components
+│   └── image-editor/            # Pixie editor integration
+├── lib/                         # Utility functions
+├── store/                       # Redux store configuration
+└── prisma/                      # Database schema and migrations
 ```
 
-### Reporting Issues
+## Key Features
 
-If you encounter any issues or have suggestions for improvement, please contact us at [support@keenthemes.com](mailto:support@keenthemes.com).
-Include a detailed description of the issue or suggestion, and we will work to address it in the next stable release.
+### Event Creation Flow
+1. **Template Selection** - Choose from pre-designed templates
+2. **Design Customization** - Use the integrated Pixie editor
+3. **Event Details** - Add title, date, time, location, and description
+4. **Guest Management** - Invite and track guests
+5. **Publishing** - Make your event live
+
+### Template System
+- Pre-designed event templates
+- Custom template creation
+- Template preview and selection
+- Template caching for performance
+
+### Image Editor Integration
+- Built-in Pixie editor
+- Template design customization
+- Text and shape overlays
+- Image upload and processing
+
+## API Endpoints
+
+- `GET /api/template` - Fetch templates
+- `GET /api/template/[id]` - Get specific template
+- `POST /api/event` - Create new event
+- `PUT /api/event/[id]` - Update event
+- `DELETE /api/event/[id]` - Delete event
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License.
+
+## Support
+
+For support and questions, please open an issue in the GitHub repository or contact the development team.
