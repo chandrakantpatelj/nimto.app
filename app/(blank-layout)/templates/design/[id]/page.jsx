@@ -24,6 +24,9 @@ function EditTemplate() {
   // Template image operations
   const { uploadTemplateImage } = useTemplateImage();
 
+  // Toast functions
+  const { toastSuccess, toastError, toastInfo, toastWarning } = useToast();
+
   // Fetch template data using Redux - OPTIMIZED: No local formData needed
   const fetchTemplateData = async () => {
     if (!templateId) {
@@ -56,7 +59,11 @@ function EditTemplate() {
   }, [templateId]); // Removed selectedTemplate from dependencies to prevent multiple calls
 
   // Handle save template - UPDATE API logic - OPTIMIZED: Use selectedTemplate directly
-  const handleSaveTemplate = async (templateData, uploadedImageFile) => {
+  const handleSaveTemplate = async (
+    templateData,
+    uploadedImageFile,
+    thumbnailData,
+  ) => {
     try {
       setLoading(true);
       setError(null);
@@ -88,6 +95,49 @@ function EditTemplate() {
         // Upload image if there's a new uploaded file
         if (uploadedImageFile) {
           await uploadTemplateImage(templateId, uploadedImageFile);
+        }
+
+        // Upload thumbnail if thumbnail data is available
+        if (thumbnailData) {
+          try {
+            toastInfo('Updating thumbnail...');
+            const thumbnailResponse = await apiFetch(
+              `/api/template/${templateId}/upload-thumbnail`,
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  imageBlob: thumbnailData.base64Data,
+                  imageFormat: 'png',
+                }),
+              },
+            );
+
+            if (!thumbnailResponse.ok) {
+              const thumbnailError = await thumbnailResponse.json();
+              throw new Error(
+                thumbnailError.error || 'Failed to upload thumbnail',
+              );
+            }
+
+            const thumbnailResult = await thumbnailResponse.json();
+            if (thumbnailResult.success) {
+              const message = thumbnailResult.data.isOverwrite
+                ? 'Thumbnail updated successfully'
+                : 'Thumbnail uploaded successfully';
+              toastSuccess(message);
+            } else {
+              throw new Error(
+                thumbnailResult.error || 'Failed to upload thumbnail',
+              );
+            }
+          } catch (thumbnailError) {
+            console.error('Thumbnail upload failed:', thumbnailError);
+            toastWarning(
+              'Template updated but thumbnail upload failed: ' +
+                thumbnailError.message,
+            );
+          }
         }
 
         toastSuccess('Template updated successfully');

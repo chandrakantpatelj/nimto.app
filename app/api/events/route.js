@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { getServerSession } from 'next-auth';
 import { checkEventManagementAccess } from '@/lib/auth-utils';
-import { generateDirectS3Url } from '@/lib/s3-utils';
+import { generateDirectS3Url, generateProxyUrl } from '@/lib/s3-utils';
 import authOptions from '../auth/[...nextauth]/auth-options';
 
 // Create a singleton Prisma client
@@ -75,19 +75,23 @@ export async function GET(request) {
       },
       orderBy: { createdAt: 'desc' },
     });
-
-    // Generate S3 URLs for events with imagePath
+    // Generate URLs for events with imagePath and eventThumbnailPath
     const eventsWithUrls = events.map((event) => {
-      if (event.imagePath) {
-        // Generate standardized proxy URL
-        const s3ImageUrl = generateDirectS3Url(event.imagePath);
+      const result = { ...event };
 
-        return {
-          ...event,
-          s3ImageUrl: s3ImageUrl,
-        };
+      if (event.imagePath) {
+        // Generate proxy URL for template image (avoids CORS issues)
+        result.s3ImageUrl = generateProxyUrl(event.imagePath);
       }
-      return event;
+
+      if (event.eventThumbnailPath) {
+        // Generate direct S3 URL for event thumbnail
+        result.eventThumbnailUrl = generateDirectS3Url(
+          event.eventThumbnailPath,
+        );
+      }
+
+      return result;
     });
 
     return NextResponse.json({

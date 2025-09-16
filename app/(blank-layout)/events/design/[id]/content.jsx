@@ -41,6 +41,7 @@ function EditEventContent() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [thumbnailData, setThumbnailData] = useState(null);
   const pixieEditorRef = useRef(null);
 
   // Load template data
@@ -104,6 +105,12 @@ function EditEventContent() {
       }
 
       try {
+        // Get thumbnail data and store in local state
+        const thumbnailData = await pixieEditorRef.current.getThumbnailData();
+        // const newTab = window.open(thumbnailData.objectUrl, '_blank');
+        console.log('thumbnailData', thumbnailData);
+        setThumbnailData(thumbnailData);
+
         const pixieState = JSON.parse(await pixieEditorRef.current.save());
 
         if (pixieState?.canvas?.objects?.length) {
@@ -113,7 +120,6 @@ function EditEventContent() {
             imageThumbnail: pixieState.exportedImage || null,
           });
         }
-        
       } catch (err) {
         toastError('There was a problem saving your design. Please try again.');
         return;
@@ -137,7 +143,7 @@ function EditEventContent() {
       // Store current path for redirect after sign in
       const currentPath = `/events/design/${templateId}`;
       const returnUrl = encodeURIComponent(currentPath);
-      
+
       // Redirect to sign in with return URL
       router.push(`/signin?callbackUrl=${returnUrl}`);
       return;
@@ -160,6 +166,7 @@ function EditEventContent() {
 
   const createEvent = async (sendInvitations = false) => {
     setIsCreating(true);
+
     try {
       const hasChangedImage = eventData.newImageBase64;
 
@@ -185,7 +192,50 @@ function EditEventContent() {
 
       const result = await response.json();
 
+      console.log('result.success', result.data);
       if (result.success) {
+        // Upload thumbnail if available from local state
+        if (thumbnailData) {
+          try {
+            console.log(
+              'Using thumbnail data from local state:',
+              thumbnailData,
+            );
+
+            const thumbnailResponse = await fetch(
+              `/api/event/${result.data.event.id}/upload-thumbnail`,
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  imageBlob: thumbnailData.base64Data,
+                  imageFormat: 'png',
+                }),
+              },
+            );
+            console.log(
+              'Thumbnail upload response status:',
+              thumbnailResponse.status,
+            );
+
+            if (thumbnailResponse.ok) {
+              const thumbnailResult = await thumbnailResponse.json();
+              if (thumbnailResult.success) {
+                toastSuccess('Thumbnail uploaded successfully');
+              } else {
+                toastWarning('Event created but thumbnail upload failed');
+              }
+            } else {
+              toastWarning('Event created but thumbnail upload failed');
+            }
+          } catch (thumbnailError) {
+            console.error('Thumbnail upload failed:', thumbnailError);
+            toastWarning('Event created but thumbnail upload failed');
+          }
+        } else {
+          console.log('No thumbnail data available in local state');
+        }
+
         toastSuccess(
           sendInvitations
             ? 'Event created and invitations sent successfully!'
@@ -240,7 +290,9 @@ function EditEventContent() {
       {activeStep === 0 && (
         <Step1 mode="create" pixieEditorRef={pixieEditorRef} />
       )}
-      {activeStep === 1 && <Step2 mode="create" />}
+      {activeStep === 1 && (
+        <Step2 mode="create" thumbnailData={thumbnailData} />
+      )}
       {activeStep === 2 && <Step3 mode="create" />}
 
       <InvitationConfirmationPopup

@@ -12,13 +12,13 @@ function hasAdminRole(userRole) {
 
 const prisma = new PrismaClient();
 
-// POST /api/template/[id]/upload-thumbnail - Upload Pixie export image to S3 and update template
+// POST /api/event/[id]/upload-thumbnail - Upload Pixie export image to S3 and update event
 //
 // Usage Example:
-// POST /api/template/123/upload-thumbnail
+// POST /api/event/456/upload-thumbnail
 // Body: { imageBlob: "data:image/png;base64,...", imageFormat: "png" }
 //
-// S3 Storage: template-thumbnails/template_123_thumbnail_1695123456789.png
+// S3 Storage: event-thumbnails/event_456_thumbnail_1695123456789.png
 export async function POST(request, { params }) {
   try {
     const session = await getServerSession(authOptions);
@@ -33,10 +33,10 @@ export async function POST(request, { params }) {
     const { id } = params;
     const { imageBlob, imageFormat = 'png' } = await request.json();
 
-    // Validate template ID
+    // Validate event ID
     if (!id || typeof id !== 'string') {
       return NextResponse.json(
-        { success: false, error: 'Valid template ID is required' },
+        { success: false, error: 'Valid event ID is required' },
         { status: 400 },
       );
     }
@@ -48,17 +48,17 @@ export async function POST(request, { params }) {
       );
     }
 
-    // Check if template exists
-    const template = await prisma.template.findFirst({
+    // Check if event exists
+    const event = await prisma.event.findFirst({
       where: {
         id,
         isTrashed: false,
       },
     });
 
-    if (!template) {
+    if (!event) {
       return NextResponse.json(
-        { success: false, error: 'Template not found' },
+        { success: false, error: 'Event not found' },
         { status: 404 },
       );
     }
@@ -81,19 +81,19 @@ export async function POST(request, { params }) {
 
     // Determine thumbnail path - use existing if available, otherwise create new
     let thumbnailPath;
-    if (template.templateThumbnailPath) {
+    if (event.eventThumbnailPath) {
       // For edit operations: overwrite existing thumbnail
-      thumbnailPath = template.templateThumbnailPath;
+      thumbnailPath = event.eventThumbnailPath;
     } else {
       // For new uploads: generate unique filename
       const timestamp = Date.now();
-      const filename = `template_${id}_thumbnail_${timestamp}.${imageFormat}`;
-      thumbnailPath = `template-thumbnails/${filename}`;
+      const filename = `event_${id}_thumbnail_${timestamp}.${imageFormat}`;
+      thumbnailPath = `event-thumbnails/${filename}`;
     }
 
     // Upload to S3
     const s3Client = createS3Client();
-    const { bucket } = getS3Config();
+    const { bucket, region, endpoint } = getS3Config();
 
     if (!bucket) {
       return NextResponse.json(
@@ -117,17 +117,17 @@ export async function POST(request, { params }) {
       throw s3Error;
     }
 
-    // Update template - only update thumbnail path if it's new
+    // Update event - only update thumbnail path if it's new
     const updateData = {
       updatedAt: new Date(),
     };
 
-    // Only update templateThumbnailPath if it's a new path (not overwriting existing)
-    if (!template.templateThumbnailPath) {
-      updateData.templateThumbnailPath = thumbnailPath;
+    // Only update eventThumbnailPath if it's a new path (not overwriting existing)
+    if (!event.eventThumbnailPath) {
+      updateData.eventThumbnailPath = thumbnailPath;
     }
 
-    const updatedTemplate = await prisma.template.update({
+    const updatedEvent = await prisma.event.update({
       where: { id },
       data: updateData,
     });
@@ -143,15 +143,16 @@ export async function POST(request, { params }) {
       // For AWS S3 - follow AWS standard path structure (bucket/bucket/path)
       thumbnailUrl = `https://${bucket}.s3.${s3Region}.amazonaws.com/${bucket}/${thumbnailPath}`;
     }
-    const isOverwrite = !!template.templateThumbnailPath;
+
+    const isOverwrite = !!event.eventThumbnailPath;
 
     return NextResponse.json({
       success: true,
       data: {
-        id: updatedTemplate.id,
-        name: updatedTemplate.name,
-        templateThumbnailPath: thumbnailPath,
-        templateThumbnailUrl: thumbnailUrl,
+        id: updatedEvent.id,
+        name: updatedEvent.title,
+        eventThumbnailPath: thumbnailPath,
+        eventThumbnailUrl: thumbnailUrl,
         message: isOverwrite
           ? 'Thumbnail updated successfully'
           : 'Thumbnail uploaded successfully',
@@ -159,10 +160,10 @@ export async function POST(request, { params }) {
       },
     });
   } catch (error) {
-    console.error('Error uploading template thumbnail:', error);
+    console.error('Error uploading event thumbnail:', error);
 
     // Return more specific error messages for debugging
-    let errorMessage = 'Failed to upload template thumbnail';
+    let errorMessage = 'Failed to upload event thumbnail';
     let statusCode = 500;
 
     if (error.name === 'NoSuchBucket') {

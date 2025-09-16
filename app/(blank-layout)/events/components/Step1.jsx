@@ -15,7 +15,7 @@ function Step1({ mode = 'create', pixieEditorRef: externalPixieRef }) {
 
   const [templateLoading, setTemplateLoading] = useState(true);
   const [imageUrl, setImageUrl] = useState('');
-
+  console.log('eventData', eventData);
   // Initialize with existing event data if in edit mode
   useEffect(() => {
     if (eventData && eventData.s3ImageUrl) {
@@ -27,32 +27,31 @@ function Step1({ mode = 'create', pixieEditorRef: externalPixieRef }) {
   return (
     <div className="flex min-h-[calc(100vh-var(--header-height))] h-full bg-gray-50">
       {/* Left Side - Full Size Pixie Editor */}
-      
 
-        {/* Pixie Editor Container */}
-        <div className=" p-4">
-          {templateLoading ? (
-            <div className="h-full flex items-center justify-center">
-              <div className="text-center space-y-4">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
-                <p className="text-gray-600">
-                  {mode === 'edit' ? 'Loading event...' : 'Loading template...'}
-                </p>
-              </div>
+      {/* Pixie Editor Container */}
+      <div className=" p-4">
+        {templateLoading ? (
+          <div className="h-full flex items-center justify-center">
+            <div className="text-center space-y-4">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+              <p className="text-gray-600">
+                {mode === 'edit' ? 'Loading event...' : 'Loading template...'}
+              </p>
             </div>
-          ) : (
-            <div className="h-[830px] w-[96.5vw] rounded-lg overflow-hidden border border-gray-200 bg-white">
-              <PixieEditor
-                key={`pixie-${eventId || templateId}`}
-                ref={pixieEditorRef}
-                initialContent={eventData?.jsonContent}
-                initialImageUrl={imageUrl}
-                width="100%"
-                height="830px"
-              />
-            </div>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="h-[830px] w-[96.5vw] rounded-lg overflow-hidden border border-gray-200 bg-white">
+            <PixieEditor
+              key={`pixie-${eventId || templateId}`}
+              ref={pixieEditorRef}
+              initialContent={eventData?.jsonContent}
+              initialImageUrl={imageUrl}
+              width="100%"
+              height="830px"
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -226,6 +226,7 @@ model Event {
   background           String?
   pageBackground       String?
   imagePath            String?
+  eventThumbnailPath   String? // S3 key for exported event thumbnail
   status               EventStatus @default(DRAFT)
   createdByUserId      String
   createdAt            DateTime    @default(now())

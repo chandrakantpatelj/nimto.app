@@ -41,6 +41,7 @@ const PixieEditor = forwardRef(
     },
     ref,
   ) => {
+    console.log('initialImageUrl', initialImageUrl);
     const pixieRef = useRef(null);
     const [containerId, setContainerId] = useState('');
     const [isLoading, setIsLoading] = useState(true);
@@ -292,7 +293,7 @@ const PixieEditor = forwardRef(
               return null;
             }
           })();
-
+          console.log('exportResult', exportResult);
           if (!exportResult || !exportResult.blob) {
             console.error('Failed to export image from Pixie:', {
               exportResult,

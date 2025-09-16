@@ -7,14 +7,11 @@ import {
   createS3Client,
   deleteImageFromS3,
   generateDirectS3Url,
+  generateProxyUrl,
 } from '@/lib/s3-utils';
 import { sendBulkEventInvitations } from '@/services/send-event-invitation.js';
 
 const prisma = new PrismaClient();
-
-
-
-
 
 // GET /api/events/[id] - Get a specific event (public access for design pages)
 export async function GET(request, { params }) {
@@ -54,9 +51,15 @@ export async function GET(request, { params }) {
       );
     }
 
-    // Generate standardized proxy URL for event image if exists
+    // Generate URLs for event images
     if (event.imagePath) {
-      event.s3ImageUrl = generateDirectS3Url(event.imagePath);
+      // Generate proxy URL for template image (avoids CORS issues)
+      event.s3ImageUrl = generateProxyUrl(event.imagePath);
+    }
+
+    if (event.eventThumbnailPath) {
+      // Generate direct S3 URL for event thumbnail
+      event.eventThumbnailUrl = generateDirectS3Url(event.eventThumbnailPath);
     }
 
     return NextResponse.json({
