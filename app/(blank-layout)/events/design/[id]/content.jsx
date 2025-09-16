@@ -21,7 +21,7 @@ import Step3 from '../../components/Step3';
 
 function EditEventContent() {
   const router = useRouter();
-  const { toastSuccess, toastError, toastWarning } = useToast();
+  const { toastSuccess, toastError } = useToast();
   const params = useParams();
   const templateId = params.id;
   const { data: session } = useSession();
@@ -46,7 +46,10 @@ function EditEventContent() {
   // Load template data
   useEffect(() => {
     const loadTemplate = async () => {
-      if (isRedirecting || eventData || !templateId) return;
+      if (isRedirecting || !templateId) return;
+      
+      // Only skip loading if we already have data for this specific template
+      if (eventData && eventData.templateId === templateId) return;
 
       try {
         const template = fetchTemplateById
@@ -74,6 +77,7 @@ function EditEventContent() {
           newImageBase64: null,
         });
       } catch (error) {
+        console.error('Error loading template:', error);
         toastError('Failed to load template. Please try again.');
       }
     };
@@ -115,6 +119,7 @@ function EditEventContent() {
         }
         
       } catch (err) {
+        console.error('Error saving design:', err);
         toastError('There was a problem saving your design. Please try again.');
         return;
       }
@@ -200,6 +205,7 @@ function EditEventContent() {
         throw new Error(result.error || 'Failed to create event');
       }
     } catch (error) {
+      console.error('Error creating event:', error);
       toastError('Failed to create event. Please try again.');
     } finally {
       setIsCreating(false);

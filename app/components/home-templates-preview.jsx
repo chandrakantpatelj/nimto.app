@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Eye, Calendar } from 'lucide-react';
+import { Loader2, Calendar } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 
 export function HomeTemplatesPreview() {
@@ -43,6 +43,8 @@ export function HomeTemplatesPreview() {
   const handleTemplateSelect = (template) => {
     // Store template data in localStorage for the event creation flow
     localStorage.setItem('selectedTemplate', JSON.stringify(template));
+    // Clear any existing event data to ensure fresh template loading
+    localStorage.removeItem('selectedEvent');
   };
 
   if (loading) {

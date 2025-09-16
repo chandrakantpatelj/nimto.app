@@ -123,7 +123,6 @@ const EnhancedTemplates = ({
     } else if (allTemplates.length === 0) {
       // If no stored filters and no templates, load all templates
       loadTemplates();
-    } else {
     }
   }, []); // Only run on mount
 
@@ -153,7 +152,9 @@ const EnhancedTemplates = ({
   };
 
   const handleTemplateSelect = (template) => {
-    setSelectedEvent(template);
+    // Clear any existing event data to ensure fresh template loading
+    setSelectedEvent(null);
+    // Navigate to design page - the content.jsx will load the template data
     router.push(`/events/design/${template.id}`);
   };
 

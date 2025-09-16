@@ -463,6 +463,13 @@ const PixieEditor = forwardRef(
       };
     }, [containerId]);
 
+    // Handle initialImageUrl changes
+    useEffect(() => {
+      if (initialImageUrl && pixieRef.current && !isLoading) {
+        loadImageIntoPixie(initialImageUrl);
+      }
+    }, [initialImageUrl, isLoading]);
+
     return (
       <div className="relative">
         {/* Enhanced Loading State */}
