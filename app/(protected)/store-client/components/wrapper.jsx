@@ -1,5 +1,4 @@
 'use client';
-'use client';
 
 import * as React from 'react';
 import { useStoreClient } from '@/app/(protected)/store-client/components/context';

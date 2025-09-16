@@ -9,14 +9,10 @@ import {
   CalendarDays, 
   Shield, 
   Settings, 
-  TrendingUp,
   UserCheck,
-  UserX,
-  Clock,
   Activity,
   BarChart3,
-  Database,
-  AlertTriangle
+  Database
 } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { useRouter } from 'next/navigation';
@@ -48,21 +44,25 @@ export function SuperAdminDashboard() {
       
       // Fetch all users
       const usersResponse = await apiFetch('/api/user-management/users?limit=1000');
-      const users = usersResponse?.data?.users || [];
+      const usersData = await usersResponse.json();
+      const users = usersData?.data || [];
       
-      // Fetch all events
-      const eventsResponse = await apiFetch('/api/events');
-      const events = eventsResponse?.data || [];
+      // Fetch all events (admin can see all events)
+      const eventsResponse = await apiFetch('/api/events?admin=true');
+      const eventsData = await eventsResponse.json();
+      const events = eventsData?.data || [];
       
       // Fetch all guests
       const guestsResponse = await apiFetch('/api/events/guests');
-      const guests = guestsResponse?.data || [];
+      const guestsData = await guestsResponse.json();
+      
+      const guests = guestsData?.data || [];      
       
       // Calculate user statistics
       const totalUsers = users.length;
       const activeUsers = users.filter(user => user.status === 'ACTIVE').length;
       const inactiveUsers = users.filter(user => user.status === 'INACTIVE').length;
-      
+            
       // Calculate role distribution
       const userRoles = users.reduce((acc, user) => {
         const roleName = user.role?.name || 'No Role';
@@ -103,6 +103,19 @@ export function SuperAdminDashboard() {
       });
     } catch (error) {
       console.error('Error fetching system stats:', error);
+      console.error('Error details:', error.message, error.stack);
+      // Set some default stats in case of error
+      setStats(prev => ({
+        ...prev,
+        totalUsers: 0,
+        totalEvents: 0,
+        totalGuests: 0,
+        activeUsers: 0,
+        inactiveUsers: 0,
+        userRoles: {},
+        eventStats: { published: 0, draft: 0 },
+        recentActivity: []
+      }));
     } finally {
       setLoading(false);
     }
