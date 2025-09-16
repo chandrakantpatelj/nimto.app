@@ -271,10 +271,10 @@ export function AdminEventContent() {
               className="overflow-hidden hover:shadow-lg transition-all duration-200 group"
             >
               {/* Event Image with Overlay Actions */}
-              {event.s3ImageUrl && (
+              {event?.eventThumbnailUrl && (
                 <div className="relative aspect-video bg-gray-100 overflow-hidden">
                   <img
-                    src={event.s3ImageUrl}
+                    src={event?.eventThumbnailUrl || event?.s3ImageUrl}
                     alt={event.title}
                     className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
                   />
