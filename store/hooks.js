@@ -100,7 +100,7 @@ export const useAllTemplates = () =>
 export const useTemplateCategories = () =>
   useAppSelector((state) => state.templates.categories || []);
 
-    export const useTemplateCategoriesLoading = () =>
+export const useTemplateCategoriesLoading = () =>
   useAppSelector((state) => state.templates.categoriesLoading);
 export const useTemplateCategoriesError = () =>
   useAppSelector((state) => state.templates.categoriesError);
@@ -226,9 +226,12 @@ export const useEventActions = () => {
       [dispatch],
     ),
 
-    fetchAllEvents: useCallback(() => {
-      return dispatch(fetchAllEvents());
-    }, [dispatch]),
+    fetchAllEvents: useCallback(
+      (params = {}) => {
+        return dispatch(fetchAllEvents(params));
+      },
+      [dispatch],
+    ),
 
     fetchEventById: useCallback(
       (eventId) => {

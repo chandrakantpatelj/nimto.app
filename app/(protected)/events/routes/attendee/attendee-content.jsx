@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useEventActions } from '@/store/hooks';
+import { useEventActions, useEvents } from '@/store/hooks';
 import {
   Calendar,
   CalendarDays,
@@ -21,39 +21,20 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export function AttendeeEventContent() {
   const router = useRouter();
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const { setSelectedEvent } = useEventActions();
+
+  // Redux state and actions
+  const { events: allEvents, isLoading: loading, error } = useEvents();
+  const { fetchAllEvents, setSelectedEvent } = useEventActions();
+
+  // Filter events to only show published ones for attendees
+  const events = allEvents.filter((event) => event.status === 'PUBLISHED');
 
   useEffect(() => {
-    fetchEvents();
-  }, []);
-
-  const fetchEvents = async () => {
-    try {
-      setLoading(true);
-      // Attendees should only see events they've been invited to
-      // For now, we'll show a limited view or redirect to invitations
-      const response = await fetch('/api/events');
-      const data = await response.json();
-
-      if (data.success) {
-        // Filter to only show published events (attendees can't see drafts)
-        const publishedEvents = data.data.filter(
-          (event) => event.status === 'PUBLISHED',
-        );
-        setEvents(publishedEvents);
-      } else {
-        setError('Failed to fetch events');
-      }
-    } catch (err) {
-      setError('Error loading events');
-      console.error('Error fetching events:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    // Fetch all events using Redux action (attendees see only published events)
+    fetchAllEvents().catch((err) => {
+      console.error('Failed to fetch events:', err);
+    });
+  }, [fetchAllEvents]);
 
   const handleTemplateSelect = (event) => {
     // Initialize selectedEvent with template data
@@ -142,7 +123,7 @@ export function AttendeeEventContent() {
             Error Loading Events
           </h3>
           <p className="text-gray-600 max-w-md">{error}</p>
-          <Button onClick={fetchEvents} variant="outline">
+          <Button onClick={fetchAllEvents} variant="outline">
             Try Again
           </Button>
         </div>
