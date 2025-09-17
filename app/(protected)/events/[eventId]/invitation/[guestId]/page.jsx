@@ -226,12 +226,12 @@ export default function EventInvitationPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
           {/* Left Column - Event Image Only */}
           <div>
-            {event.s3ImageUrl && (
+            {(event.eventThumbnailUrl || event.s3ImageUrl) && (
               <Card className="border-0 shadow-xl overflow-hidden h-full">
                 <CardContent className="p-0">
                   <div className="relative w-full h-full min-h-[500px] lg:min-h-[600px] overflow-hidden">
                     <img
-                      src={event.s3ImageUrl}
+                      src={event.eventThumbnailUrl || event.s3ImageUrl}
                       alt={event.title}
                       className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                     />
