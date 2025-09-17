@@ -122,7 +122,7 @@ export async function POST(request) {
     // Send email invitation automatically
     try {
       const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-      const invitationUrl = `${baseUrl}/events/${event.id}/invitation/${guest.id}`;
+      const invitationUrl = `${baseUrl}/invitation/${event.id}/${guest.id}`;
 
       await sendEventInvitation({
         guest: {

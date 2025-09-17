@@ -24,6 +24,9 @@ export default withAuth(
     if (pathname.match(/^\/events\/[a-zA-Z0-9_-]+$/))
       return NextResponse.next(); // Allow /events/[eventId]
 
+    // Allow public access to invitation routes
+    if (pathname.startsWith('/invitation/')) return NextResponse.next();
+
     // Redirect non-logged-in users from /events to home page
     if (pathname === '/events' && !token) {
       return redirect('/', req);
@@ -142,6 +145,8 @@ export default withAuth(
         if (req.nextUrl.pathname.startsWith('/events/design')) return true;
         if (req.nextUrl.pathname.match(/^\/events\/[a-zA-Z0-9_-]+$/))
           return true; // Allow /events/[eventId]
+        // Allow public access to invitation routes
+        if (req.nextUrl.pathname.startsWith('/invitation/')) return true;
         // Allow /events route to be processed by middleware (for redirect logic)
         if (req.nextUrl.pathname === '/events') return true;
         // Require token for all other routes including /templates
@@ -169,6 +174,6 @@ export const config = {
     '/public-profile/:path*',
     '/account/:path*',
     '/events', // Add /events to matcher to handle authentication
-    '/((?!api|_next/static|_next/image|favicon.ico|signin|signup|verify-email|reset-password|unauthorized|events/design|events/[a-zA-Z0-9_-]+|pixie-assets|^/$).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|signin|signup|verify-email|reset-password|unauthorized|events/design|events/[a-zA-Z0-9_-]+|invitation|pixie-assets|^/$).*)',
   ],
 };

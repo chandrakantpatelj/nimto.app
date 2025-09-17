@@ -297,7 +297,7 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
   };
 
   return (
-    <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-green-50/30">
+    <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-green-50/30 dark:from-gray-800 dark:to-slate-800/50 dark:border-gray-700">
       <CardHeader className="bg-gradient-to-r from-green-400 to-teal-400 text-white rounded-t-lg pb-6">
         <CardTitle className="text-xl font-bold flex items-center gap-3 mb-3 pt-3">
           <div className="p-2 bg-white/20 rounded-lg">
@@ -342,11 +342,11 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
           </div>
         )}
       </CardHeader>
-      <CardContent>
+      <CardContent className="dark:text-gray-100">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Response Selection */}
           <div>
-            <Label className="text-sm font-semibold mb-4 block text-gray-800">
+            <Label className="text-sm font-semibold mb-4 block text-gray-800 dark:text-gray-200">
               Will you attend this event? *
             </Label>
             <div
@@ -402,48 +402,48 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
           <div className="space-y-4">
             {/* Email - Read Only */}
             <div>
-              <Label className="text-sm font-medium">
+              <Label className="text-sm font-medium dark:text-gray-200">
                 Email Address *
-                <span className="text-xs text-muted-foreground ml-2">
+                <span className="text-xs text-muted-foreground dark:text-gray-400 ml-2">
                   (Invited to: {userGuest?.email || session?.user?.email})
                 </span>
               </Label>
               <div className="relative mt-1">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground dark:text-gray-400" />
                 <Input
                   type="email"
                   value={userGuest?.email || session?.user?.email || ''}
                   disabled={true}
-                  className="pl-10 bg-gray-50 text-gray-600"
+                  className="pl-10 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 dark:border-gray-600"
                   placeholder="Email address"
                 />
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground dark:text-gray-400 mt-1">
                 Email cannot be changed. Contact the host if this is incorrect.
               </p>
             </div>
 
             {/* Name - Editable */}
             <div>
-              <Label htmlFor="name" className="text-sm font-medium">
+              <Label htmlFor="name" className="text-sm font-medium dark:text-gray-200">
                 Full Name *
-                <span className="text-xs text-muted-foreground ml-2">
+                <span className="text-xs text-muted-foreground dark:text-gray-400 ml-2">
                   (Invited as: {userGuest?.name || 'Not specified'})
                 </span>
               </Label>
               <div className="relative mt-1">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground dark:text-gray-400" />
                 <Input
                   id="name"
                   type="text"
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
-                  className="pl-10"
+                  className="pl-10 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
                   placeholder="Enter your full name"
                   required
                 />
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground dark:text-gray-400 mt-1">
                 You can update your name if needed (e.g., preferred name,
                 marriage name change).
               </p>
@@ -451,24 +451,24 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
 
             {/* Phone - Editable */}
             <div>
-              <Label htmlFor="phone" className="text-sm font-medium">
+              <Label htmlFor="phone" className="text-sm font-medium dark:text-gray-200">
                 Phone Number
-                <span className="text-xs text-muted-foreground ml-2">
+                <span className="text-xs text-muted-foreground dark:text-gray-400 ml-2">
                   (Optional - for event updates)
                 </span>
               </Label>
               <div className="relative mt-1">
-                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground dark:text-gray-400" />
                 <Input
                   id="phone"
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => handleInputChange('phone', e.target.value)}
-                  className="pl-10"
+                  className="pl-10 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
                   placeholder="Enter your phone number"
                 />
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground dark:text-gray-400 mt-1">
                 Provide your phone number for event updates and reminders.
               </p>
             </div>
@@ -476,14 +476,14 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
 
           {/* Plus Ones Section */}
           {event?.allowPlusOnes && (
-            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
               <div className="flex items-center gap-2 mb-3">
-                <UserPlus className="h-4 w-4 text-blue-600" />
-                <Label className="text-sm font-medium text-blue-900">
+                <UserPlus className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <Label className="text-sm font-medium text-blue-900 dark:text-blue-300">
                   Plus Ones
                 </Label>
               </div>
-              <p className="text-xs text-blue-700 mb-3">
+              <p className="text-xs text-blue-700 dark:text-blue-300 mb-3">
                 You can bring up to {event.maxPlusOnes} additional guests
               </p>
               <div className="flex items-center gap-2">
@@ -507,7 +507,7 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
                   onChange={(e) =>
                     handleInputChange('plusOnes', parseInt(e.target.value) || 0)
                   }
-                  className="w-20 text-center"
+                  className="w-20 text-center dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
                   min="0"
                   max={event.maxPlusOnes}
                 />
@@ -525,7 +525,7 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
                 >
                   +
                 </Button>
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-muted-foreground dark:text-gray-400">
                   additional guests
                 </span>
               </div>
@@ -534,19 +534,19 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
 
           {/* Family Headcount Section */}
           {event?.allowFamilyHeadcount && (
-            <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+            <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
               <div className="flex items-center gap-2 mb-3">
-                <Users className="h-4 w-4 text-green-600" />
-                <Label className="text-sm font-medium text-green-900">
+                <Users className="h-4 w-4 text-green-600 dark:text-green-400" />
+                <Label className="text-sm font-medium text-green-900 dark:text-green-300">
                   Family Headcount
                 </Label>
               </div>
-              <p className="text-xs text-green-700 mb-3">
+              <p className="text-xs text-green-700 dark:text-green-300 mb-3">
                 Please specify the number of adults and children attending
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-sm font-medium text-green-800 mb-2 block">
+                  <Label className="text-sm font-medium text-green-800 dark:text-green-300 mb-2 block">
                     Adults
                   </Label>
                   <div className="flex items-center gap-2">
@@ -573,7 +573,7 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
                           parseInt(e.target.value) || 1,
                         )
                       }
-                      className="w-20 text-center"
+                      className="w-20 text-center dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
                       min="1"
                     />
                     <Button
@@ -589,7 +589,7 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
                   </div>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-green-800 mb-2 block">
+                  <Label className="text-sm font-medium text-green-800 dark:text-green-300 mb-2 block">
                     Children
                   </Label>
                   <div className="flex items-center gap-2">
@@ -616,7 +616,7 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
                           parseInt(e.target.value) || 0,
                         )
                       }
-                      className="w-20 text-center"
+                      className="w-20 text-center dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
                       min="0"
                     />
                     <Button
@@ -637,10 +637,10 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
 
           {/* Event Capacity Warning */}
           {event?.limitEventCapacity && event?.maxEventCapacity && (
-            <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg border border-yellow-200 dark:border-yellow-800">
               <div className="flex items-center gap-2">
-                <Shield className="h-4 w-4 text-yellow-600" />
-                <p className="text-sm text-yellow-800">
+                <Shield className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                <p className="text-sm text-yellow-800 dark:text-yellow-300">
                   This event has a capacity limit of {event.maxEventCapacity}{' '}
                   guests.
                 </p>
@@ -650,7 +650,7 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
 
           {/* Additional Notes */}
           <div>
-            <Label htmlFor="additionalNotes" className="text-sm font-medium">
+            <Label htmlFor="additionalNotes" className="text-sm font-medium dark:text-gray-200">
               Additional Notes
             </Label>
             <Textarea
@@ -659,7 +659,7 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
               onChange={(e) =>
                 handleInputChange('additionalNotes', e.target.value)
               }
-              className="mt-1"
+              className="mt-1 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
               placeholder="Any additional information, dietary requirements, or special requests..."
               rows={3}
             />
@@ -667,15 +667,15 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
 
           {/* Error Message */}
           {submitError && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-              <p className="text-sm text-red-600">{submitError}</p>
+            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+              <p className="text-sm text-red-600 dark:text-red-400">{submitError}</p>
             </div>
           )}
 
           {/* Success Message */}
           {submitSuccess && (
-            <div className="p-3 bg-green-50 border border-green-200 rounded-md">
-              <p className="text-sm text-green-600">
+            <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
+              <p className="text-sm text-green-600 dark:text-green-400">
                 ✅ RSVP submitted successfully! Thank you for your response.
               </p>
             </div>

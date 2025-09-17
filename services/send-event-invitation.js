@@ -58,7 +58,7 @@ export async function sendBulkEventInvitations({ guests, event, baseUrl }) {
   const results = [];
 
   for (const guest of guests) {
-    const invitationUrl = `${baseUrl}/events/${event.id}/invitation/${guest.id}`;
+    const invitationUrl = `${baseUrl}/invitation/${event.id}/${guest.id}`;
 
     const success = await sendEventInvitation({
       guest,
