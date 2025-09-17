@@ -309,7 +309,7 @@ function EditEventContent() {
         <Step1 mode="create" pixieEditorRef={pixieEditorRef} />
       )}
       {activeStep === 1 && (
-        <Step2 mode="create" thumbnailData={thumbnailData} />
+        <Step2 mode="create" thumbnailData={thumbnailData} session={session} />
       )}
       {activeStep === 2 && <Step3 mode="create" />}
 

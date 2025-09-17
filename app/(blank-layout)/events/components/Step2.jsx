@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
 
-function Step2({ thumbnailData }) {
+function Step2({ thumbnailData, session }) {
   const { selectedEvent: eventData } = useEvents();
   const { updateSelectedEvent: updateEventData } = useEventActions();
   const [datePickerOpen, setDatePickerOpen] = useState(false);
@@ -193,7 +193,7 @@ function Step2({ thumbnailData }) {
                         Host Details
                       </p>
                       <p className="text-base text-purple-600 font-semibold">
-                        ajay Devakar
+                        {session?.user?.name || session?.user?.email || 'Host'}
                       </p>
                     </div>
                   </div>
