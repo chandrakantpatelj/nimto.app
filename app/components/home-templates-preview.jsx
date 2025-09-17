@@ -194,86 +194,84 @@ export function HomeTemplatesPreview() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4">
         {templates.map((template) => (
-          <Card key={template.id} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-            <CardContent className="p-0">
-              {/* Template Preview Image */}
-              <div className="relative aspect-[4/3] overflow-hidden rounded-t-lg">
-                {template.templateThumbnailUrl || template.s3ImageUrl ? (
-                  <img
-                    src={template.templateThumbnailUrl || template.s3ImageUrl}
-                    alt={template.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/20 dark:to-purple-900/20 flex items-center justify-center">
-                    <div className="text-center">
-                      <Calendar className="h-12 w-12 text-blue-600 dark:text-blue-400 mx-auto mb-2" />
-                      <p className="text-sm text-gray-600 dark:text-gray-400">{template.name}</p>
-                    </div>
+          <div key={template.id} className="group relative rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300">
+            {/* Template Background Image */}
+            <div className="relative aspect-[3/4] overflow-hidden">
+              {template.templateThumbnailUrl || template.s3ImageUrl ? (
+                <img
+                  src={template.templateThumbnailUrl || template.s3ImageUrl}
+                  alt={template.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20">
+                </div>
+              )}
+
+              {/* Dark Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+
+              {/* Status Badge */}
+              <div className="absolute top-3 left-3">
+                <Badge className="bg-white/90 dark:bg-gray-800/90 text-gray-700 dark:text-gray-300 text-xs font-medium px-2 py-1 shadow-sm">
+                  TEMPLATE
+                </Badge>
+              </div>
+
+              {/* Content Overlay */}
+              <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                <h3 className="font-bold text-lg mb-2 line-clamp-2">
+                  {template.name}
+                </h3>
+                
+                {/* Template Meta Info */}
+                <div className="space-y-1 text-sm opacity-90">
+                  <div className="flex items-center">
+                    <Calendar className="h-3 w-3 mr-1.5" />
+                    <span>{template.category || 'Event Template'}</span>
                   </div>
-                )}
-                {/* Overlay with action buttons */}
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                  <div className="flex gap-2">
-                    
-                    <Button
-                      size="sm"
-                      onClick={() => handleTemplateSelect(template, 'home')}
-                      asChild
-                    >
-                      <Link href={`/events/design/${template.id}`}>
-                        Use Template
-                      </Link>
-                    </Button>
+                  
+                  <div className="flex items-center">
+                    <svg className="h-3 w-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+                    </svg>
+                    <span>Ready to use</span>
+                  </div>
+
+                  <div className="flex items-center">
+                    <svg className="h-3 w-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    <span>by {template.isSystemTemplate ? 'Nimto' : 'Community'}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Template Info */}
-              <div className="p-4">
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-semibold text-gray-900 dark:text-white text-lg line-clamp-1">
-                    {template.name}
-                  </h3>
-                  <div className="flex gap-1 ml-2">
-                    {template.isPremium && (
-                      <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 text-xs">
-                        Premium
-                      </Badge>
-                    )}
-                    {template.isSystemTemplate && (
-                      <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 text-xs">
-                        Featured
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
-                  {template.category || 'Event Template'}
-                </p>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                    {template.isPremium ? `$${template.price || 20}` : 'Free'}
-                  </span>
+              {/* Hover Action Buttons */}
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                <div className="flex flex-col gap-2">
                   <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleTemplateSelect(template, 'create-event')}
+                    onClick={() => handleTemplateSelect(template, 'home')}
                     asChild
-                    className="text-xs"
+                    className="bg-white text-gray-900 hover:bg-gray-100 font-medium"
                   >
                     <Link href={`/events/design/${template.id}`}>
-                      Create Event
+                      Use Template
                     </Link>
                   </Button>
+                  {template.isPremium && (
+                    <div className="text-center">
+                      <Badge className="bg-yellow-500 text-white text-xs px-2 py-1">
+                        ${template.price || 20}
+                      </Badge>
+                    </div>
+                  )}
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ))}
       </div>
 
