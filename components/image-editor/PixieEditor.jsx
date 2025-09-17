@@ -85,51 +85,83 @@ const PixieEditor = forwardRef(
         try {
           // Try different ways to access the canvas
           let canvas = null;
+          let dataUrl = null;
 
-          // Method 1: Try to get canvas from fabric instance (most likely to work)
-          if (pixieRef.current?.fabric) {
+          // Method 1: Use Pixie's built-in export tool if available
+          if (pixieRef.current?.tools?.export?.getDataUrl) {
+            try {
+              dataUrl = pixieRef.current.tools.export.getDataUrl('png', 1.0);
+            } catch (exportError) {
+              console.warn('Pixie export tool failed:', exportError);
+            }
+          }
+
+          // Method 2: Try to get canvas from fabric instance (most likely to work)
+          if (!dataUrl && pixieRef.current?.fabric) {
             canvas = pixieRef.current.fabric;
           }
 
-          // Method 2: Try to get canvas from tools (but validate it has toDataURL)
-          if (!canvas && pixieRef.current?.tools?.canvas) {
+          // Method 3: Try to get canvas from tools (but validate it has toDataURL)
+          if (!dataUrl && !canvas && pixieRef.current?.tools?.canvas) {
             const toolsCanvas = pixieRef.current.tools.canvas;
             if (typeof toolsCanvas.toDataURL === 'function') {
               canvas = toolsCanvas;
             }
           }
 
-          // Method 3: Try to get canvas from the main instance
-          if (!canvas && pixieRef.current?.canvas) {
+          // Method 4: Try to get canvas from the main instance
+          if (!dataUrl && !canvas && pixieRef.current?.canvas) {
             const mainCanvas = pixieRef.current.canvas;
             if (typeof mainCanvas.toDataURL === 'function') {
               canvas = mainCanvas;
             }
           }
 
-          // Method 4: Try to get the HTML canvas element
-          if (!canvas && pixieRef.current?.getCanvas) {
+          // Method 5: Try to get the HTML canvas element
+          if (!dataUrl && !canvas && pixieRef.current?.getCanvas) {
             const htmlCanvas = pixieRef.current.getCanvas();
             if (typeof htmlCanvas.toDataURL === 'function') {
               canvas = htmlCanvas;
             }
           }
 
-          if (!canvas) {
-            return null;
+          // If we don't have a dataUrl from export tool, try canvas toDataURL
+          if (!dataUrl) {
+            if (!canvas) {
+              return null;
+            }
+
+            // Check if canvas has toDataURL method
+            if (typeof canvas.toDataURL !== 'function') {
+              return null;
+            }
+
+            // Try different parameter formats for toDataURL
+            try {
+              // First try with object parameters (Fabric.js style)
+              dataUrl = canvas.toDataURL({
+                format: 'png',
+                quality: 1.0,
+                multiplier: 2,
+              });
+            } catch (err1) {
+              try {
+                // Try with string parameters (HTML Canvas style)
+                dataUrl = canvas.toDataURL('image/png', 1.0);
+              } catch (err2) {
+                try {
+                  // Try basic call with no parameters
+                  dataUrl = canvas.toDataURL();
+                } catch (err3) {
+                  return null;
+                }
+              }
+            }
           }
 
-          // Check if canvas has toDataURL method
-          if (typeof canvas.toDataURL !== 'function') {
+          if (!dataUrl) {
             return null;
           }
-
-          // Export as data URL with high quality
-          const dataUrl = canvas.toDataURL({
-            format: 'png',
-            quality: 1.0,
-            multiplier: 2,
-          });
 
           // Convert Data URL → Blob
           const response = await fetch(dataUrl);
@@ -229,51 +261,99 @@ const PixieEditor = forwardRef(
             try {
               // Try different ways to access the canvas
               let canvas = null;
+              let dataUrl = null;
 
-              // Method 1: Try to get canvas from fabric instance (most likely to work)
-              if (pixieRef.current?.fabric) {
-                canvas = pixieRef.current.fabric;
+              // Method 1: Use Pixie's built-in export tool if available
+              if (pixieRef.current?.tools?.export?.getDataUrl) {
+                console.log('Using Pixie export tool');
+                try {
+                  dataUrl = pixieRef.current.tools.export.getDataUrl('png', 1.0);
+                  if (dataUrl) {
+                    console.log('Successfully exported using Pixie export tool');
+                  }
+                } catch (exportError) {
+                  console.warn('Pixie export tool failed:', exportError);
+                }
               }
 
-              // Method 2: Try to get canvas from tools (but validate it has toDataURL)
-              if (!canvas && pixieRef.current?.tools?.canvas) {
+              // Method 2: Try to get canvas from fabric instance (most likely to work)
+              if (!dataUrl && pixieRef.current?.fabric) {
+                canvas = pixieRef.current.fabric;
+                console.log('Trying fabric canvas');
+              }
+
+              // Method 3: Try to get canvas from tools (but validate it has toDataURL)
+              if (!dataUrl && !canvas && pixieRef.current?.tools?.canvas) {
                 const toolsCanvas = pixieRef.current.tools.canvas;
                 if (typeof toolsCanvas.toDataURL === 'function') {
                   canvas = toolsCanvas;
+                  console.log('Using tools canvas');
                 }
               }
 
-              // Method 3: Try to get canvas from the main instance
-              if (!canvas && pixieRef.current?.canvas) {
+              // Method 4: Try to get canvas from the main instance
+              if (!dataUrl && !canvas && pixieRef.current?.canvas) {
                 const mainCanvas = pixieRef.current.canvas;
                 if (typeof mainCanvas.toDataURL === 'function') {
                   canvas = mainCanvas;
+                  console.log('Using main canvas');
                 }
               }
 
-              // Method 4: Try to get the HTML canvas element
-              if (!canvas && pixieRef.current?.getCanvas) {
+              // Method 5: Try to get the HTML canvas element
+              if (!dataUrl && !canvas && pixieRef.current?.getCanvas) {
                 const htmlCanvas = pixieRef.current.getCanvas();
                 if (typeof htmlCanvas.toDataURL === 'function') {
                   canvas = htmlCanvas;
+                  console.log('Using HTML canvas');
                 }
               }
 
-              if (!canvas) {
+              // If we don't have a dataUrl from export tool, try canvas toDataURL
+              if (!dataUrl) {
+                if (!canvas) {
+                  console.error('No canvas found for export');
+                  return null;
+                }
+
+                // Check if canvas has toDataURL method
+                if (typeof canvas.toDataURL !== 'function') {
+                  console.error('Canvas does not have toDataURL method');
+                  return null;
+                }
+
+                // Try different parameter formats for toDataURL
+                try {
+                  // First try with object parameters (Fabric.js style)
+                  dataUrl = canvas.toDataURL({
+                    format: 'png',
+                    quality: 1.0,
+                    multiplier: 2,
+                  });
+                } catch (err1) {
+                  console.warn('Object parameters failed, trying string parameters:', err1);
+                  try {
+                    // Try with string parameters (HTML Canvas style)
+                    dataUrl = canvas.toDataURL('image/png', 1.0);
+                  } catch (err2) {
+                    console.warn('String parameters failed, trying basic call:', err2);
+                    try {
+                      // Try basic call with no parameters
+                      dataUrl = canvas.toDataURL();
+                    } catch (err3) {
+                      console.error('All toDataURL attempts failed:', err3);
+                      return null;
+                    }
+                  }
+                }
+              }
+
+              if (!dataUrl) {
+                console.error('Failed to get data URL from canvas');
                 return null;
               }
 
-              // Check if canvas has toDataURL method
-              if (typeof canvas.toDataURL !== 'function') {
-                return null;
-              }
-
-              // Export as data URL with high quality
-              const dataUrl = canvas.toDataURL({
-                format: 'png',
-                quality: 1.0,
-                multiplier: 2,
-              });
+              console.log('Successfully got data URL, length:', dataUrl.length);
 
               // Convert Data URL → Blob
               const response = await fetch(dataUrl);
@@ -290,9 +370,11 @@ const PixieEditor = forwardRef(
                 type: blob.type,
               };
             } catch (err) {
+              console.error('Export function error:', err);
               return null;
             }
           })();
+          
           console.log('exportResult', exportResult);
           if (!exportResult || !exportResult.blob) {
             console.error('Failed to export image from Pixie:', {
@@ -355,9 +437,11 @@ const PixieEditor = forwardRef(
         const Pixie = window.Pixie;
         if (!Pixie?.init) throw new Error('Pixie init missing');
 
-        const instance = await Pixie.init({
+        console.log('PixieEditor: Initializing with image URL:', initialImageUrl);
+        
+        // Prepare init config
+        const initConfig = {
           selector: `#${containerId}`,
-          image: initialImageUrl,
           ...config,
           baseUrl: '/pixie-assets',
           allowExternalImages: true,
@@ -374,14 +458,24 @@ const PixieEditor = forwardRef(
 
             ...config?.tools,
           },
-          ui: {
-            nav: {
-              replaceDefault: true,
-              items: NAV_ITEMS,
-            },
-            openImageDialog: { show: false },
+        };
+        
+        // Only add image parameter if we have a valid image URL
+        if (initialImageUrl && initialImageUrl.trim()) {
+          initConfig.image = initialImageUrl;
+        }
+        
+        // Add UI configuration
+        initConfig.ui = {
+          nav: {
+            replaceDefault: true,
+            items: NAV_ITEMS,
           },
-          onLoad: async (editor) => {
+          openImageDialog: { show: false },
+        };
+        
+        // Add onLoad handler
+        initConfig.onLoad = async (editor) => {
             // Wait a moment for the editor to be fully ready
             setTimeout(async () => {
               if (initialContent) {
@@ -389,9 +483,10 @@ const PixieEditor = forwardRef(
                   console.log('PixieEditor onLoad: Loading initial content:', {
                     hasContent: !!initialContent,
                     contentType: typeof initialContent,
+                    contentLength: typeof initialContent === 'string' ? initialContent.length : JSON.stringify(initialContent).length,
                     contentPreview: typeof initialContent === 'string' 
-                      ? initialContent.substring(0, 100) 
-                      : JSON.stringify(initialContent).substring(0, 100)
+                      ? initialContent.substring(0, 200) 
+                      : JSON.stringify(initialContent).substring(0, 200)
                   });
 
                   const initialContentJson =
@@ -399,9 +494,20 @@ const PixieEditor = forwardRef(
                       ? JSON.parse(initialContent)
                       : initialContent;
 
+                  console.log('PixieEditor: Parsed content structure:', {
+                    hasCanvas: !!initialContentJson?.canvas,
+                    totalObjects: initialContentJson?.canvas?.objects?.length || 0,
+                    objectTypes: initialContentJson?.canvas?.objects?.map(obj => ({
+                      type: obj.type,
+                      text: obj.type === 'text' ? obj.text : undefined,
+                      name: obj.name || 'unnamed'
+                    })) || []
+                  });
+
                   if (initialContentJson?.canvas?.objects?.length > 0) {
                     // Get current state to preserve the loaded image
                     const currentState = JSON.parse(editor.getState());
+                    console.log('PixieEditor: Current editor state objects:', currentState.canvas?.objects?.length || 0);
 
                     // Find the image object in current state (the one we just loaded)
                     const currentImageObj = currentState.canvas?.objects?.find(
@@ -414,6 +520,8 @@ const PixieEditor = forwardRef(
                         (o) => o.type !== 'image',
                       ) || [];
 
+                    console.log('PixieEditor: Merging content - currentImage:', !!currentImageObj, 'savedObjects:', savedObjects.length);
+
                     // Create merged state: current image + saved objects
                     const mergedState = {
                       ...initialContentJson,
@@ -425,7 +533,11 @@ const PixieEditor = forwardRef(
                       },
                     };
 
+                    console.log('PixieEditor: Setting merged state with', mergedState.canvas.objects.length, 'objects');
                     await editor.setState(mergedState);
+                    console.log('PixieEditor: Successfully applied template content');
+                  } else {
+                    console.warn('PixieEditor: No template objects found to load');
                   }
                 } catch (err) {
                   console.warn('Failed to load initial content in onLoad:', err);
@@ -434,9 +546,9 @@ const PixieEditor = forwardRef(
             }, 100); // Small delay to ensure editor is ready
             
             setIsLoading(false);
-          },
-        });
+          };
 
+        const instance = await Pixie.init(initConfig);
         pixieRef.current = instance;
       } catch (err) {
         setError('Failed to initialize image editor');

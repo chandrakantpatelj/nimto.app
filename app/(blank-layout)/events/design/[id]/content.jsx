@@ -53,11 +53,32 @@ function EditEventContent() {
       if (eventData && eventData.templateId === templateId) return;
 
       try {
-        const template = fetchTemplateById
-          ? await fetchTemplateById(templateId).unwrap()
-          : await dispatch(fetchTemplateByIdThunk(templateId)).unwrap();
+        // First, check if we have template data from localStorage (home page flow)
+        const storedTemplate = localStorage.getItem('selectedTemplate');
+        let templateData = null;
 
-        const templateData = template.data || template;
+        if (storedTemplate) {
+          try {
+            const parsedTemplate = JSON.parse(storedTemplate);
+            if (parsedTemplate.id === templateId) {
+              console.log('Using stored template data from localStorage:', parsedTemplate);
+              templateData = parsedTemplate;
+              // Clear the stored template after using it
+              localStorage.removeItem('selectedTemplate');
+            }
+          } catch (parseError) {
+            console.warn('Failed to parse stored template:', parseError);
+          }
+        }
+
+        // If no stored template, fetch from API
+        if (!templateData) {
+          const template = fetchTemplateById
+            ? await fetchTemplateById(templateId).unwrap()
+            : await dispatch(fetchTemplateByIdThunk(templateId)).unwrap();
+
+          templateData = template.data || template;
+        }
 
         // Debug: Log template data to see what we're getting
         console.log('Template data loaded:', {
@@ -67,8 +88,44 @@ function EditEventContent() {
           hasContent: !!templateData.content,
           jsonContentType: typeof templateData.jsonContent,
           contentType: typeof templateData.content,
-          jsonContentPreview: templateData.jsonContent ? templateData.jsonContent.substring(0, 100) : null,
-          contentPreview: templateData.content ? JSON.stringify(templateData.content).substring(0, 100) : null,
+          imagePath: templateData.imagePath,
+          s3ImageUrl: templateData.s3ImageUrl,
+          jsonContentPreview: templateData.jsonContent ? templateData.jsonContent.substring(0, 200) : null,
+          contentPreview: templateData.content ? JSON.stringify(templateData.content).substring(0, 200) : null,
+        });
+
+        // Parse and analyze the content structure
+        let finalContent = templateData.content || templateData.jsonContent;
+        if (typeof finalContent === 'string') {
+          try {
+            const parsed = JSON.parse(finalContent);
+            console.log('Parsed template content structure:', {
+              hasCanvas: !!parsed.canvas,
+              canvasObjects: parsed.canvas?.objects?.length || 0,
+              objectTypes: parsed.canvas?.objects?.map(obj => obj.type) || [],
+              canvasPreview: parsed.canvas ? JSON.stringify(parsed.canvas).substring(0, 300) : null
+            });
+          } catch (e) {
+            console.warn('Failed to parse template content:', e);
+          }
+        }
+
+        // Ensure we have the content in the right format for PixieEditor
+        let processedContent = null;
+        if (templateData.content) {
+          // If content is already parsed (from individual template API)
+          processedContent = typeof templateData.content === 'string' 
+            ? templateData.content 
+            : JSON.stringify(templateData.content);
+        } else if (templateData.jsonContent) {
+          // If we only have jsonContent (should be a string)
+          processedContent = templateData.jsonContent;
+        }
+
+        console.log('Setting event with processed content:', {
+          hasProcessedContent: !!processedContent,
+          contentType: typeof processedContent,
+          contentLength: processedContent?.length || 0
         });
 
         setSelectedEvent({
@@ -80,7 +137,7 @@ function EditEventContent() {
           location: '',
           status: 'DRAFT',
           guests: [],
-          jsonContent: templateData.content || templateData.jsonContent,
+          jsonContent: processedContent,
           backgroundStyle: templateData.backgroundStyle,
           htmlContent: templateData.htmlContent,
           background: templateData.background,
@@ -281,10 +338,10 @@ function EditEventContent() {
   // Loading state
   if (!eventData || isTemplateLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             {isTemplateLoading ? 'Loading template...' : 'Loading...'}
           </p>
         </div>

@@ -137,7 +137,17 @@ export function HomeTemplatesPreview() {
   }, []);
 
   const handleTemplateSelect = (template, source = 'home') => {
+    console.log('Home page: Storing template for event creation:', {
+      id: template.id,
+      name: template.name,
+      s3ImageUrl: template.s3ImageUrl,
+      imagePath: template.imagePath,
+      templateThumbnailUrl: template.templateThumbnailUrl,
+      source
+    });
+    
     // Store template data in localStorage for the event creation flow
+    // The template already has the correct s3ImageUrl from the API
     localStorage.setItem('selectedTemplate', JSON.stringify(template));
     // Store navigation source for smart redirect
     localStorage.setItem('navigationSource', source);

@@ -96,18 +96,18 @@ export function TemplateHeader({
             {!isTemplateEditor && (
               <>
                 <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-gradient-to-br from-pink-500 to-purple-600 rounded-lg flex items-center justify-center">
-                    <span className="text-white text-sm font-bold">
+                  <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-purple-600 dark:from-pink-400 dark:to-purple-500 rounded-xl flex items-center justify-center shadow-md border border-white/20">
+                    <span className="text-white text-base font-bold drop-shadow-sm">
                       {activeStep + 1}
                     </span>
                   </div>
                   <div>
-                    <h1 className="text-lg font-semibold text-gray-900">
+                    <h1 className="text-lg font-bold text-foreground dark:text-white">
                       {activeStep === 0 && 'Design Your Event'}
                       {activeStep === 1 && 'Event Details'}
                       {activeStep === 2 && 'Manage Guests'}
                     </h1>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-muted-foreground dark:text-gray-300">
                       {activeStep === 0 &&
                         'Customize your event invitation design'}
                       {activeStep === 1 && 'Preview your event invitation'}
@@ -158,7 +158,7 @@ export function TemplateHeader({
               <div className="flex space-x-2">
                 <button
                   onClick={() => setShowExitPopup(true)}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                  className="px-4 py-2 text-sm font-medium text-foreground bg-background border border-border rounded-md hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
                 >
                   Cancel
                 </button>
@@ -169,7 +169,7 @@ export function TemplateHeader({
                     onClick={() => {
                       handleBack();
                     }}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                    className="px-4 py-2 text-sm font-medium text-foreground bg-background border border-border rounded-md hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
                   >
                     Previous
                   </button>
