@@ -8,6 +8,7 @@ import { apiFetch } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import RSVPForm from '@/components/rsvp/rsvp-form';
+import { getCategoryTheme, getHeaderGradientClasses, getFallbackGradientClasses } from '@/lib/category-themes';
 
 export default function PublicEventInvitationPage() {
   const [event, setEvent] = useState(null);
@@ -138,6 +139,10 @@ export default function PublicEventInvitationPage() {
 
   const userGuest = event.guests?.[0] || guest; // Use the guest from event or fallback to direct guest
 
+  // Get category from template or default
+  const category = event?.Template?.category || 'default';
+  const categoryTheme = getCategoryTheme(category);
+
   const handleRSVPUpdate = (updatedGuest) => {
     // Update the event state with the new guest information
     setEvent((prevEvent) => ({
@@ -158,8 +163,8 @@ export default function PublicEventInvitationPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 dark:from-gray-900 dark:to-slate-900/50">
       {/* Enhanced Header with Better Layout */}
-      <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-xl relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/20 via-purple-600/20 to-pink-600/20"></div>
+      <div className={`${getHeaderGradientClasses(category)} text-white shadow-xl relative overflow-hidden`}>
+        <div className="absolute inset-0 bg-black/10"></div>
         <div className="relative z-10 px-4 sm:px-6 py-6">
           <div className="max-w-7xl mx-auto">
             {/* Mobile-first layout */}
@@ -181,10 +186,10 @@ export default function PublicEventInvitationPage() {
               {/* Title - Center on larger screens, left-aligned on mobile */}
               <div className="text-center sm:flex-1">
                 <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
-                  You're Invited! 🎉
+                  You're Invited! {categoryTheme.icon}
                 </h1>
                 <p className="text-blue-100 text-sm sm:text-base font-medium mt-1">
-                  ✨ Special Event Invitation
+                  ✨ {categoryTheme.name} Event Invitation
                 </p>
               </div>
 
@@ -243,8 +248,11 @@ export default function PublicEventInvitationPage() {
                 </div>
               ) : (
                 /* Fallback when no image */
-                <div className="relative w-full h-[200px] sm:h-[250px] bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500 dark:from-blue-600 dark:via-purple-700 dark:to-pink-600 flex items-center justify-center">
+                <div className={`relative w-full h-[200px] sm:h-[250px] ${getFallbackGradientClasses(category)} flex items-center justify-center`}>
                   <div className="text-center text-white p-6">
+                    <div className="mb-3 text-4xl sm:text-5xl">
+                      {categoryTheme.icon}
+                    </div>
                     <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2 drop-shadow-lg">
                       {event.title}
                     </h2>

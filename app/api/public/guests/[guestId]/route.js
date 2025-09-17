@@ -28,6 +28,7 @@ export async function GET(request, { params }) {
             description: true,
             status: true,
             isTrashed: true,
+            templateId: true,
             allowFamilyHeadcount: true,
             allowMaybeRSVP: true,
             allowPlusOnes: true,
@@ -40,6 +41,15 @@ export async function GET(request, { params }) {
                 id: true,
                 name: true,
                 email: true,
+              },
+            },
+          },
+          include: {
+            Template: {
+              select: {
+                id: true,
+                name: true,
+                category: true,
               },
             },
           },

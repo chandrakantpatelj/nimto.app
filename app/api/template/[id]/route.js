@@ -29,7 +29,9 @@ export async function GET(request, { params }) {
     let s3ImageUrl = null;
     if (template.imagePath) {
       console.log('Template imagePath:', template.imagePath);
-      s3ImageUrl = generateDirectS3Url(template.imagePath);
+      const directS3Url = generateDirectS3Url(template.imagePath);
+      // Use image proxy to avoid CORS and permission issues
+      s3ImageUrl = `/api/image-proxy?url=${directS3Url}`;
       console.log('Generated s3ImageUrl:', s3ImageUrl);
     }
 
