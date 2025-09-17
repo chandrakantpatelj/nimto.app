@@ -6,22 +6,28 @@ import { Image as ImageIcon } from 'lucide-react';
 export default function TemplateImageDisplay({
   template,
   className = 'w-full h-32 object-cover',
+  useThumbnail = false, // New prop to control whether to use thumbnail or full image
 }) {
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // Use image proxy for validation
   const imageUrl = useMemo(() => {
-    if (template?.s3ImageUrl) {
-      // If s3ImageUrl is already a proxy URL, use it directly
-      if (template.s3ImageUrl.startsWith('/api/image-proxy')) {
-        return template.s3ImageUrl;
+    // Choose between thumbnail and full image based on useThumbnail prop
+    const sourceUrl = useThumbnail && template?.templateThumbnailUrl 
+      ? template.templateThumbnailUrl 
+      : template?.s3ImageUrl;
+      
+    if (sourceUrl) {
+      // If URL is already a proxy URL, use it directly
+      if (sourceUrl.startsWith('/api/image-proxy')) {
+        return sourceUrl;
       }
       // If it's a direct S3 URL, wrap it with image proxy
-      return `/api/image-proxy?url=${template.s3ImageUrl}`;
+      return `/api/image-proxy?url=${sourceUrl}`;
     }
     return null;
-  }, [template?.s3ImageUrl]);
+  }, [template?.s3ImageUrl, template?.templateThumbnailUrl, useThumbnail]);
 
   // Reset states when template changes
   useEffect(() => {
@@ -29,8 +35,12 @@ export default function TemplateImageDisplay({
     setLoading(true);
   }, [template?.id]);
 
-  // Show "No Image" when there's no s3ImageUrl
-  if (!template?.s3ImageUrl) {
+  // Show "No Image" when there's no image URL available
+  const hasImage = useThumbnail 
+    ? template?.templateThumbnailUrl || template?.s3ImageUrl
+    : template?.s3ImageUrl;
+    
+  if (!hasImage) {
     return (
       <div
         className={`${className} bg-gray-100 flex items-center justify-center rounded-t-xl`}

@@ -190,9 +190,9 @@ export function HomeTemplatesPreview() {
             <CardContent className="p-0">
               {/* Template Preview Image */}
               <div className="relative aspect-[4/3] overflow-hidden rounded-t-lg">
-                {template.previewImageUrl || template.s3ImageUrl ? (
+                {template.templateThumbnailUrl || template.s3ImageUrl ? (
                   <img
-                    src={template.previewImageUrl || template.s3ImageUrl}
+                    src={template.templateThumbnailUrl || template.s3ImageUrl}
                     alt={template.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
