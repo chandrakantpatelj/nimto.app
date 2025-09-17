@@ -48,7 +48,7 @@ function EditEventContent() {
   useEffect(() => {
     const loadTemplate = async () => {
       if (isRedirecting || !templateId) return;
-      
+
       // Only skip loading if we already have data for this specific template
       if (eventData && eventData.templateId === templateId) return;
 
@@ -67,8 +67,12 @@ function EditEventContent() {
           hasContent: !!templateData.content,
           jsonContentType: typeof templateData.jsonContent,
           contentType: typeof templateData.content,
-          jsonContentPreview: templateData.jsonContent ? templateData.jsonContent.substring(0, 100) : null,
-          contentPreview: templateData.content ? JSON.stringify(templateData.content).substring(0, 100) : null,
+          jsonContentPreview: templateData.jsonContent
+            ? templateData.jsonContent.substring(0, 100)
+            : null,
+          contentPreview: templateData.content
+            ? JSON.stringify(templateData.content).substring(0, 100)
+            : null,
         });
 
         setSelectedEvent({
@@ -81,10 +85,6 @@ function EditEventContent() {
           status: 'DRAFT',
           guests: [],
           jsonContent: templateData.content || templateData.jsonContent,
-          backgroundStyle: templateData.backgroundStyle,
-          htmlContent: templateData.htmlContent,
-          background: templateData.background,
-          pageBackground: templateData.pageBackground,
           imagePath: templateData.imagePath,
           s3ImageUrl: templateData.s3ImageUrl,
           newImageBase64: null,

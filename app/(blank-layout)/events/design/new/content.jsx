@@ -2,11 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  useEventActions,
-  useEvents,
-  useTemplateLoading,
-} from '@/store/hooks';
+import { useEventActions, useEvents, useTemplateLoading } from '@/store/hooks';
 import { useSession } from 'next-auth/react';
 import { showCustomToast } from '@/components/common/custom-toast';
 import { TemplateHeader } from '../../components';
@@ -44,7 +40,7 @@ function NewEventFromTemplateContent() {
           // Store current path for redirect after sign in
           const currentPath = '/events/design/new';
           const returnUrl = encodeURIComponent(currentPath);
-          
+
           // Redirect to sign in with return URL
           router.push(`/signin?callbackUrl=${returnUrl}`);
           return;
@@ -52,7 +48,7 @@ function NewEventFromTemplateContent() {
 
         // Get template from localStorage (set by home page template selection)
         const storedTemplate = localStorage.getItem('selectedTemplate');
-        
+
         if (!storedTemplate) {
           // No template selected, redirect to template selection
           showCustomToast('Please select a template first', 'error');
@@ -74,10 +70,6 @@ function NewEventFromTemplateContent() {
           status: 'DRAFT',
           guests: [],
           jsonContent: templateData.jsonContent,
-          backgroundStyle: null,
-          htmlContent: null,
-          background: null,
-          pageBackground: templateData.pageBackground,
           imagePath: templateData.imagePath,
           s3ImageUrl: templateData.s3ImageUrl,
           newImageBase64: null,
@@ -92,12 +84,7 @@ function NewEventFromTemplateContent() {
     };
 
     loadTemplate();
-  }, [
-    eventData,
-    setSelectedEvent,
-    session,
-    router,
-  ]);
+  }, [eventData, setSelectedEvent, session, router]);
 
   const handleNext = async () => {
     // Check authentication before proceeding to next step
@@ -105,7 +92,7 @@ function NewEventFromTemplateContent() {
       // Store current path for redirect after sign in
       const currentPath = '/events/design/new';
       const returnUrl = encodeURIComponent(currentPath);
-      
+
       // Redirect to sign in with return URL
       router.push(`/signin?callbackUrl=${returnUrl}`);
       return;
@@ -157,7 +144,7 @@ function NewEventFromTemplateContent() {
       // Store current path for redirect after sign in
       const currentPath = '/events/design/new';
       const returnUrl = encodeURIComponent(currentPath);
-      
+
       // Redirect to sign in with return URL
       router.push(`/signin?callbackUrl=${returnUrl}`);
       return;
@@ -185,10 +172,10 @@ function NewEventFromTemplateContent() {
       await addEventToStore(eventDataToSave);
       setShowInvitationPopup(false);
       showCustomToast('Event created successfully!', 'success');
-      
+
       // Reset event creation state
       resetEventCreation();
-      
+
       // Redirect to events page
       router.push('/events');
     } catch (error) {
@@ -237,16 +224,10 @@ function NewEventFromTemplateContent() {
           />
         )}
         {activeStep === 1 && (
-          <Step2
-            eventData={eventData}
-            onUpdateEvent={updateSelectedEvent}
-          />
+          <Step2 eventData={eventData} onUpdateEvent={updateSelectedEvent} />
         )}
         {activeStep === 2 && (
-          <Step3
-            eventData={eventData}
-            onUpdateEvent={updateSelectedEvent}
-          />
+          <Step3 eventData={eventData} onUpdateEvent={updateSelectedEvent} />
         )}
       </div>
 

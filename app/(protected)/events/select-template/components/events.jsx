@@ -25,10 +25,6 @@ const SelectEvents = () => {
       // Template fields (for design)
       templateId: template.id,
       jsonContent: template.jsonContent || '',
-      backgroundStyle: template.backgroundStyle || '',
-      htmlContent: template.htmlContent || '',
-      background: template.background || '',
-      pageBackground: template.pageBackground || '',
       imagePath: template.imagePath || '',
       s3ImageUrl: template.s3ImageUrl || '',
       title: '',

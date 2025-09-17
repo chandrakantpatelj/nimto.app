@@ -38,7 +38,11 @@ export async function GET(request) {
     };
 
     // Super Admin and Application Admin can see all events, others see only their own
-    if (!admin || (session.user.roleName !== 'super-admin' && session.user.roleName !== 'application-admin')) {
+    if (
+      !admin ||
+      (session.user.roleName !== 'super-admin' &&
+        session.user.roleName !== 'application-admin')
+    ) {
       where.createdByUserId = session.user.id;
     }
 
@@ -147,10 +151,6 @@ export async function POST(request) {
       location,
       templateId,
       jsonContent,
-      backgroundStyle,
-      htmlContent,
-      background,
-      pageBackground,
       imagePath,
       status,
     } = body;
@@ -164,10 +164,6 @@ export async function POST(request) {
         location,
         templateId,
         jsonContent,
-        backgroundStyle,
-        htmlContent,
-        background,
-        pageBackground,
         imagePath,
         status: status || 'DRAFT',
         createdByUserId: session.user.id, // Automatically set from session

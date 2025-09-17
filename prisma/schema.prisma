@@ -221,10 +221,6 @@ model Event {
   location             String?
   templateId           String?
   jsonContent          String?
-  backgroundStyle      String?
-  htmlContent          String?
-  background           String?
-  pageBackground       String?
   imagePath            String?
   eventThumbnailPath   String? // S3 key for exported event thumbnail
   status               EventStatus @default(DRAFT)

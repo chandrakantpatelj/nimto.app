@@ -3,11 +3,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiFetch } from '@/lib/api';
+import { useToast } from '@/providers/toast-provider';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/providers/toast-provider';
 import { TemplateHeader } from '../components';
 
 function Design() {
@@ -21,11 +21,7 @@ function Design() {
     category: '',
     isPremium: false,
     price: 0,
-    background: '',
-    pageBackground: '',
     content: [], // This will be populated from the canvas
-    backgroundStyle: '{}', // This will be populated from the canvas as JSON string
-    htmlContent: '', // This will be populated from the canvas
   });
 
   // Handle form field changes
@@ -73,11 +69,7 @@ function Design() {
         category: formData.category.trim(),
         isPremium: formData.isPremium,
         price: formData.isPremium ? parseFloat(formData.price) || 0 : 0,
-        background: formData.background || null,
-        pageBackground: formData.pageBackground || null,
         content: formData.content,
-        backgroundStyle: formData.backgroundStyle,
-        htmlContent: formData.htmlContent || null,
         // These will be populated when canvas is implemented
         previewImageUrl: null,
         imagePath: null,
@@ -214,36 +206,9 @@ function Design() {
               Canvas Settings
             </h3>
             <div className="py-3">
-              <p className="text-primary fw-500">Canvas Background</p>
-              <div className="w-full mb-5">
-                <Label className="text-muted-foreground">
-                  Color, Gradient, or URL
-                </Label>
-                <Input
-                  type="text"
-                  value={formData.background}
-                  onChange={(e) =>
-                    handleInputChange('background', e.target.value)
-                  }
-                  placeholder="e.g., #ffffff, linear-gradient(...), or image URL"
-                />
-              </div>
-              <hr className="my-3" />
-              <p className="text-primary fw-500">Page Background</p>
-
-              <div className="w-full mb-5">
-                <Label className="text-muted-foreground">
-                  Color, Gradient, or URL
-                </Label>
-                <Input
-                  type="text"
-                  value={formData.pageBackground}
-                  onChange={(e) =>
-                    handleInputChange('pageBackground', e.target.value)
-                  }
-                  placeholder="e.g., #ffffff, linear-gradient(...), or image URL"
-                />
-              </div>
+              <p className="text-muted-foreground text-sm">
+                Canvas settings will be configured through the design editor.
+              </p>
             </div>
           </div>
         </aside>
