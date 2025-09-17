@@ -103,16 +103,23 @@ export async function GET(request) {
         ],
       }));
 
-    // Generate S3 URLs for events with imagePath
+    // Generate S3 URLs for events with imagePath and thumbnailPath
     const eventsWithUrls = events.map((event) => {
+      const eventWithUrls = { ...event };
+
+      // Generate S3 URL for main image
       if (event.imagePath) {
-        const s3ImageUrl = generateDirectS3Url(event.imagePath);
-        return {
-          ...event,
-          s3ImageUrl: s3ImageUrl,
-        };
+        eventWithUrls.s3ImageUrl = generateDirectS3Url(event.imagePath);
       }
-      return event;
+
+      // Generate S3 URL for thumbnail
+      if (event.eventThumbnailPath) {
+        eventWithUrls.eventThumbnailUrl = generateDirectS3Url(
+          event.eventThumbnailPath,
+        );
+      }
+
+      return eventWithUrls;
     });
 
     return NextResponse.json({
