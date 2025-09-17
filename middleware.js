@@ -18,18 +18,24 @@ export default withAuth(
     // Allow public access to root route (homepage)
     if (pathname === '/') return NextResponse.next();
     if (pathname === '/unauthorized') return NextResponse.next();
-    
+
     // Allow public access to specific events routes, protect main events listing
     if (pathname.startsWith('/events/design')) return NextResponse.next();
-    if (pathname.match(/^\/events\/[a-zA-Z0-9_-]+$/)) return NextResponse.next(); // Allow /events/[eventId]
-    
+    if (pathname.match(/^\/events\/[a-zA-Z0-9_-]+$/))
+      return NextResponse.next(); // Allow /events/[eventId]
+
     // Redirect non-logged-in users from /events to home page
     if (pathname === '/events' && !token) {
       return redirect('/', req);
     }
-    
+
     // Redirect authenticated users away from auth pages
-    if (token && (pathname.startsWith('/signin') || pathname.startsWith('/signup') || pathname.startsWith('/reset-password'))) {
+    if (
+      token &&
+      (pathname.startsWith('/signin') ||
+        pathname.startsWith('/signup') ||
+        pathname.startsWith('/reset-password'))
+    ) {
       // Redirect based on user role
       const userRole = getRoleSlug(token.roleName);
       if (userRole === 'attendee') {
@@ -37,7 +43,7 @@ export default withAuth(
       }
       return redirect('/templates', req);
     }
-    
+
     if (!token) return redirect('/', req);
 
     const userRole = getRoleSlug(token.roleName);
@@ -56,7 +62,12 @@ export default withAuth(
       '/templates': new Set(['host', 'super-admin', 'application-admin']),
       '/messaging': new Set(['host', 'super-admin', 'application-admin']),
       '/store-admin': new Set(['super-admin', 'application-admin']),
-      '/invited-events': new Set(['attendee', 'super-admin', 'application-admin']),
+      '/invited-events': new Set([
+        'attendee',
+        'super-admin',
+        'host',
+        'application-admin',
+      ]),
       '/dashboard': new Set([
         'host',
         'attendee',
@@ -123,18 +134,19 @@ export default withAuth(
     return NextResponse.next();
   },
   {
-    callbacks: { 
+    callbacks: {
       authorized: ({ token, req }) => {
         // Allow public access to root route
         if (req.nextUrl.pathname === '/') return true;
         // Allow public access to specific events routes, protect main events listing
         if (req.nextUrl.pathname.startsWith('/events/design')) return true;
-        if (req.nextUrl.pathname.match(/^\/events\/[a-zA-Z0-9_-]+$/)) return true; // Allow /events/[eventId]
+        if (req.nextUrl.pathname.match(/^\/events\/[a-zA-Z0-9_-]+$/))
+          return true; // Allow /events/[eventId]
         // Allow /events route to be processed by middleware (for redirect logic)
         if (req.nextUrl.pathname === '/events') return true;
         // Require token for all other routes including /templates
         return !!token;
-      }
+      },
     },
   },
 );
