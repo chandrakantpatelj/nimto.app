@@ -70,9 +70,17 @@ export const fetchEvents = createAsyncThunk(
 
 export const fetchAllEvents = createAsyncThunk(
   'events/fetchAllEvents',
-  async (_, { rejectWithValue }) => {
+  async (params = {}, { rejectWithValue }) => {
     try {
-      const response = await fetch('/api/events');
+      let url = '/api/events';
+
+      // Only add query parameters if admin=true is present
+      if (params.admin === 'true') {
+        const queryParams = new URLSearchParams(params);
+        url = `/api/events?${queryParams}`;
+      }
+
+      const response = await fetch(url);
 
       if (!response.ok) {
         if (response.status === 401) {

@@ -7,7 +7,11 @@ import authOptions from '../../../auth/[...nextauth]/auth-options';
 
 // Helper function to check if user has admin role
 function hasAdminRole(userRole) {
-  return userRole === 'super-admin' || userRole === 'application-admin';
+  return (
+    userRole === 'super-admin' ||
+    userRole === 'application-admin' ||
+    userRole === 'host'
+  );
 }
 
 const prisma = new PrismaClient();

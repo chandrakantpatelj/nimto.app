@@ -6,7 +6,10 @@ import { useRouter } from 'next/navigation';
 import { useAllEvents, useEventActions, useEvents } from '@/store/hooks';
 import {
   CalendarCheck,
+  CalendarDays,
+  Clock,
   Earth,
+  MapPin,
   Pencil,
   Search,
   Trash2,
@@ -35,6 +38,7 @@ const Events = () => {
 
   useEffect(() => {
     if (session?.user?.id) {
+      // Host users don't need admin parameter - they see only their own events
       fetchAllEvents().catch((err) => {
         console.error('Failed to fetch events:', err);
         // Handle 401 errors by redirecting to home page
@@ -48,7 +52,7 @@ const Events = () => {
   const totalConfirmedGuests = (events || []).reduce((acc, event) => {
     return (
       acc +
-      ((event.guests || []) || []).filter((guest) => guest.status === 'CONFIRMED')
+      (event.guests || [] || []).filter((guest) => guest.status === 'CONFIRMED')
         .length
     );
   }, 0);
@@ -64,6 +68,7 @@ const Events = () => {
   });
 
   const handleDeleteClick = (event) => {
+    console.log('Delete button clicked for event:', event.title, event.id);
     setSelectedEvent(event);
     setShowDeleteDialog(true);
   };
@@ -74,7 +79,7 @@ const Events = () => {
 
   const handleEventDeleted = () => {
     // Event is already deleted by DeleteEvent component
-    // Just refresh the events list
+    // Just refresh the events list (host users see only their own events)
     fetchAllEvents();
     setShowDeleteDialog(false);
     setSelectedEvent(null);
@@ -95,23 +100,35 @@ const Events = () => {
     });
   };
 
+  const formatTime = (timeString) => {
+    if (!timeString) return '';
+    const time = new Date(`2000-01-01T${timeString}`);
+    return time.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
+  };
+
   // Events are now filtered by Redux useFilteredEvents hook
 
   const renderData = (event, index) => {
     // Show skeleton loader if this event is being deleted
     if (deletingEventId === event.id) {
       return (
-        <Card key={event.id || index} className="rounded-xl relative">
+        <Card
+          key={event.id || index}
+          className="overflow-hidden border-0 shadow-lg"
+        >
           <div className="animate-pulse">
-            <div className="min-h-32 h-100 bg-gray-200 rounded-tr-xl rounded-tl-xl"></div>
-            <div className="p-4">
-              <div className="h-6 bg-gray-200 rounded mb-2"></div>
-              <div className="h-4 bg-gray-200 rounded mb-2"></div>
-              <div className="h-4 bg-gray-200 rounded mb-2"></div>
-              <div className="h-4 bg-gray-200 rounded mb-2"></div>
-              <div className="flex gap-2 mt-3">
-                <div className="h-8 bg-gray-200 rounded flex-1"></div>
-                <div className="h-8 bg-gray-200 rounded flex-1"></div>
+            <div className="aspect-[3/4] bg-gradient-to-br from-gray-100 to-gray-200 relative">
+              {/* Skeleton overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent">
+                <div className="absolute bottom-4 left-4 right-4 space-y-2">
+                  <div className="h-5 bg-white/20 rounded w-3/4"></div>
+                  <div className="h-4 bg-white/20 rounded w-1/2"></div>
+                  <div className="h-4 bg-white/20 rounded w-2/3"></div>
+                </div>
               </div>
             </div>
           </div>
@@ -122,103 +139,145 @@ const Events = () => {
     return (
       <Card
         key={event.id || index}
-        className="rounded-xl relative group hover:shadow-lg transition-all duration-200"
+        className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 bg-white"
       >
-        <div className="flex flex-col gap-2 justify-between h-100">
-          <div className="relative min-h-32 h-100 overflow-hidden rounded-tr-xl rounded-tl-xl">
-            {event.s3ImageUrl ? (
+        {/* Event Image as Main Content */}
+        <div className="relative aspect-[3/4] overflow-hidden">
+          {event?.eventThumbnailUrl || event?.s3ImageUrl ? (
+            <>
               <img
-                src={event.s3ImageUrl}
-                className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
+                src={event?.eventThumbnailUrl || event?.s3ImageUrl}
                 alt={event.title}
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.nextSibling.style.display = 'flex';
+                }}
               />
-            ) : (
-              <div className="w-full h-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center">
-                <span className="text-white text-lg font-semibold">
-                  No Image
-                </span>
+              {/* Fallback for broken images */}
+              <div
+                className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 items-center justify-center"
+                style={{ display: 'none' }}
+              >
+                <div className="text-center p-6">
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <CalendarDays className="w-8 h-8 text-blue-600" />
+                  </div>
+                  <p className="text-sm font-medium text-gray-600">
+                    Event Image
+                  </p>
+                </div>
               </div>
-            )}
-            {/* Action Buttons Overlay */}
-            <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => router.push(`/events/${event.id}`)}
-                className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-md"
-              >
-                <Pencil className="h-4 w-4 text-gray-700" />
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => handleDeleteClick(event)}
-                className="h-8 w-8 p-0 bg-white/90 hover:bg-red-50 shadow-md"
-              >
-                <Trash2 className="h-4 w-4 text-red-600" />
-              </Button>
+            </>
+          ) : (
+            /* No image placeholder */
+            <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+              <div className="text-center p-6">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <CalendarDays className="w-8 h-8 text-blue-600" />
+                </div>
+                <p className="text-sm font-medium text-gray-600">No Image</p>
+              </div>
             </div>
+          )}
+
+          {/* Action Buttons Overlay */}
+          <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-10">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log(
+                  'Edit button clicked for event:',
+                  event.title,
+                  event.id,
+                );
+                router.push(`/events/${event.id}`);
+              }}
+              className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-lg border-0 backdrop-blur-sm cursor-pointer"
+            >
+              <Pencil className="h-3 w-3 text-gray-700" />
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleDeleteClick(event);
+              }}
+              className="h-8 w-8 p-0 bg-white/90 hover:bg-red-50 shadow-lg border-0 backdrop-blur-sm cursor-pointer"
+            >
+              <Trash2 className="h-3 w-3 text-red-600" />
+            </Button>
           </div>
-          <div className="p-4 relative">
-            <span className="text-lg text-dark font-media/brand text-mono hover:text-primary-active mb-px block pr-16">
-              {event.title}
-            </span>
-            {/* Fallback action buttons if no image */}
-            {!event.s3ImageUrl && (
-              <div className="absolute top-4 right-4 flex gap-1">
-                <Button
-                  variant="softPrimary"
-                  mode="icon"
-                  onClick={() => router.push(`/events/${event.id}`)}
-                >
-                  <Pencil className="text-primary" />
-                </Button>
-                <Button
-                  variant="softDanger"
-                  mode="icon"
-                  onClick={() => handleDeleteClick(event)}
-                >
-                  <Trash2 className="text-red-500" />
-                </Button>
+
+          {/* Event Information Overlay - Bottom */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent">
+            <div className="absolute bottom-0 left-0 right-0 p-5">
+              <div className="space-y-2">
+                <h3 className="text-white font-bold text-xl leading-tight mb-2 drop-shadow-lg">
+                  {event.title}
+                </h3>
+
+                <div className="flex items-center gap-2 text-white/90 text-sm">
+                  <CalendarDays className="w-4 h-4" />
+                  <span className="font-medium">{formatDate(event.date)}</span>
+                  {event.time && (
+                    <>
+                      <span className="text-white/60">•</span>
+                      <span className="font-medium">
+                        {formatTime(event.time)}
+                      </span>
+                    </>
+                  )}
+                </div>
+
+                {event.location && (
+                  <div className="flex items-center gap-2 text-white/90 text-sm">
+                    <MapPin className="w-4 h-4" />
+                    <span className="font-medium line-clamp-1">
+                      {event.location}
+                    </span>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-2 text-white/90 text-sm">
+                  <Users className="w-4 h-4" />
+                  <span className="font-medium">
+                    {
+                      (event.guests || []).filter(
+                        (guest) => guest.status === 'CONFIRMED',
+                      ).length
+                    }{' '}
+                    / {(event.guests || []).length} guests
+                  </span>
+                </div>
+
+                {/* Action Buttons - Bottom */}
+                <div className="flex gap-2 pt-3">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => router.push(`/events/${event.id}/guest`)}
+                    className="flex-1 h-8 bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm text-xs font-medium"
+                  >
+                    <Users className="w-3 h-3 mr-1" />
+                    Manage Guests
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => router.push(`/events/${event.id}`)}
+                    className="flex-1 h-8 bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm text-xs font-medium"
+                  >
+                    <Earth className="w-3 h-3 mr-1" />
+                    Public Page
+                  </Button>
+                </div>
               </div>
-            )}
-
-            <div className="flex items-center  mt-3">
-              <CalendarCheck className="w-5 h-5 mr-2 " />
-              <span className="text-sm font-medium text-secondary-foreground">
-                {formatDate(event.date)}
-              </span>
-            </div>
-
-            <div className="flex items-center  mt-1">
-              <Users className="w-5 h-5  mr-2 " />
-              <span className="text-sm font-medium text-secondary-foreground">
-                {totalConfirmedGuests} Accepted / {(event.guests || []).length}{' '}
-                Invited
-              </span>
-            </div>
-            <div className="flex gap-2 items-center justify-between mt-3">
-              <Button
-                variant="secondary"
-                mode="default"
-                size="md"
-                onClick={() => router.push(`/events/${event.id}/guest`)}
-                className="mx-auto w-full max-w-50"
-              >
-                <Users />
-                Manage Guests
-              </Button>
-
-              <Button
-                variant="outline"
-                mode="primary"
-                size="md"
-                onClick={() => router.push(`/events/${event.id}`)}
-                className="mx-auto w-full max-w-50"
-              >
-                <Earth />
-                Public Page
-              </Button>
             </div>
           </div>
         </div>
@@ -241,12 +300,26 @@ const Events = () => {
 
         <div id="projects_cards">
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3.5 lg:gap-4.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
               {[1, 2, 3, 4].map((i) => (
-                <div
-                  key={i}
-                  className="rounded-xl bg-gray-100 h-64 animate-pulse"
-                ></div>
+                <Card key={i} className="overflow-hidden border-0 shadow-lg">
+                  <div className="animate-pulse">
+                    <div className="aspect-[3/4] bg-gradient-to-br from-gray-100 to-gray-200 relative">
+                      {/* Skeleton overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent">
+                        <div className="absolute bottom-4 left-4 right-4 space-y-2">
+                          <div className="h-5 bg-white/20 rounded w-3/4"></div>
+                          <div className="h-4 bg-white/20 rounded w-1/2"></div>
+                          <div className="h-4 bg-white/20 rounded w-2/3"></div>
+                          <div className="flex gap-2 pt-2">
+                            <div className="h-6 bg-white/20 rounded flex-1"></div>
+                            <div className="h-6 bg-white/20 rounded flex-1"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
               ))}
             </div>
           ) : error ? (
@@ -260,27 +333,36 @@ const Events = () => {
                 Try Again
               </Button>
             </div>
-          ) : filteredEvents.length === 0 ? (
-            <div className="text-center py-8">
-              {searchQuery ? (
-                <>
-                  {' '}
-                  <p className="text-gray-600">
-                    You haven't created any events yet
-                  </p>
-                  <p className="text-sm text-gray-500 mt-2">
-                    Create your first event to get started
-                  </p>
-                </>
-              ) : (
-                <p className="text-gray-600">No events found </p>
-              )}
-            </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3.5 lg:gap-4.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
               {filteredEvents.map((event, index) => renderData(event, index))}
             </div>
           )}
+
+          {/* Empty State */}
+          {filteredEvents.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-12">
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+                  <CalendarDays className="w-8 h-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {searchQuery ? 'No Events Found' : 'No Events Yet'}
+                </h3>
+                <p className="text-gray-600 max-w-md">
+                  {searchQuery
+                    ? 'No events match your search criteria. Try adjusting your search terms.'
+                    : "You haven't created any events yet. Create your first event to get started."}
+                </p>
+                {searchQuery && (
+                  <p className="text-sm text-gray-500">
+                    Clear your search to see all events
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
           <div className="flex grow justify-center pt-5 lg:pt-7.5">
             <Button mode="link" underlined="dashed" asChild>
               <Link href="#">Show more events</Link>
