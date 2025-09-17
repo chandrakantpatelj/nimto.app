@@ -21,7 +21,7 @@ import Step3 from '../../components/Step3';
 
 function EditEventContent() {
   const router = useRouter();
-  const { toastSuccess, toastError } = useToast();
+  const { toastSuccess, toastError, toastWarning } = useToast();
   const params = useParams();
   const templateId = params.id;
   const { data: session } = useSession();

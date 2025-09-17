@@ -83,7 +83,7 @@ export async function POST(request, { params }) {
     // Send invitations to each guest
     for (const guest of guests) {
       try {
-        const invitationUrl = `${baseUrl}/events/${eventId}/invitation/${guest.id}`;
+        const invitationUrl = `${baseUrl}/invitation/${eventId}/${guest.id}`;
 
         const emailSent = await sendEventInvitation({
           guest: {

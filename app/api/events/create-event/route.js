@@ -201,7 +201,7 @@ export async function POST(request) {
       if (isNaN(eventDate.getTime())) {
         throw new Error('Invalid date format');
       }
-    } catch (error) {
+    } catch {
       return NextResponse.json(
         { success: false, error: 'Invalid date format' },
         { status: 400 },
@@ -359,13 +359,16 @@ export async function POST(request) {
 
     // Send invitations if requested
     let invitationResults = [];
-    if (sendInvitations && guests.length > 0) {
-      const eventUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/events/${event.id}`;
+    if (sendInvitations && createdGuests.length > 0) {
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000';
 
-      for (const guest of guests) {
+      for (const guest of createdGuests) {
         try {
+          // Create personalized RSVP URL for each guest
+          const rsvpUrl = `${baseUrl}/invitation/${event.id}/${guest.id}`;
+
           await sendEmail({
-            to: guest.contact,
+            to: guest.email,
             subject: `You're invited to ${title}`,
             content: {
               title: `You're invited to ${title}`,
@@ -376,25 +379,27 @@ export async function POST(request) {
                 <p><strong>Time:</strong> ${time || 'TBD'}</p>
                 <p><strong>Location:</strong> ${location || 'TBD'}</p>
                 ${description ? `<p><strong>Description:</strong> ${description}</p>` : ''}
+                <p>Please click the button below to view the full invitation and respond.</p>
               `,
-              buttonLabel: 'View Event',
-              buttonUrl: eventUrl,
+              buttonLabel: 'View Invitation & RSVP',
+              buttonUrl: rsvpUrl,
             },
           });
 
           invitationResults.push({
             guest: guest.name,
-            email: guest.contact,
+            email: guest.email,
             status: 'sent',
+            rsvpUrl: rsvpUrl,
           });
         } catch (emailError) {
           console.error(
-            `Failed to send invitation to ${guest.contact}:`,
+            `Failed to send invitation to ${guest.email}:`,
             emailError,
           );
           invitationResults.push({
             guest: guest.name,
-            email: guest.contact,
+            email: guest.email,
             status: 'failed',
             error: emailError.message,
           });
