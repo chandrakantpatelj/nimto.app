@@ -96,6 +96,118 @@ export async function POST(request) {
       );
     }
 
+    // Validate user session
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { success: false, error: 'User session not found' },
+        { status: 401 },
+      );
+    }
+
+    // Debug: Log session data
+    console.log('Session data:', {
+      userId: session.user.id,
+      userEmail: session.user.email,
+      userName: session.user.name,
+      roleId: session.user.roleId,
+      roleName: session.user.roleName,
+    });
+
+    // Try to find user by session ID first
+    let user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true, name: true, email: true },
+    });
+
+    // If not found by ID, try to find by email (common issue with NextAuth)
+    if (!user && session.user.email) {
+      console.log(
+        'User not found by ID, trying to find by email:',
+        session.user.email,
+      );
+      user = await prisma.user.findUnique({
+        where: { email: session.user.email },
+        select: { id: true, name: true, email: true },
+      });
+
+      if (user) {
+        console.log('Found user by email, but ID mismatch:', {
+          sessionUserId: session.user.id,
+          databaseUserId: user.id,
+          email: user.email,
+        });
+        console.log('Using database user ID for event creation');
+      }
+    }
+
+    // If still not found, try to find by name (last resort)
+    if (!user && session.user.name) {
+      console.log(
+        'User not found by ID or email, trying to find by name:',
+        session.user.name,
+      );
+      user = await prisma.user.findFirst({
+        where: {
+          name: session.user.name,
+          email: session.user.email, // Additional check to ensure it's the right user
+        },
+        select: { id: true, name: true, email: true },
+      });
+
+      if (user) {
+        console.log('Found user by name and email:', {
+          sessionUserId: session.user.id,
+          databaseUserId: user.id,
+          email: user.email,
+          name: user.name,
+        });
+      }
+    }
+
+    if (!user) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'User not found in database',
+          debug: {
+            sessionUserId: session.user.id,
+            sessionEmail: session.user.email,
+            searchedBy: session.user.id,
+          },
+        },
+        { status: 404 },
+      );
+    }
+
+    // Verify template exists if templateId is provided
+    if (templateId) {
+      const template = await prisma.template.findUnique({
+        where: { id: templateId },
+        select: { id: true, name: true },
+      });
+
+      if (!template) {
+        return NextResponse.json(
+          { success: false, error: 'Template not found' },
+          { status: 404 },
+        );
+      }
+    }
+
+    // Validate date format
+    let eventDate;
+    try {
+      eventDate = new Date(date);
+      if (isNaN(eventDate.getTime())) {
+        throw new Error('Invalid date format');
+      }
+    } catch (error) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid date format' },
+        { status: 400 },
+      );
+    }
+
     if (guests.length === 0) {
       return NextResponse.json(
         { success: false, error: 'At least one guest is required' },
@@ -103,12 +215,23 @@ export async function POST(request) {
       );
     }
 
+    // Debug logging
+    console.log('Creating event with data:', {
+      title,
+      date: eventDate,
+      sessionUserId: session.user.id,
+      databaseUserId: user.id,
+      userExists: !!user,
+      userEmail: user?.email,
+      guestsCount: guests.length,
+    });
+
     // First create the event to get the event ID
     const event = await prisma.event.create({
       data: {
         title,
         description,
-        date: new Date(date),
+        date: eventDate,
         time,
         location,
         templateId,
@@ -118,7 +241,8 @@ export async function POST(request) {
         background,
         pageBackground,
         imagePath: templateImagePath, // Initially use template imagePath
-        status: (status && typeof status === 'string' ? status.toUpperCase() : 'DRAFT'),
+        status:
+          status && typeof status === 'string' ? status.toUpperCase() : 'DRAFT',
         createdByUserId: session.user.id, // This is correct - it's setting from session
         isTrashed: false,
       },
@@ -292,9 +416,29 @@ export async function POST(request) {
     });
   } catch (error) {
     console.error('Error creating event:', error);
+
+    // Return more specific error messages for debugging
+    let errorMessage = 'Failed to create event';
+    let statusCode = 500;
+
+    if (error.code === 'P2002') {
+      errorMessage = 'Event with this title already exists';
+      statusCode = 409;
+    } else if (error.code === 'P2003') {
+      errorMessage = 'Invalid template or user reference';
+      statusCode = 400;
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+
     return NextResponse.json(
-      { success: false, error: 'Failed to create event' },
-      { status: 500 },
+      {
+        success: false,
+        error: errorMessage,
+        details:
+          process.env.NODE_ENV === 'development' ? error.stack : undefined,
+      },
+      { status: statusCode },
     );
   }
 }

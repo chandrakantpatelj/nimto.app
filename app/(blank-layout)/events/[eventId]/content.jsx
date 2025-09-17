@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 import { useEventActions, useEvents } from '@/store/hooks';
+import { useSession } from 'next-auth/react';
 import { useToast } from '@/providers/toast-provider';
 import { AuthModal } from '@/components/common/auth-modal';
 import { TemplateHeader } from '../components';
@@ -15,7 +15,7 @@ import Step3 from '../components/Step3';
 function EditEventContent() {
   const params = useParams();
   const router = useRouter();
-  const { toastSuccess, toastError } = useToast();
+  const { toastSuccess, toastWarning, toastError } = useToast();
   const eventId = params.eventId;
   const { data: session } = useSession();
   const { selectedEvent: eventData } = useEvents();
@@ -32,13 +32,14 @@ function EditEventContent() {
   const [showInvitationPopup, setShowInvitationPopup] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [thumbnailData, setThumbnailData] = useState(null);
   const pixieEditorRef = useRef(null);
   const hasLoadedRef = useRef(false);
 
   const fetchEventData = useCallback(async () => {
     if (hasLoadedRef.current) return;
     hasLoadedRef.current = true;
-    
+
     try {
       setLoading(true);
       setError(null);
@@ -80,6 +81,18 @@ function EditEventContent() {
       }
 
       try {
+        // Get thumbnail data for upload
+        console.log('pixieEditorRef.current', pixieEditorRef.current);
+        if (pixieEditorRef.current?.getThumbnailData) {
+          try {
+            const thumbnailData =
+              await pixieEditorRef.current.getThumbnailData();
+            setThumbnailData(thumbnailData);
+          } catch (thumbnailError) {
+            console.error('Error getting thumbnail data:', thumbnailError);
+            // Don't block the flow if thumbnail capture fails
+          }
+        }
         const pixieState = JSON.parse(await pixieEditorRef.current.save());
 
         if (pixieState?.canvas?.objects?.length) {
@@ -150,6 +163,38 @@ function EditEventContent() {
       const data = await response.json();
 
       if (data.success) {
+        if (thumbnailData) {
+          console.log('data', data);
+          try {
+            const thumbnailResponse = await fetch(
+              `/api/event/${data.data.id}/upload-thumbnail`,
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  imageBlob: thumbnailData.base64Data,
+                  imageFormat: 'png',
+                }),
+              },
+            );
+
+            if (thumbnailResponse.ok) {
+              const thumbnailResult = await thumbnailResponse.json();
+              if (thumbnailResult.success) {
+                toastSuccess('Thumbnail uploaded successfully');
+              } else {
+                toastWarning('Event created but thumbnail upload failed');
+              }
+            } else {
+              toastWarning('Event created but thumbnail upload failed');
+            }
+          } catch (thumbnailError) {
+            console.error('Thumbnail upload failed:', thumbnailError);
+            toastWarning('Event created but thumbnail upload failed');
+          }
+        } else {
+          console.log('No thumbnail data available in local state');
+        }
         let message = 'Event updated successfully';
         if (invitationType === 'all') {
           message = `Event updated successfully and invitations sent to all ${eventData.guests?.length || 0} guests`;
@@ -158,8 +203,8 @@ function EditEventContent() {
           message = `Event updated successfully and invitations sent to ${newGuestsCount} new guests`;
         }
 
-        // Update Redux store with the updated event data
-        updateEventInStore(data.data);
+        // Note: Redux store will be updated when user navigates back to events page
+        // No need to update store here as it will be refreshed from API
 
         // Clear selectedEvent from store after successful update
         resetEventCreation();
@@ -228,7 +273,7 @@ function EditEventContent() {
       {activeStep === 0 && (
         <Step1 mode="edit" pixieEditorRef={pixieEditorRef} />
       )}
-      {activeStep === 1 && <Step2 mode="edit" />}
+      {activeStep === 1 && <Step2 mode="edit" thumbnailData={thumbnailData} />}
       {activeStep === 2 && <Step3 mode="edit" />}
 
       <InvitationPopup

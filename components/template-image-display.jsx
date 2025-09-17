@@ -57,7 +57,7 @@ export default function TemplateImageDisplay({
   return (
     <div className={`${className} relative`}>
       <img
-        src={imageUrl}
+        src={template?.templateThumbnailUrl || imageUrl}
         className={`w-full h-full object-cover rounded-t-xl`}
         alt={template.name || 'Template Image'}
         onLoad={() => {

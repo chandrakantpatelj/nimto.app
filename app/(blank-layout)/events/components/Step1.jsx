@@ -19,21 +19,20 @@ function Step1({ mode = 'create', pixieEditorRef: externalPixieRef }) {
   return (
     <div className="flex min-h-[calc(100vh-var(--header-height))] h-full bg-gray-50">
       {/* Left Side - Full Size Pixie Editor */}
-      
 
-        {/* Pixie Editor Container */}
-        <div className=" p-4">
-          <div className="h-[830px] w-[96.5vw] rounded-lg overflow-hidden border border-gray-200 bg-white">
-            <PixieEditor
-              key={`pixie-${eventId || templateId}`}
-              ref={pixieEditorRef}
-              initialContent={eventData?.jsonContent}
-              initialImageUrl={imageUrl}
-              width="100%"
-              height="830px"
-            />
-          </div>
+      {/* Pixie Editor Container */}
+      <div className=" p-4">
+        <div className="h-[830px] w-[96.5vw] rounded-lg overflow-hidden border border-gray-200 bg-white">
+          <PixieEditor
+            key={`pixie-${eventId || templateId}`}
+            ref={pixieEditorRef}
+            initialContent={eventData?.jsonContent}
+            initialImageUrl={imageUrl}
+            width="100%"
+            height="830px"
+          />
         </div>
+      </div>
     </div>
   );
 }

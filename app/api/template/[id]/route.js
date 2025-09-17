@@ -28,7 +28,9 @@ export async function GET(request, { params }) {
     // Generate standardized proxy URL for template image
     let s3ImageUrl = null;
     if (template.imagePath) {
+      console.log('Template imagePath:', template.imagePath);
       s3ImageUrl = generateDirectS3Url(template.imagePath);
+      console.log('Generated s3ImageUrl:', s3ImageUrl);
     }
 
     // Parse JSON content back to object
