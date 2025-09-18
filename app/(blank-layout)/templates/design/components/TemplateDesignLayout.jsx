@@ -41,11 +41,7 @@ const TemplateDesignLayout = ({
       category: '',
       isPremium: false,
       price: 0,
-      background: '',
-      pageBackground: '',
-      content: [],
-      backgroundStyle: {},
-      htmlContent: '',
+      jsonContent: null,
     },
   );
 
@@ -157,11 +153,9 @@ const TemplateDesignLayout = ({
         category: formData.category.trim(),
         isPremium: formData.isPremium,
         price: formData.isPremium ? parseFloat(formData.price) || 0 : 0,
-        background: formData.background || null,
-        pageBackground: formData.pageBackground || null,
-        content: pixieState?.canvas?.objects?.length ? pixieState : [],
-        backgroundStyle: formData.backgroundStyle,
-        htmlContent: formData.htmlContent || null,
+        jsonContent: pixieState?.canvas?.objects?.length
+          ? JSON.stringify(pixieState)
+          : null,
       };
 
       // Call the parent's save function with template data and uploaded file
@@ -169,7 +163,6 @@ const TemplateDesignLayout = ({
 
       // Temporarily open thumbnail image in new tab
       if (thumbnailData.objectUrl) {
-        const newTab = window.open(thumbnailData.objectUrl, '_blank');
         if (newTab) {
           newTab.focus();
           // Clean up the object URL after a delay to free memory

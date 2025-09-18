@@ -1,6 +1,13 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { getServerSession } from 'next-auth';
 import { generateDirectS3Url } from '@/lib/s3-utils';
+import authOptions from '../../auth/[...nextauth]/auth-options';
+
+// Helper function to check if user has admin role
+function hasAdminRole(roleName) {
+  return ['super-admin', 'application-admin'].includes(roleName);
+}
 
 const prisma = new PrismaClient();
 
@@ -9,7 +16,7 @@ export async function GET(request, { params }) {
   try {
     // Allow public access to read individual templates
     // No authentication required for viewing templates
-    const { id } = await params;    
+    const { id } = await params;
 
     const template = await prisma.template.findFirst({
       where: {
@@ -35,14 +42,10 @@ export async function GET(request, { params }) {
       console.log('Generated s3ImageUrl:', s3ImageUrl);
     }
 
-    // Parse JSON content back to object
+    // Return template with jsonContent
     const parsedTemplate = {
       ...template,
       s3ImageUrl,
-      content: template.jsonContent ? JSON.parse(template.jsonContent) : null,
-      backgroundStyle: template.backgroundStyle
-        ? JSON.parse(template.backgroundStyle)
-        : null,
     };
 
     return NextResponse.json({
@@ -75,12 +78,7 @@ export async function PUT(request, { params }) {
     const {
       name,
       category,
-      content,
-      backgroundStyle,
-      htmlContent,
-      background,
-      pageBackground,
-      previewImageUrl,
+      jsonContent,
       isPremium,
       price,
       isSystemTemplate,
@@ -102,35 +100,12 @@ export async function PUT(request, { params }) {
       );
     }
 
-    // Convert content array to JSON string
-    const jsonContent = content
-      ? JSON.stringify(content)
-      : existingTemplate.jsonContent;
-    const backgroundStyleJson = backgroundStyle
-      ? JSON.stringify(backgroundStyle)
-      : existingTemplate.backgroundStyle;
-
     const updatedTemplate = await prisma.template.update({
       where: { id },
       data: {
         name: name || existingTemplate.name,
         category: category || existingTemplate.category,
-        jsonContent,
-        backgroundStyle: backgroundStyleJson,
-        htmlContent:
-          htmlContent !== undefined
-            ? htmlContent
-            : existingTemplate.htmlContent,
-        background:
-          background !== undefined ? background : existingTemplate.background,
-        pageBackground:
-          pageBackground !== undefined
-            ? pageBackground
-            : existingTemplate.pageBackground,
-        previewImageUrl:
-          previewImageUrl !== undefined
-            ? previewImageUrl
-            : existingTemplate.previewImageUrl,
+        jsonContent: jsonContent || existingTemplate.jsonContent,
         isPremium:
           isPremium !== undefined ? isPremium : existingTemplate.isPremium,
         price: price !== undefined ? price : existingTemplate.price,

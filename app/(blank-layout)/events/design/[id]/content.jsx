@@ -48,85 +48,16 @@ function EditEventContent() {
   useEffect(() => {
     const loadTemplate = async () => {
       if (isRedirecting || !templateId) return;
-      
+
       // Only skip loading if we already have data for this specific template
       if (eventData && eventData.templateId === templateId) return;
 
       try {
-        // First, check if we have template data from localStorage (home page flow)
-        const storedTemplate = localStorage.getItem('selectedTemplate');
-        let templateData = null;
+        const template = fetchTemplateById
+          ? await fetchTemplateById(templateId).unwrap()
+          : await dispatch(fetchTemplateByIdThunk(templateId)).unwrap();
 
-        if (storedTemplate) {
-          try {
-            const parsedTemplate = JSON.parse(storedTemplate);
-            if (parsedTemplate.id === templateId) {
-              console.log('Using stored template data from localStorage:', parsedTemplate);
-              templateData = parsedTemplate;
-              // Clear the stored template after using it
-              localStorage.removeItem('selectedTemplate');
-            }
-          } catch (parseError) {
-            console.warn('Failed to parse stored template:', parseError);
-          }
-        }
-
-        // If no stored template, fetch from API
-        if (!templateData) {
-          const template = fetchTemplateById
-            ? await fetchTemplateById(templateId).unwrap()
-            : await dispatch(fetchTemplateByIdThunk(templateId)).unwrap();
-
-          templateData = template.data || template;
-        }
-
-        // Debug: Log template data to see what we're getting
-        console.log('Template data loaded:', {
-          id: templateData.id,
-          name: templateData.name,
-          hasJsonContent: !!templateData.jsonContent,
-          hasContent: !!templateData.content,
-          jsonContentType: typeof templateData.jsonContent,
-          contentType: typeof templateData.content,
-          imagePath: templateData.imagePath,
-          s3ImageUrl: templateData.s3ImageUrl,
-          jsonContentPreview: templateData.jsonContent ? templateData.jsonContent.substring(0, 200) : null,
-          contentPreview: templateData.content ? JSON.stringify(templateData.content).substring(0, 200) : null,
-        });
-
-        // Parse and analyze the content structure
-        let finalContent = templateData.content || templateData.jsonContent;
-        if (typeof finalContent === 'string') {
-          try {
-            const parsed = JSON.parse(finalContent);
-            console.log('Parsed template content structure:', {
-              hasCanvas: !!parsed.canvas,
-              canvasObjects: parsed.canvas?.objects?.length || 0,
-              objectTypes: parsed.canvas?.objects?.map(obj => obj.type) || [],
-              canvasPreview: parsed.canvas ? JSON.stringify(parsed.canvas).substring(0, 300) : null
-            });
-          } catch (e) {
-            console.warn('Failed to parse template content:', e);
-          }
-        }
-
-        // Ensure we have the content in the right format for PixieEditor
-        let processedContent = null;
-        if (templateData.content) {
-          // If content is already parsed (from individual template API)
-          processedContent = typeof templateData.content === 'string' 
-            ? templateData.content 
-            : JSON.stringify(templateData.content);
-        } else if (templateData.jsonContent) {
-          // If we only have jsonContent (should be a string)
-          processedContent = templateData.jsonContent;
-        }
-
-        console.log('Setting event with processed content:', {
-          hasProcessedContent: !!processedContent,
-          contentType: typeof processedContent,
-          contentLength: processedContent?.length || 0
-        });
+        const templateData = template.data || template;
 
         setSelectedEvent({
           title: templateData.name,
@@ -137,11 +68,7 @@ function EditEventContent() {
           location: '',
           status: 'DRAFT',
           guests: [],
-          jsonContent: processedContent,
-          backgroundStyle: templateData.backgroundStyle,
-          htmlContent: templateData.htmlContent,
-          background: templateData.background,
-          pageBackground: templateData.pageBackground,
+          jsonContent: templateData.jsonContent,
           imagePath: templateData.imagePath,
           s3ImageUrl: templateData.s3ImageUrl,
           newImageBase64: null,
@@ -180,7 +107,6 @@ function EditEventContent() {
       try {
         // Get thumbnail data and store in local state
         const thumbnailData = await pixieEditorRef.current.getThumbnailData();
-        // const newTab = window.open(thumbnailData.objectUrl, '_blank');
         console.log('thumbnailData', thumbnailData);
         setThumbnailData(thumbnailData);
 

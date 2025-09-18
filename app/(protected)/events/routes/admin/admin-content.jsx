@@ -44,10 +44,6 @@ export function AdminEventContent() {
     setEventForEdit({
       templateId: event.id,
       jsonContent: event.jsonContent || '',
-      backgroundStyle: event.backgroundStyle || '',
-      htmlContent: event.htmlContent || '',
-      background: event.background || '',
-      pageBackground: event.pageBackground || '',
       imagePath: event.imagePath || '',
       s3ImageUrl: event.s3ImageUrl || '',
       title: event.title,

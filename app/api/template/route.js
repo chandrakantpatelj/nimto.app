@@ -88,24 +88,8 @@ export async function GET(request) {
         result.templateThumbnailUrl = thumbnailUrl;
       }
 
-      // Parse JSON content to object for consistency with individual template API
-      if (template.jsonContent) {
-        try {
-          result.content = JSON.parse(template.jsonContent);
-        } catch (parseError) {
-          console.warn(`Failed to parse jsonContent for template ${template.id}:`, parseError);
-          result.content = null;
-        }
-      }
-
-      // Parse backgroundStyle if it exists
-      if (template.backgroundStyle) {
-        try {
-          result.backgroundStyle = JSON.parse(template.backgroundStyle);
-        } catch (parseError) {
-          console.warn(`Failed to parse backgroundStyle for template ${template.id}:`, parseError);
-        }
-      }
+      // Keep jsonContent as is - no parsing needed
+      // The client can parse jsonContent when needed
 
       return result;
     });

@@ -76,10 +76,6 @@ export async function POST(request) {
       location,
       templateId,
       jsonContent,
-      backgroundStyle,
-      htmlContent,
-      background,
-      pageBackground,
       templateImagePath, // Original template imagePath to copy
       newImageData, // Base64 image data if user changed image in Pixie
       imageFormat = 'png',
@@ -236,10 +232,6 @@ export async function POST(request) {
         location,
         templateId,
         jsonContent,
-        backgroundStyle,
-        htmlContent,
-        background,
-        pageBackground,
         imagePath: templateImagePath, // Initially use template imagePath
         status:
           status && typeof status === 'string' ? status.toUpperCase() : 'DRAFT',
@@ -360,7 +352,10 @@ export async function POST(request) {
     // Send invitations if requested
     let invitationResults = [];
     if (sendInvitations && createdGuests.length > 0) {
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000';
+      const baseUrl =
+        process.env.NEXT_PUBLIC_APP_URL ||
+        process.env.NEXTAUTH_URL ||
+        'http://localhost:3000';
 
       for (const guest of createdGuests) {
         try {
