@@ -77,6 +77,21 @@ export async function PUT(request, { params }) {
 
     const { name, email, phone, status, response } = body;
 
+    // Convert response to proper enum value
+    let guestResponse = null;
+    if (response) {
+      const normalizedResponse = response.toString().toLowerCase();
+      if (normalizedResponse === 'yes') {
+        guestResponse = 'YES';
+      } else if (normalizedResponse === 'no') {
+        guestResponse = 'NO';
+      } else if (normalizedResponse === 'maybe') {
+        guestResponse = 'MAYBE';
+      } else {
+        guestResponse = response; // Keep original if it's already uppercase
+      }
+    }
+
     const guest = await prisma.guest.update({
       where: { id },
       data: {
@@ -84,8 +99,8 @@ export async function PUT(request, { params }) {
         email,
         phone,
         status,
-        response,
-        respondedAt: response ? new Date() : undefined,
+        response: guestResponse,
+        respondedAt: guestResponse ? new Date() : undefined,
       },
       include: {
         event: {

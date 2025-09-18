@@ -170,6 +170,20 @@ export async function PUT(request) {
       );
     }
 
+    // Convert response to proper enum value
+    let guestResponse = null;
+    const responseValue = additionalNotes || response;
+    if (responseValue) {
+      const normalizedResponse = responseValue.toString().toLowerCase();
+      if (normalizedResponse === 'yes') {
+        guestResponse = 'YES';
+      } else if (normalizedResponse === 'no') {
+        guestResponse = 'NO';
+      } else if (normalizedResponse === 'maybe') {
+        guestResponse = 'MAYBE';
+      }
+    }
+
     // Update the guest record
     const updatedGuest = await prisma.guest.update({
       where: { id: guest.id },
@@ -177,7 +191,7 @@ export async function PUT(request) {
         name: name || guest.name,
         phone: phone || guest.phone,
         status: newStatus,
-        response: additionalNotes || response || null,
+        response: guestResponse,
         respondedAt: new Date(),
         plusOnes: plusOnes !== undefined ? plusOnes : guest.plusOnes,
         adults: adults !== undefined ? adults : guest.adults,
