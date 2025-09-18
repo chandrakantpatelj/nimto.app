@@ -138,6 +138,7 @@ export async function PUT(request) {
       children,
     } = body;
 
+
     if (!eventId) {
       return NextResponse.json(
         { success: false, error: 'Event ID is required' },
@@ -170,6 +171,23 @@ export async function PUT(request) {
       );
     }
 
+    // Convert response to proper enum value
+    let guestResponse = null;
+    if (response) {
+      const normalizedResponse = response.toString().toLowerCase();
+      if (normalizedResponse === 'yes') {
+        guestResponse = 'YES';
+      } else if (normalizedResponse === 'no') {
+        guestResponse = 'NO';
+      } else if (normalizedResponse === 'maybe') {
+        guestResponse = 'MAYBE';
+      } else if (['YES', 'NO', 'MAYBE'].includes(response.toString().toUpperCase())) {
+        // If it's already a valid enum value, keep it
+        guestResponse = response.toString().toUpperCase();
+      }
+    }
+
+
     // Update the guest record
     const updatedGuest = await prisma.guest.update({
       where: { id: guest.id },
@@ -177,7 +195,7 @@ export async function PUT(request) {
         name: name || guest.name,
         phone: phone || guest.phone,
         status: newStatus,
-        response: additionalNotes || response || null,
+        response: guestResponse,
         respondedAt: new Date(),
         plusOnes: plusOnes !== undefined ? plusOnes : guest.plusOnes,
         adults: adults !== undefined ? adults : guest.adults,

@@ -5,7 +5,7 @@ import { generateDirectS3Url } from '@/lib/s3-utils';
 // GET /api/public/guests/[guestId] - Get guest record by ID (public access for invitations)
 export async function GET(request, { params }) {
   try {
-    const { guestId } = params;
+    const { guestId } = await params;
 
     if (!guestId) {
       return NextResponse.json(
@@ -19,37 +19,12 @@ export async function GET(request, { params }) {
       where: { id: guestId },
       include: {
         event: {
-          select: {
-            id: true,
-            title: true,
-            date: true,
-            time: true,
-            location: true,
-            description: true,
-            status: true,
-            isTrashed: true,
-            templateId: true,
-            allowFamilyHeadcount: true,
-            allowMaybeRSVP: true,
-            allowPlusOnes: true,
-            limitEventCapacity: true,
-            maxEventCapacity: true,
-            maxPlusOnes: true,
-            privateGuestList: true,
+          include: {
             User: {
               select: {
                 id: true,
                 name: true,
                 email: true,
-              },
-            },
-          },
-          include: {
-            Template: {
-              select: {
-                id: true,
-                name: true,
-                category: true,
               },
             },
           },
@@ -73,8 +48,13 @@ export async function GET(request, { params }) {
     }
 
     // Generate S3 URL for event image if it exists
-    if (guest.event.imagePath) {
-      guest.event.s3ImageUrl = generateDirectS3Url(guest.event.imagePath);
+    try {
+      if (guest.event.imagePath) {
+        guest.event.s3ImageUrl = generateDirectS3Url(guest.event.imagePath);
+      }
+    } catch (s3Error) {
+      console.warn('S3 URL generation failed:', s3Error);
+      // Continue without S3 URL
     }
 
     return NextResponse.json({
