@@ -59,22 +59,6 @@ function EditEventContent() {
 
         const templateData = template.data || template;
 
-        // Debug: Log template data to see what we're getting
-        console.log('Template data loaded:', {
-          id: templateData.id,
-          name: templateData.name,
-          hasJsonContent: !!templateData.jsonContent,
-          hasContent: !!templateData.content,
-          jsonContentType: typeof templateData.jsonContent,
-          contentType: typeof templateData.content,
-          jsonContentPreview: templateData.jsonContent
-            ? templateData.jsonContent.substring(0, 100)
-            : null,
-          contentPreview: templateData.content
-            ? JSON.stringify(templateData.content).substring(0, 100)
-            : null,
-        });
-
         setSelectedEvent({
           title: templateData.name,
           templateId: templateData.id,
@@ -84,7 +68,7 @@ function EditEventContent() {
           location: '',
           status: 'DRAFT',
           guests: [],
-          jsonContent: templateData.content || templateData.jsonContent,
+          jsonContent: templateData.jsonContent,
           imagePath: templateData.imagePath,
           s3ImageUrl: templateData.s3ImageUrl,
           newImageBase64: null,
@@ -123,7 +107,6 @@ function EditEventContent() {
       try {
         // Get thumbnail data and store in local state
         const thumbnailData = await pixieEditorRef.current.getThumbnailData();
-        // const newTab = window.open(thumbnailData.objectUrl, '_blank');
         console.log('thumbnailData', thumbnailData);
         setThumbnailData(thumbnailData);
 
@@ -281,10 +264,10 @@ function EditEventContent() {
   // Loading state
   if (!eventData || isTemplateLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             {isTemplateLoading ? 'Loading template...' : 'Loading...'}
           </p>
         </div>
@@ -309,7 +292,7 @@ function EditEventContent() {
         <Step1 mode="create" pixieEditorRef={pixieEditorRef} />
       )}
       {activeStep === 1 && (
-        <Step2 mode="create" thumbnailData={thumbnailData} />
+        <Step2 mode="create" thumbnailData={thumbnailData} session={session} />
       )}
       {activeStep === 2 && <Step3 mode="create" />}
 

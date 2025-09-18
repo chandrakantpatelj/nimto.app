@@ -21,7 +21,7 @@ function Design() {
     category: '',
     isPremium: false,
     price: 0,
-    content: [], // This will be populated from the canvas
+    jsonContent: null, // This will be populated from the canvas
   });
 
   // Handle form field changes
@@ -69,9 +69,8 @@ function Design() {
         category: formData.category.trim(),
         isPremium: formData.isPremium,
         price: formData.isPremium ? parseFloat(formData.price) || 0 : 0,
-        content: formData.content,
+        jsonContent: formData.jsonContent,
         // These will be populated when canvas is implemented
-        previewImageUrl: null,
         imagePath: null,
       };
 

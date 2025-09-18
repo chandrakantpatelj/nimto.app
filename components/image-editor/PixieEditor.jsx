@@ -382,57 +382,8 @@ const PixieEditor = forwardRef(
             openImageDialog: { show: false },
           },
           onLoad: async (editor) => {
-            // Wait a moment for the editor to be fully ready
-            setTimeout(async () => {
-              if (initialContent) {
-                try {
-                  console.log('PixieEditor onLoad: Loading initial content:', {
-                    hasContent: !!initialContent,
-                    contentType: typeof initialContent,
-                    contentPreview: typeof initialContent === 'string' 
-                      ? initialContent.substring(0, 100) 
-                      : JSON.stringify(initialContent).substring(0, 100)
-                  });
-
-                  const initialContentJson =
-                    typeof initialContent === 'string'
-                      ? JSON.parse(initialContent)
-                      : initialContent;
-
-                  if (initialContentJson?.canvas?.objects?.length > 0) {
-                    // Get current state to preserve the loaded image
-                    const currentState = JSON.parse(editor.getState());
-
-                    // Find the image object in current state (the one we just loaded)
-                    const currentImageObj = currentState.canvas?.objects?.find(
-                      (o) => o.type === 'image',
-                    );
-
-                    // Get other objects from saved content (text, shapes, etc.)
-                    const savedObjects =
-                      initialContentJson.canvas?.objects?.filter(
-                        (o) => o.type !== 'image',
-                      ) || [];
-
-                    // Create merged state: current image + saved objects
-                    const mergedState = {
-                      ...initialContentJson,
-                      canvas: {
-                        ...initialContentJson.canvas,
-                        objects: currentImageObj
-                          ? [currentImageObj, ...savedObjects]
-                          : savedObjects,
-                      },
-                    };
-
-                    await editor.setState(mergedState);
-                  }
-                } catch (err) {
-                  console.warn('Failed to load initial content in onLoad:', err);
-                }
-              }
-            }, 100); // Small delay to ensure editor is ready
-            
+            // Editor is ready, set loading to false
+            // Content loading is now handled by the consolidated useEffect
             setIsLoading(false);
           },
         });
@@ -476,63 +427,76 @@ const PixieEditor = forwardRef(
       };
     }, [containerId]);
 
-    // Handle initialImageUrl changes
+    // Handle initialImageUrl and initialContent changes - consolidated to avoid race conditions
     useEffect(() => {
-      if (initialImageUrl && pixieRef.current && !isLoading) {
-        loadImageIntoPixie(initialImageUrl);
-      }
-    }, [initialImageUrl, isLoading]);
+      if (pixieRef.current && !isLoading) {
+        const loadContent = async () => {
+          try {
+            // First, load the image if provided
+            if (initialImageUrl) {
+              console.log(
+                'PixieEditor: Loading initial image:',
+                initialImageUrl,
+              );
+              await loadImageIntoPixie(initialImageUrl);
 
-    // Handle initialContent changes
-    useEffect(() => {
-      if (initialContent && pixieRef.current && !isLoading) {
-        try {
-          console.log('PixieEditor: Loading initial content:', {
-            hasContent: !!initialContent,
-            contentType: typeof initialContent,
-            contentPreview: typeof initialContent === 'string' 
-              ? initialContent.substring(0, 100) 
-              : JSON.stringify(initialContent).substring(0, 100)
-          });
+              // Wait a bit for image to load
+              await new Promise((resolve) => setTimeout(resolve, 500));
+            }
 
-          const initialContentJson =
-            typeof initialContent === 'string'
-              ? JSON.parse(initialContent)
-              : initialContent;
+            // Then, load the content if provided
+            if (initialContent) {
+              console.log('PixieEditor: Loading initial content:', {
+                hasContent: !!initialContent,
+                contentType: typeof initialContent,
+                contentPreview:
+                  typeof initialContent === 'string'
+                    ? initialContent.substring(0, 100)
+                    : JSON.stringify(initialContent).substring(0, 100),
+              });
 
-          if (initialContentJson?.canvas?.objects?.length > 0) {
-            // Get current state to preserve the loaded image
-            const currentState = JSON.parse(pixieRef.current.getState());
-            
-            // Find the image object in current state (the one we just loaded)
-            const currentImageObj = currentState.canvas?.objects?.find(
-              (o) => o.type === 'image',
-            );
+              const initialContentJson =
+                typeof initialContent === 'string'
+                  ? JSON.parse(initialContent)
+                  : initialContent;
 
-            // Get other objects from saved content (text, shapes, etc.)
-            const savedObjects =
-              initialContentJson.canvas?.objects?.filter(
-                (o) => o.type !== 'image',
-              ) || [];
+              if (initialContentJson?.canvas?.objects?.length > 0) {
+                // Get current state to preserve the loaded image
+                const currentState = JSON.parse(pixieRef.current.getState());
 
-            // Create merged state: current image + saved objects
-            const mergedState = {
-              ...initialContentJson,
-              canvas: {
-                ...initialContentJson.canvas,
-                objects: currentImageObj
-                  ? [currentImageObj, ...savedObjects]
-                  : savedObjects,
-              },
-            };
+                // Find the image object in current state (the one we just loaded)
+                const currentImageObj = currentState.canvas?.objects?.find(
+                  (o) => o.type === 'image',
+                );
 
-            pixieRef.current.setState(mergedState);
+                // Get other objects from saved content (text, shapes, etc.)
+                const savedObjects =
+                  initialContentJson.canvas?.objects?.filter(
+                    (o) => o.type !== 'image',
+                  ) || [];
+
+                // Create merged state: current image + saved objects
+                const mergedState = {
+                  ...initialContentJson,
+                  canvas: {
+                    ...initialContentJson.canvas,
+                    objects: currentImageObj
+                      ? [currentImageObj, ...savedObjects]
+                      : savedObjects,
+                  },
+                };
+
+                pixieRef.current.setState(mergedState);
+              }
+            }
+          } catch (error) {
+            console.error('Error loading initial content:', error);
           }
-        } catch (err) {
-          console.warn('Failed to load initial content:', err);
-        }
+        };
+
+        loadContent();
       }
-    }, [initialContent, isLoading]);
+    }, [initialImageUrl, initialContent, isLoading]);
 
     return (
       <div className="relative">

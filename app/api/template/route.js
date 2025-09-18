@@ -88,6 +88,9 @@ export async function GET(request) {
         result.templateThumbnailUrl = thumbnailUrl;
       }
 
+      // Keep jsonContent as is - no parsing needed
+      // The client can parse jsonContent when needed
+
       return result;
     });
 

@@ -26,12 +26,7 @@ export async function POST(request) {
     const {
       name,
       category,
-      content,
-      backgroundStyle,
-      htmlContent,
-      background,
-      pageBackground,
-      previewImageUrl,
+      jsonContent,
       isPremium = false,
       price = 0,
       isSystemTemplate = false,
@@ -46,22 +41,11 @@ export async function POST(request) {
       );
     }
 
-    // Convert content array to JSON string
-    const jsonContent = content ? JSON.stringify(content) : null;
-    const backgroundStyleJson = backgroundStyle
-      ? JSON.stringify(backgroundStyle)
-      : null;
-
     const template = await prisma.template.create({
       data: {
         name,
         category,
         jsonContent,
-        backgroundStyle: backgroundStyleJson,
-        htmlContent,
-        background,
-        pageBackground,
-        previewImageUrl,
         isPremium,
         price,
         isSystemTemplate,

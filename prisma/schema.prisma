@@ -163,11 +163,6 @@ model Template {
   name             String
   category         String
   jsonContent      String?
-  backgroundStyle  String?
-  htmlContent      String?
-  background       String?
-  pageBackground   String?
-  previewImageUrl  String?
   isPremium        Boolean  @default(false)
   price            Float    @default(0)
   isSystemTemplate Boolean  @default(false)

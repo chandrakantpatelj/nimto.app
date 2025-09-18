@@ -19,26 +19,26 @@ function InvitationPopup({
   // Show only loader when loading
   if (isLoading) {
     return (
-      <div className="fixed inset-0 backdrop-blur-sm bg-white/20 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg shadow-md p-6 flex flex-col items-center">
+      <div className="fixed inset-0 backdrop-blur-sm bg-background/20 flex items-center justify-center z-50">
+        <div className="bg-card rounded-lg shadow-md p-6 flex flex-col items-center border border-border">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-3"></div>
-          <p className="text-sm text-gray-600">Processing...</p>
+          <p className="text-sm text-muted-foreground">Processing...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="fixed inset-0 backdrop-blur-sm bg-white/20 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+    <div className="fixed inset-0 backdrop-blur-sm bg-background/20 flex items-center justify-center z-50">
+      <div className="bg-card rounded-lg shadow-xl max-w-md w-full mx-4 border border-border">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">
+        <div className="flex items-center justify-between p-6 border-b border-border">
+          <h3 className="text-lg font-semibold text-foreground">
             Send Invitations
           </h3>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-muted-foreground hover:text-foreground transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -47,7 +47,7 @@ function InvitationPopup({
         {/* Content */}
         <div className="p-6">
           <div className="mb-6">
-            <p className="text-gray-600 mb-4">
+            <p className="text-muted-foreground mb-4">
               {newGuestsCount > 0
                 ? `You have ${totalGuestsCount} guest${totalGuestsCount > 1 ? 's' : ''} in your list (${newGuestsCount} newly added). Choose how you'd like to handle invitations:`
                 : `You have ${totalGuestsCount} guest${totalGuestsCount > 1 ? 's' : ''} in your list. Choose how you'd like to handle invitations:`}

@@ -74,20 +74,20 @@ function Step3() {
   );
 
   return (
-    <div className="flex flex-1 overflow-hidden">
+    <div className="flex flex-1 overflow-hidden bg-background">
       <main className="flex-1 overflow-auto p-8">
         <div className="max-w-4xl mx-auto">
           {/* Main Card */}
-          <div className="bg-background rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-card rounded-xl shadow-sm border border-border p-6">
             <div className="space-y-8">
               {/* Add a Guest Section */}
               <div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                <h2 className="text-xl font-bold text-foreground dark:text-white mb-4">
                   Add a Guest
                 </h2>
                 <div className="flex gap-4">
                   <div className="flex-1">
-                    <label htmlFor="guest-name" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="guest-name" className="block text-sm font-medium text-foreground mb-2">
                       Guest Name
                     </label>
                     <Input
@@ -101,7 +101,7 @@ function Step3() {
                     />
                   </div>
                   <div className="flex-1">
-                    <label htmlFor="guest-email" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="guest-email" className="block text-sm font-medium text-foreground mb-2">
                       Email
                     </label>
                     <Input
@@ -115,7 +115,7 @@ function Step3() {
                     />
                   </div>
                   <div className="flex-1">
-                    <label htmlFor="guest-phone" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="guest-phone" className="block text-sm font-medium text-foreground mb-2">
                       Phone
                     </label>
                     <Input
@@ -140,18 +140,18 @@ function Step3() {
               {/* Invited Guests Section */}
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-gray-900">
+                  <h2 className="text-xl font-bold text-foreground dark:text-white">
                     Invited Guests ({(eventData?.guests || []).length})
                   </h2>
                 </div>
 
                 {/* Guest Requirement Notice */}
                 {(eventData?.guests || []).length === 0 && (
-                  <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                  <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/50 rounded-lg">
                     <div className="flex items-start gap-3">
-                      <div className="w-5 h-5 bg-amber-100 rounded-full flex items-center justify-center mt-0.5">
+                      <div className="w-5 h-5 bg-amber-100 dark:bg-amber-900/50 rounded-full flex items-center justify-center mt-0.5">
                         <svg
-                          className="w-3 h-3 text-amber-600"
+                          className="w-3 h-3 text-amber-600 dark:text-amber-400"
                           fill="currentColor"
                           viewBox="0 0 20 20"
                         >
@@ -163,10 +163,10 @@ function Step3() {
                         </svg>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-amber-900 mb-1">
+                        <p className="text-sm font-medium text-amber-900 dark:text-amber-100 mb-1">
                           Guest Required
                         </p>
-                        <p className="text-xs text-amber-700">
+                        <p className="text-xs text-amber-700 dark:text-amber-300">
                           You must add at least one guest to create an event.
                           Events without guests cannot be published.
                         </p>
@@ -178,7 +178,7 @@ function Step3() {
                 {/* Search and Actions Bar */}
                 <div className="flex items-center gap-4 mb-6">
                   <div className="flex-1 relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
                       type="text"
                       placeholder="Search guests..."
@@ -190,7 +190,7 @@ function Step3() {
                     variant="ghost"
                     size="sm"
                     onClick={() => setIsDrawerOpen(true)}
-                    className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
                   >
                     <Settings className="w-4 h-4" />
                   </Button>
@@ -200,48 +200,48 @@ function Step3() {
                 </div>
 
                 {/* Guests Table */}
-                <div className="overflow-hidden border border-gray-200 rounded-lg">
+                <div className="overflow-hidden border border-border rounded-lg">
                   <table className="w-full">
-                    <thead className="bg-gray-50">
+                    <thead className="bg-muted/50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                           NAME
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                           EMAIL
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                           PHONE
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                           STATUS
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                           ACTIONS
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-background divide-y divide-gray-200">
+                    <tbody className="bg-card divide-y divide-border">
                       {filteredGuests.map((guest) => (
                         <tr
                           key={guest.id || guest.tempId}
-                          className="hover:bg-gray-50"
+                          className="hover:bg-muted/50"
                         >
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">
                             {guest.name}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                             {guest.email || '-'}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                             {guest.phone || '-'}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                            <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200">
                               {guest.status}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                             <Button
                               variant="destructive"
                               appearance="ghost"
@@ -261,10 +261,10 @@ function Step3() {
                 {/* Empty State */}
                 {filteredGuests.length === 0 && (
                   <div className="text-center py-8">
-                    <div className="text-gray-400 mb-2">
+                    <div className="text-muted-foreground mb-2">
                       <UserPlus className="w-12 h-12 mx-auto" />
                     </div>
-                    <p className="text-gray-500">
+                    <p className="text-muted-foreground">
                       {searchTerm
                         ? 'No guests found matching your search.'
                         : 'No guests invited yet.'}

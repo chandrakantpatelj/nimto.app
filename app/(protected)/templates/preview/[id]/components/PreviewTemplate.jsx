@@ -62,20 +62,9 @@ function PreviewTemplate({ template }) {
             </h3>
 
             {/* Preview Canvas */}
-            <div
-              className="relative w-full h-96 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center overflow-hidden"
-              style={{
-                background:
-                  template.background || template.pageBackground || '#f3f4f6',
-              }}
-            >
+            <div className="relative w-full h-96 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center overflow-hidden">
               {/* Template Content Card */}
-              <div
-                className="relative w-80 h-64 bg-white dark:bg-gray-700 rounded-lg shadow-lg p-6 transform rotate-3"
-                style={{
-                  background: template.pageBackground || 'white',
-                }}
-              >
+              <div className="relative w-80 h-64 bg-white dark:bg-gray-700 rounded-lg shadow-lg p-6 transform rotate-3">
                 {/* Watermark */}
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <div className="text-gray-200 dark:text-gray-600 text-4xl font-bold transform -rotate-45 opacity-20">
