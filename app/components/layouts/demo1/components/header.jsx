@@ -49,7 +49,7 @@ export function Header() {
   return (
     <header
       className={cn(
-        'header fixed top-0 z-10  flex items-stretch shrink-0 border-b border-transparent bg-background end-0 pe-[var(--removed-body-scroll-bar-size,0px)]',
+        'header fixed left-0 w-full top-0 z-10  flex items-stretch shrink-0 border-b border-transparent bg-background end-0 pe-[var(--removed-body-scroll-bar-size,0px)]',
         headerSticky && 'border-b border-border',
       )}
     >
@@ -58,7 +58,7 @@ export function Header() {
         <div className="flex items-center gap-4">
           {/* HeaderLogo */}
           <div className="flex gap-1 lg:hidden items-center gap-2.5">
-            <Link href="/" className="shrink-0">
+            <Link href="/dashboard" className="shrink-0">
               <img
                 src={toAbsoluteUrl('/media/app/mini-logo.svg')}
                 className="h-[25px] w-full"

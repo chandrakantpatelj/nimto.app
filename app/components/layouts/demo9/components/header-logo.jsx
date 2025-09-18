@@ -29,7 +29,7 @@ export function HeaderLogo() {
   return (
     <div className="flex items-center gap-1 lg:w-[400px] grow lg:grow-0">
       <div className="flex items-center gap-2 shrink-0">
-        <Link href="/">
+        <Link href="/dashboard">
           <img
             src={toAbsoluteUrl('/media/app/mini-logo-circle.svg')}
             className="shrink-0 dark:hidden min-h-[34px]"

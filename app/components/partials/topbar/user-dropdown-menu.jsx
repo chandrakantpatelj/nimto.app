@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { I18N_LANGUAGES } from '@/i18n/config';
 import {
   BetweenHorizontalStart,
@@ -16,6 +17,7 @@ import {
 import { signOut, useSession } from 'next-auth/react';
 import { useTheme } from 'next-themes';
 import { toAbsoluteUrl } from '@/lib/helpers';
+import { useLogout } from '@/lib/logout-utils';
 import { useLanguage } from '@/providers/i18n-provider';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -35,6 +37,11 @@ import { Switch } from '@/components/ui/switch';
 
 export function UserDropdownMenu({ trigger }) {
   const { data: session, status } = useSession();
+  const router = useRouter();
+  const logout = useLogout();
+
+  console.log('session98597', session);
+
   const { changeLanguage, language } = useLanguage();
   const { theme, setTheme } = useTheme();
 
@@ -44,6 +51,20 @@ export function UserDropdownMenu({ trigger }) {
 
   const handleThemeToggle = (checked) => {
     setTheme(checked ? 'dark' : 'light');
+  };
+
+  const handleLogout = async () => {
+    await logout({
+      redirect: true,
+      redirectUrl: '/',
+      reload: true,
+      onSuccess: () => {
+        console.log('Logout successful');
+      },
+      onError: (error) => {
+        console.error('Logout failed:', error);
+      },
+    });
   };
 
   // Don't render session-dependent content until session is loaded
@@ -261,7 +282,7 @@ export function UserDropdownMenu({ trigger }) {
             variant="outline"
             size="sm"
             className="w-full"
-            onClick={() => signOut()}
+            onClick={handleLogout}
           >
             Logout
           </Button>

@@ -8,51 +8,7 @@ async function main() {
 
   await prisma.$transaction(
     async (tx) => {
-      // Ensure the owner role exists
-      const ownerRole = await tx.userRole.upsert({
-        where: { slug: 'owner' },
-        update: {}, // No updates needed, ensures idempotency
-        create: {
-          slug: 'owner',
-          name: 'Owner',
-          description: 'The default system role with full access.',
-          isProtected: true,
-          isDefault: false, // Optional: set to false if it's not the default role
-        },
-      });
-
-      // Create the owner user
-      const ownerPassword = await bcrypt.hash('123456', 10);
-      const demoPassword = await bcrypt.hash('demo123', 10);
-
-      const ownerUser = await tx.user.upsert({
-        where: { email: 'owner@example.com' },
-        update: {}, // No updates needed, ensures idempotency
-        create: {
-          email: 'owner@example.com',
-          name: 'System Owner',
-          password: ownerPassword,
-          roleId: ownerRole.id,
-          avatar: null, // Optional: Add avatar URL if available
-          emailVerifiedAt: new Date(), // Optional: Mark email as verified
-          status: 'ACTIVE',
-        },
-      });
-
-      const demoUser = await tx.user.upsert({
-        where: { email: 'demo@kt.com' },
-        update: {}, // No updates needed, ensures idempotency
-        create: {
-          isProtected: true,
-          email: 'demo@shoplit.com',
-          name: 'Demo',
-          password: demoPassword,
-          roleId: ownerRole.id,
-          avatar: null, // Optional: Add avatar URL if available
-          emailVerifiedAt: new Date(), // Optional: Mark email as verified
-          status: 'ACTIVE',
-        },
-      });
+      // Demo users and owner role have been removed
 
       // Seed UserRoles
       const defaultRole = await tx.userRole.create({

@@ -1,0 +1,91 @@
+import { NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
+import { generateDirectS3Url } from '@/lib/s3-utils';
+
+// GET /api/public/guests/[guestId] - Get guest record by ID (public access for invitations)
+export async function GET(request, { params }) {
+  try {
+    const { guestId } = params;
+
+    if (!guestId) {
+      return NextResponse.json(
+        { success: false, error: 'Guest ID is required' },
+        { status: 400 },
+      );
+    }
+
+    // Get guest record with basic event information
+    const guest = await prisma.guest.findUnique({
+      where: { id: guestId },
+      include: {
+        event: {
+          select: {
+            id: true,
+            title: true,
+            date: true,
+            time: true,
+            location: true,
+            description: true,
+            status: true,
+            isTrashed: true,
+            templateId: true,
+            allowFamilyHeadcount: true,
+            allowMaybeRSVP: true,
+            allowPlusOnes: true,
+            limitEventCapacity: true,
+            maxEventCapacity: true,
+            maxPlusOnes: true,
+            privateGuestList: true,
+            User: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+          include: {
+            Template: {
+              select: {
+                id: true,
+                name: true,
+                category: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!guest) {
+      return NextResponse.json(
+        { success: false, error: 'Guest record not found' },
+        { status: 404 },
+      );
+    }
+
+    // Check if event is valid and not trashed
+    if (!guest.event || guest.event.isTrashed || guest.event.status === 'CANCELLED') {
+      return NextResponse.json(
+        { success: false, error: 'Event is no longer available' },
+        { status: 404 },
+      );
+    }
+
+    // Generate S3 URL for event image if it exists
+    if (guest.event.imagePath) {
+      guest.event.s3ImageUrl = generateDirectS3Url(guest.event.imagePath);
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: guest,
+    });
+  } catch (error) {
+    console.error('Error fetching public guest:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to fetch guest information' },
+      { status: 500 },
+    );
+  }
+}

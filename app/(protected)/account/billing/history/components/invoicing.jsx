@@ -9,7 +9,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import { Download, Settings2 } from 'lucide-react';
-import { toast } from 'sonner';
+import { useToast } from '@/providers/toast-provider';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {

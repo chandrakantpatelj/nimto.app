@@ -10,14 +10,16 @@ import { AuthProvider } from '@/providers/auth-provider';
 import { I18nProvider } from '@/providers/i18n-provider';
 import { ModulesProvider } from '@/providers/modules-provider';
 import { QueryProvider } from '@/providers/query-provider';
+import { ReduxProvider } from '@/providers/redux-provider';
 import { ThemeProvider } from '@/providers/theme-provider';
+import { ToastProvider } from '@/providers/toast-provider';
 
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
   title: {
-    template: '%s | Metronic',
-    default: 'Metronic', // a default is required when creating a template
+    template: '%s | Nimto',
+    default: 'Nimto', // a default is required when creating a template
   },
 };
 
@@ -31,22 +33,26 @@ export default async function RootLayout({ children }) {
         )}
         suppressHydrationWarning
       >
-        <QueryProvider>
-          <AuthProvider>
-            <SettingsProvider>
-              <ThemeProvider>
-                <I18nProvider>
-                  <TooltipsProvider>
-                    <ModulesProvider>
-                      <Suspense>{children}</Suspense>
-                      <Toaster />
-                    </ModulesProvider>
-                  </TooltipsProvider>
-                </I18nProvider>
-              </ThemeProvider>
-            </SettingsProvider>
-          </AuthProvider>
-        </QueryProvider>
+        <ReduxProvider>
+          <QueryProvider>
+            <AuthProvider>
+              <SettingsProvider>
+                <ThemeProvider>
+                  <I18nProvider>
+                    <TooltipsProvider>
+                      <ModulesProvider>
+                        <ToastProvider>
+                          <Suspense>{children}</Suspense>
+                          <Toaster />
+                        </ToastProvider>
+                      </ModulesProvider>
+                    </TooltipsProvider>
+                  </I18nProvider>
+                </ThemeProvider>
+              </SettingsProvider>
+            </AuthProvider>
+          </QueryProvider>
+        </ReduxProvider>
       </body>
     </html>
   );

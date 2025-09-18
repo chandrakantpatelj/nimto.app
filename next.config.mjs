@@ -13,8 +13,8 @@ const nextConfig = {
   
   // Experimental features that might help with hydration
   experimental: {
-    // Enable concurrent features
-    concurrentFeatures: true,
+    // Enable modern React features
+    optimizePackageImports: ['lucide-react'],
   },
   
   // Add timeout configurations
@@ -28,12 +28,25 @@ const nextConfig = {
     timeout: 30000, // 30 seconds
   },
   
-  // Webpack configuration to help with debugging
+  // Webpack configuration to help with debugging and handle local modules
   webpack: (config, { dev, isServer }) => {
     if (dev && !isServer) {
       // Add source maps for better debugging
       config.devtool = 'eval-source-map';
     }
+    
+    // Handle local modules
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@pixie': '/local_modules/pixie',
+    };
+    
+    // Handle UMD modules
+    config.module.rules.push({
+      test: /\.umd\.js$/,
+      type: 'asset/resource',
+    });
+    
     return config;
   },
   
@@ -51,6 +64,8 @@ const nextConfig = {
       },
     ];
   },
+  
+
 };
 
 export default nextConfig;

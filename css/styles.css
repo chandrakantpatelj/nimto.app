@@ -26,6 +26,11 @@
 /* Demos */
 @import './demos/demo1.css';
 
+/* Pixie Editor Customizations */
+.pixie-editor-container .z-loading-indicator {
+  display: none !important;
+}
+
 /** Dark/Light Theme Variant **/
 @custom-variant dark (&:is(.dark *));
 @custom-variant light (&:not(.dark *));

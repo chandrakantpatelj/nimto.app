@@ -25,6 +25,8 @@ const buttonVariants = cva(
         dim: 'text-muted-foreground hover:text-foreground data-[state=open]:text-foreground',
         foreground: '',
         inverse: '',
+        softDanger: 'bg-red-100 text-red-600 hover:bg-red-200',
+        softPrimary: 'bg-blue-100 text-blue-600 hover:bg-blue-200',
       },
       appearance: {
         default: '',
@@ -73,6 +75,17 @@ const buttonVariants = cva(
     },
     compoundVariants: [
       // Icons opacity for default mode
+      {
+        variant: 'outline',
+        mode: 'primary',
+        className: 'border border-primary text-primary hover:bg-primary/10',
+      },
+      {
+        variant: 'secondary',
+        mode: 'default',
+        className:
+          'bg-secondary text-secondary-foreground hover:bg-secondary/90',
+      },
       {
         variant: 'ghost',
         mode: 'default',

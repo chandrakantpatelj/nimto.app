@@ -6,7 +6,7 @@ import { RiCheckboxCircleFill, RiErrorWarningFill } from '@remixicon/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { LoaderCircleIcon, X } from 'lucide-react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
+import { useToast } from '@/providers/toast-provider';
 import { apiFetch } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import {
@@ -70,7 +70,9 @@ const RoleEditDialog = ({ open, closeDialog, role }) => {
 
   useEffect(() => {
     if (open) {
-      const permissionIds = role?.permissions?.map((p) => p.id) ?? [];
+      // Handle both nested permission structure and flat structure
+      const permissionIds =
+        role?.permissions?.map((p) => p.id || p.permission?.id) ?? [];
 
       form.reset({
         name: role?.name || '',
@@ -125,7 +127,7 @@ const RoleEditDialog = ({ open, closeDialog, role }) => {
         ),
 
         {
-          position: 'top-center',
+          position: 'bottom-right',
           duration: 1000 * 5, // 5 seconds
         },
       );
@@ -146,7 +148,7 @@ const RoleEditDialog = ({ open, closeDialog, role }) => {
         ),
 
         {
-          position: 'top-center',
+          position: 'bottom-right',
         },
       );
     },

@@ -1,254 +1,184 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { useSelectedTemplate, useTemplateActions } from '@/store/hooks';
 import { apiFetch } from '@/lib/api';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { showCustomToast } from '@/components/common/custom-toast';
-import { TemplateHeader } from '../components';
+import { useTemplateImage } from '@/hooks/use-template-image';
+import { useToast } from '@/providers/toast-provider';
+import TemplateDesignLayout from '../components/TemplateDesignLayout';
 
 function EditTemplate() {
   const router = useRouter();
+  const params = useParams();
+  const templateId = params.id;
+
+  // Redux state and actions
+  const selectedTemplate = useSelectedTemplate();
+  const { fetchTemplateById } = useTemplateActions();
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [fetchingTemplate, setFetchingTemplate] = useState(false);
 
-  // Form state
-  const [formData, setFormData] = useState({
-    name: '',
-    category: '',
-    isPremium: false,
-    price: 0,
-    background: '',
-    pageBackground: '',
-    content: [], // This will be populated from the canvas
-    backgroundStyle: {}, // This will be populated from the canvas
-    htmlContent: '', // This will be populated from the canvas
-  });
+  // Template image operations
+  const { uploadTemplateImage } = useTemplateImage();
 
-  // Handle form field changes
-  const handleInputChange = (field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+  // Toast functions
+  const { toastSuccess, toastError, toastInfo, toastWarning } = useToast();
+
+  // Fetch template data using Redux - OPTIMIZED: No local formData needed
+  const fetchTemplateData = async () => {
+    if (!templateId) {
+      return;
+    }
+
+    try {
+      setFetchingTemplate(true);
+      setError(null);
+
+      if (!selectedTemplate || selectedTemplate.id !== templateId) {
+        const result = await fetchTemplateById(templateId);
+        if (!result.payload) {
+          throw new Error('Failed to fetch template');
+        }
+      }
+      console.log('selectedTemplate222', selectedTemplate);
+    } catch (err) {
+      setError(err.message);
+      toastError('Failed to load template');
+    } finally {
+      setFetchingTemplate(false);
+    }
   };
+  console.log('selectedTemplate', selectedTemplate);
 
-  // Handle template name change (for header input)
-  const handleTemplateNameChange = (e) => {
-    const value = e.target.value;
-    setFormData((prev) => ({
-      ...prev,
-      name: value,
-    }));
-  };
+  // Load template data on component mount - FIXED: Prevent multiple API calls
+  useEffect(() => {
+    fetchTemplateData();
+  }, [templateId]); // Removed selectedTemplate from dependencies to prevent multiple calls
 
-  // Handle radio button change
-  const handleTypeChange = (value) => {
-    setFormData((prev) => ({
-      ...prev,
-      isPremium: value === 'premium',
-    }));
-  };
-
-  // Save template function
-  const handleSaveTemplate = async () => {
+  // Handle save template - UPDATE API logic - OPTIMIZED: Use selectedTemplate directly
+  const handleSaveTemplate = async (
+    templateData,
+    uploadedImageFile,
+    thumbnailData,
+  ) => {
     try {
       setLoading(true);
       setError(null);
 
-      // Validate required fields
-      if (!formData.name.trim()) {
-        throw new Error('Template name is required');
-      }
-      if (!formData.category.trim()) {
-        throw new Error('Category is required');
-      }
+      // Use selectedTemplate as base, merge with form changes
 
-      // Prepare the data for API
-      const templateData = {
-        name: formData.name.trim(),
-        category: formData.category.trim(),
-        isPremium: formData.isPremium,
-        price: formData.isPremium ? parseFloat(formData.price) || 0 : 0,
-        background: formData.background || null,
-        pageBackground: formData.pageBackground || null,
-        content: formData.content,
-        backgroundStyle: formData.backgroundStyle,
-        htmlContent: formData.htmlContent || null,
-        // These will be populated when canvas is implemented
-        previewImageUrl: null,
-        imagePath: null,
+      const templateToSave = {
+        ...templateData,
+        // imagePath: templateImagePath,
       };
 
-      const response = await apiFetch('/api/template/create-template', {
-        method: 'POST',
+      // Update existing template
+      const response = await apiFetch(`/api/template/${templateId}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(templateData),
+        body: JSON.stringify(templateToSave),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create template');
+        throw new Error(errorData.error || 'Failed to update template');
       }
 
       const result = await response.json();
 
       if (result.success) {
-        showCustomToast('Template created successfully', 'success');
+        // Upload image if there's a new uploaded file
+        if (uploadedImageFile) {
+          await uploadTemplateImage(templateId, uploadedImageFile);
+        }
 
+        // Upload thumbnail if thumbnail data is available
+        if (thumbnailData) {
+          try {
+            toastInfo('Updating thumbnail...');
+            const thumbnailResponse = await apiFetch(
+              `/api/template/${templateId}/upload-thumbnail`,
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  imageBlob: thumbnailData.base64Data,
+                  imageFormat: 'png',
+                }),
+              },
+            );
+
+            if (!thumbnailResponse.ok) {
+              const thumbnailError = await thumbnailResponse.json();
+              throw new Error(
+                thumbnailError.error || 'Failed to upload thumbnail',
+              );
+            }
+
+            const thumbnailResult = await thumbnailResponse.json();
+            if (thumbnailResult.success) {
+              const message = thumbnailResult.data.isOverwrite
+                ? 'Thumbnail updated successfully'
+                : 'Thumbnail uploaded successfully';
+              toastSuccess(message);
+            } else {
+              throw new Error(
+                thumbnailResult.error || 'Failed to upload thumbnail',
+              );
+            }
+          } catch (thumbnailError) {
+            console.error('Thumbnail upload failed:', thumbnailError);
+            toastWarning(
+              'Template updated but thumbnail upload failed: ' +
+                thumbnailError.message,
+            );
+          }
+        }
+
+        toastSuccess('Template updated successfully');
         router.push('/templates');
       } else {
-        throw new Error(result.error || 'Failed to create template');
+        throw new Error(result.error || 'Failed to update template');
       }
     } catch (err) {
-      console.error('Error saving template:', err);
       setError(err.message);
+      throw err;
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <>
-      <TemplateHeader
-        onSave={handleSaveTemplate}
-        loading={loading}
-        templateName={formData.name}
-        onTemplateNameChange={handleTemplateNameChange}
-      />
-      <div className="flex flex-1 overflow-hidden">
-        <aside className="w-64 flex-shrink-0 bg-white p-4 border-r border-slate-200 overflow-y-auto min-h-[calc(100vh-var(--header-height))] h-100">
-          <Tabs
-            defaultValue="profile"
-            className="text-sm text-muted-foreground"
-          >
-            <TabsList variant="line">
-              <TabsTrigger value="profile">Details</TabsTrigger>
-              <TabsTrigger value="security">Design</TabsTrigger>
-            </TabsList>
-            <TabsContent value="profile">
-              <div className="py-3">
-                {error && (
-                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-                    <p className="text-red-600 text-sm">{error}</p>
-                  </div>
-                )}
-
-                <div className="w-full mb-5">
-                  <Label className="text-muted-foreground">Template Name</Label>
-                  <Input
-                    type="text"
-                    value={formData.name}
-                    onChange={handleTemplateNameChange}
-                    placeholder="Enter template name"
-                  />
-                </div>
-                <div className="w-full mb-5">
-                  <Label className="text-muted-foreground">Category</Label>
-                  <Input
-                    type="text"
-                    value={formData.category}
-                    onChange={(e) =>
-                      handleInputChange('category', e.target.value)
-                    }
-                    placeholder="e.g., Birthday, Corporate, Wedding"
-                  />
-                </div>
-                <Label className="text-muted-foreground">Type </Label>
-
-                <RadioGroup
-                  value={formData.isPremium ? 'premium' : 'free'}
-                  onValueChange={handleTypeChange}
-                  className="flex items-center gap-5 mb-5"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="free" id="free" />
-                    <Label
-                      htmlFor="free"
-                      className="text-foreground text-sm font-normal"
-                    >
-                      Free
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="premium" id="premium" />
-                    <Label
-                      htmlFor="premium"
-                      className="text-foreground text-sm font-normal"
-                    >
-                      Premium
-                    </Label>
-                  </div>
-                </RadioGroup>
-                {formData.isPremium && (
-                  <div className="w-full mb-5">
-                    <Label className="text-muted-foreground">
-                      Price (in dollars)
-                    </Label>
-                    <Input
-                      type="number"
-                      value={formData.price}
-                      onChange={(e) =>
-                        handleInputChange('price', e.target.value)
-                      }
-                      placeholder="0.00"
-                      min="0"
-                      step="0.01"
-                    />
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-            <TabsContent value="security">Content for Design</TabsContent>
-          </Tabs>
-        </aside>
-        <main className="flex-1 overflow-auto p-8"></main>
-        <aside className="w-74 flex-shrink-0 bg-white p-4 border-l border-slate-200 overflow-y-auto min-h-[calc(100vh-var(--header-height))] h-100">
-          <div className="space-y-6">
-            <h3 className="font-semibold text-lg mb-2 border-b pb-2">
-              Canvas Settings
-            </h3>
-            <div className="py-3">
-              <p className="text-primary fw-500">Canvas Background</p>
-              <div className="w-full mb-5">
-                <Label className="text-muted-foreground">
-                  Color, Gradient, or URL
-                </Label>
-                <Input
-                  type="text"
-                  value={formData.background}
-                  onChange={(e) =>
-                    handleInputChange('background', e.target.value)
-                  }
-                  placeholder="e.g., #ffffff, linear-gradient(...), or image URL"
-                />
-              </div>
-              <hr className="my-3" />
-              <p className="text-primary fw-500">Page Background</p>
-
-              <div className="w-full mb-5">
-                <Label className="text-muted-foreground">
-                  Color, Gradient, or URL
-                </Label>
-                <Input
-                  type="text"
-                  value={formData.pageBackground}
-                  onChange={(e) =>
-                    handleInputChange('pageBackground', e.target.value)
-                  }
-                  placeholder="e.g., #ffffff, linear-gradient(...), or image URL"
-                />
-              </div>
-            </div>
-          </div>
-        </aside>
+  // Show loading state while fetching template data
+  if (fetchingTemplate) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="text-gray-700">Loading template...</div>
+        </div>
       </div>
-    </>
+    );
+  }
+
+  // Don't render until selectedTemplate is loaded
+  if (!selectedTemplate) {
+    return null;
+  }
+
+  return (
+    <TemplateDesignLayout
+      mode="edit"
+      initialFormData={selectedTemplate}
+      onSave={handleSaveTemplate}
+      loading={loading}
+      error={error}
+      headerButtonText="Update Template"
+    />
   );
 }
 

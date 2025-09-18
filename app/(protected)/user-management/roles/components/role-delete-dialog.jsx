@@ -3,7 +3,7 @@
 import { RiCheckboxCircleFill, RiErrorWarningFill } from '@remixicon/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { LoaderCircleIcon } from 'lucide-react';
-import { toast } from 'sonner';
+import { useToast } from '@/providers/toast-provider';
 import { apiFetch } from '@/lib/api';
 import { Alert, AlertIcon, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -47,7 +47,7 @@ const RoleDeleteDialog = ({ open, closeDialog, role }) => {
         ),
 
         {
-          position: 'top-center',
+          position: 'bottom-right',
           duration: 1000 * 5, // 5 seconds
         },
       );
@@ -68,7 +68,7 @@ const RoleDeleteDialog = ({ open, closeDialog, role }) => {
         ),
 
         {
-          position: 'top-center',
+          position: 'bottom-right',
         },
       );
     },
