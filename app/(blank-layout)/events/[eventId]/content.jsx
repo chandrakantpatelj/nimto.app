@@ -151,12 +151,15 @@ function EditEventContent() {
         guests: eventData.guests || [],
       };
 
-      const response = await fetch(`/api/events/${eventId}`, {
+      const response = await fetch('/api/events/update-event', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify({
+          ...requestBody,
+          id: eventId, // Include the event ID in the request body
+        }),
       });
 
       const data = await response.json();
