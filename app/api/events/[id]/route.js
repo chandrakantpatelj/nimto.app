@@ -188,7 +188,6 @@ export async function PUT(request, { params }) {
         });
 
         await s3Client.send(uploadCommand);
-        console.log(`Uploaded updated event image to S3: ${newImagePath}`);
 
         // Smart cleanup: Delete old image if it's different from template
         if (existingEvent.imagePath && existingEvent.templateId) {
@@ -201,12 +200,6 @@ export async function PUT(request, { params }) {
             if (template && template.imagePath !== existingEvent.imagePath) {
               // Old image was user-uploaded, delete it
               await deleteImageFromS3(existingEvent.imagePath);
-              console.log(
-                `Deleted old user-uploaded image: ${existingEvent.imagePath}`,
-              );
-            } else {
-              // Old image was template image, keep it
-              console.log(`Keeping template image: ${existingEvent.imagePath}`);
             }
           } catch (cleanupError) {
             console.error('Error during image cleanup:', cleanupError);
@@ -215,7 +208,6 @@ export async function PUT(request, { params }) {
         } else if (existingEvent.imagePath && !existingEvent.templateId) {
           // No template, delete the old image
           await deleteImageFromS3(existingEvent.imagePath);
-          console.log(`Deleted old event image: ${existingEvent.imagePath}`);
         }
 
         finalImagePath = newImagePath;
@@ -232,16 +224,6 @@ export async function PUT(request, { params }) {
     let newlyCreatedGuestIds = [];
     if (guests && Array.isArray(guests)) {
       try {
-        console.log('Guest Update Debug:', {
-          totalGuestsInRequest: guests.length,
-          guests: guests.map((g) => ({
-            id: g.id,
-            name: g.name,
-            email: g.email,
-            isNew: !g.id,
-          })),
-        });
-
         // Process each guest - update existing or create new
         for (const guest of guests) {
           if (
@@ -251,7 +233,6 @@ export async function PUT(request, { params }) {
             !guest.id.startsWith('temp-')
           ) {
             // Update existing guest (has a valid database ID)
-            console.log('Updating existing guest:', guest.name, guest.id);
             await prisma.guest.update({
               where: { id: guest.id },
               data: {
@@ -263,7 +244,6 @@ export async function PUT(request, { params }) {
             });
           } else {
             // Create new guest (no ID, temp ID, or invalid ID)
-            console.log('Creating new guest:', guest.name, guest.email);
             const newGuest = await prisma.guest.create({
               data: {
                 eventId: id,
@@ -274,11 +254,8 @@ export async function PUT(request, { params }) {
               },
             });
             newlyCreatedGuestIds.push(newGuest.id);
-            console.log('New guest created with ID:', newGuest.id);
           }
         }
-
-        console.log('Newly created guest IDs:', newlyCreatedGuestIds);
       } catch (guestError) {
         console.error('Error updating guests:', guestError);
         // Don't fail the entire update if guest update fails
@@ -332,35 +309,15 @@ export async function PUT(request, { params }) {
       try {
         let guestsToInvite = [];
 
-        console.log('Invitation Debug:', {
-          invitationType,
-          totalGuests: event.guests?.length || 0,
-          newlyCreatedGuestIds,
-          guests: (event.guests || []).map((g) => ({
-            id: g.id,
-            name: g.name,
-            email: g.email,
-          })),
-        });
-
         if (invitationType === 'all') {
           // Send to all guests
           guestsToInvite = event.guests || [];
-          console.log('Sending to all guests:', guestsToInvite.length);
         } else if (invitationType === 'new') {
           // Send only to newly created guests
           if (newlyCreatedGuestIds.length > 0) {
             guestsToInvite = (event.guests || []).filter((guest) =>
               newlyCreatedGuestIds.includes(guest.id),
             );
-            console.log(
-              'Sending to new guests:',
-              guestsToInvite.length,
-              'guests:',
-              guestsToInvite.map((g) => g.name),
-            );
-          } else {
-            console.log('No newly created guest IDs found');
           }
         }
 
@@ -385,16 +342,9 @@ export async function PUT(request, { params }) {
               baseUrl: baseUrl,
             });
 
-            const successfulInvitations = invitationResults.filter(
-              (r) => r.success,
-            ).length;
             const failedInvitations = invitationResults.filter(
               (r) => !r.success,
             ).length;
-
-            console.log(
-              `Invitations sent to ${successfulInvitations} guests for event ${id}`,
-            );
 
             if (failedInvitations > 0) {
               console.warn(
@@ -490,14 +440,11 @@ export async function DELETE(request, { params }) {
         if (template && template.imagePath !== event.imagePath) {
           // User uploaded a new image (different from template), so delete it from S3
           await deleteImageFromS3(event.imagePath);
-          console.log(`Deleted user-uploaded image: ${event.imagePath}`);
         } else if (template && template.imagePath === event.imagePath) {
           // User used template image, don't delete from S3
-          console.log(`Keeping template image: ${event.imagePath}`);
         } else {
           // No template found or no template image, delete the event image
           await deleteImageFromS3(event.imagePath);
-          console.log(`Deleted event image (no template): ${event.imagePath}`);
         }
       } catch (s3Error) {
         console.error('Error handling S3 image cleanup:', s3Error);
@@ -507,7 +454,6 @@ export async function DELETE(request, { params }) {
       // Event has image but no template, delete the image
       try {
         await deleteImageFromS3(event.imagePath);
-        console.log(`Deleted event image (no template): ${event.imagePath}`);
       } catch (s3Error) {
         console.error('Error deleting S3 image:', s3Error);
         // Continue with event deletion even if S3 deletion fails
@@ -519,7 +465,6 @@ export async function DELETE(request, { params }) {
       await prisma.guest.deleteMany({
         where: { eventId: id },
       });
-      console.log(`Deleted ${event.guests.length} guests for event ${id}`);
     }
 
     // Delete the event

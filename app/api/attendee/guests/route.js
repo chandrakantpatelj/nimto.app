@@ -132,12 +132,10 @@ export async function PUT(request) {
       response,
       name,
       phone,
-      additionalNotes,
       plusOnes,
       adults,
       children,
     } = body;
-
 
     if (!eventId) {
       return NextResponse.json(
@@ -181,12 +179,13 @@ export async function PUT(request) {
         guestResponse = 'NO';
       } else if (normalizedResponse === 'maybe') {
         guestResponse = 'MAYBE';
-      } else if (['YES', 'NO', 'MAYBE'].includes(response.toString().toUpperCase())) {
+      } else if (
+        ['YES', 'NO', 'MAYBE'].includes(response.toString().toUpperCase())
+      ) {
         // If it's already a valid enum value, keep it
         guestResponse = response.toString().toUpperCase();
       }
     }
-
 
     // Update the guest record
     const updatedGuest = await prisma.guest.update({

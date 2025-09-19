@@ -106,7 +106,6 @@ function EditEventContent() {
       try {
         // Get thumbnail data and store in local state
         const thumbnailData = await pixieEditorRef.current.getThumbnailData();
-        console.log('thumbnailData', thumbnailData);
         setThumbnailData(thumbnailData);
 
         const pixieState = JSON.parse(await pixieEditorRef.current.save());
@@ -191,16 +190,10 @@ function EditEventContent() {
 
       const result = await response.json();
 
-      console.log('result.success', result.data);
       if (result.success) {
         // Upload thumbnail if available from local state
         if (thumbnailData) {
           try {
-            console.log(
-              'Using thumbnail data from local state:',
-              thumbnailData,
-            );
-
             const thumbnailResponse = await fetch(
               `/api/event/${result.data.event.id}/upload-thumbnail`,
               {
@@ -211,10 +204,6 @@ function EditEventContent() {
                   imageFormat: 'png',
                 }),
               },
-            );
-            console.log(
-              'Thumbnail upload response status:',
-              thumbnailResponse.status,
             );
 
             if (thumbnailResponse.ok) {
@@ -232,7 +221,6 @@ function EditEventContent() {
             toastWarning('Event created but thumbnail upload failed');
           }
         } else {
-          console.log('No thumbnail data available in local state');
         }
 
         toastSuccess(
