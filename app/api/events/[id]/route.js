@@ -1,15 +1,11 @@
 import { NextResponse } from 'next/server';
-import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { PrismaClient } from '@prisma/client';
 import { checkEventManagementAccess } from '@/lib/auth-utils';
-import { uid } from '@/lib/helpers';
 import {
-  createS3Client,
   deleteImageFromS3,
   generateDirectS3Url,
   generateProxyUrl,
 } from '@/lib/s3-utils';
-import { sendBulkEventInvitations } from '@/services/send-event-invitation.js';
 
 const prisma = new PrismaClient();
 
@@ -18,23 +14,10 @@ export async function GET(request, { params }) {
   try {
     const { id } = await params;
 
-    // Allow public access to all events for design pages
-    // No authentication required - all events are accessible
     const event = await prisma.event.findUnique({
       where: { id },
       include: {
-        guests: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-            status: true,
-            response: true,
-            invitedAt: true,
-            respondedAt: true,
-          },
-        },
+        guests: true,
         User: {
           select: {
             id: true,
@@ -44,6 +27,7 @@ export async function GET(request, { params }) {
         },
       },
     });
+
     if (!event) {
       return NextResponse.json(
         { success: false, error: 'Event not found' },
@@ -51,9 +35,9 @@ export async function GET(request, { params }) {
       );
     }
 
-    // Generate URLs for event images
+    // Generate S3 URLs for images
     if (event.imagePath) {
-      // Generate proxy URL for template image (avoids CORS issues)
+      // Generate proxy URL for template images or direct URL for event images
       event.s3ImageUrl = generateProxyUrl(event.imagePath);
     }
 
@@ -89,302 +73,6 @@ export async function GET(request, { params }) {
   }
 }
 
-// PUT /api/events/[id] - Update an event
-export async function PUT(request, { params }) {
-  try {
-    const { id } = await params;
-    const body = await request.json();
-
-    // Check role-based access
-    const accessCheck = await checkEventManagementAccess('update events');
-    if (accessCheck.error) {
-      return accessCheck.error;
-    }
-
-    const { session } = accessCheck;
-
-    // Get the existing event to check ownership and prepare for image handling
-    const existingEvent = await prisma.event.findUnique({
-      where: { id },
-      include: {
-        User: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
-    });
-
-    if (!existingEvent) {
-      return NextResponse.json(
-        { success: false, error: 'Event not found' },
-        { status: 404 },
-      );
-    }
-
-    // Check if user has permission to update this event
-    if (existingEvent.User.id !== session.user.id) {
-      return NextResponse.json(
-        { success: false, error: 'You can only update your own events' },
-        { status: 403 },
-      );
-    }
-
-    const {
-      title,
-      description,
-      startDateTime,
-      endDateTime,
-      location,
-      templateId,
-      jsonContent,
-      imagePath,
-      newImageData, // Base64 image data if user changed image
-      imageFormat = 'png',
-      status,
-      invitationType, // 'all', 'new', or null
-      guests, // Array of guest objects
-    } = body;
-
-    let finalImagePath = imagePath || existingEvent.imagePath;
-
-    // Handle image update if new image data is provided
-    if (newImageData) {
-      try {
-        const s3Client = createS3Client();
-        const bucket = process.env.AWS_S3_BUCKET || process.env.STORAGE_BUCKET;
-
-        if (!bucket) {
-          return NextResponse.json(
-            { success: false, error: 'S3 bucket not configured' },
-            { status: 500 },
-          );
-        }
-
-        // Generate unique image path
-        const timestamp = Date.now();
-        const uniqueId = uid();
-        const extension = imageFormat || 'png';
-        const filename = `template_${id}_${timestamp}_${uniqueId}.${extension}`;
-        const newImagePath = `templates/${filename}`;
-
-        // Convert base64 to buffer
-        const base64Data = newImageData.replace(/^data:image\/\w+;base64,/, '');
-        const imageBuffer = Buffer.from(base64Data, 'base64');
-
-        // Upload new image to S3
-        const uploadCommand = new PutObjectCommand({
-          Bucket: bucket,
-          Key: newImagePath,
-          Body: imageBuffer,
-          ContentType: `image/${imageFormat}`,
-          CacheControl: 'public, max-age=31536000',
-          Metadata: {
-            'last-updated': new Date().toISOString(),
-            'updated-by': 'event-updater',
-          },
-        });
-
-        await s3Client.send(uploadCommand);
-
-        // Smart cleanup: Delete old image if it's different from template
-        if (existingEvent.imagePath && existingEvent.templateId) {
-          try {
-            const template = await prisma.template.findUnique({
-              where: { id: existingEvent.templateId },
-              select: { imagePath: true },
-            });
-
-            if (template && template.imagePath !== existingEvent.imagePath) {
-              // Old image was user-uploaded, delete it
-              await deleteImageFromS3(existingEvent.imagePath);
-            }
-          } catch (cleanupError) {
-            console.error('Error during image cleanup:', cleanupError);
-            // Continue with update even if cleanup fails
-          }
-        } else if (existingEvent.imagePath && !existingEvent.templateId) {
-          // No template, delete the old image
-          await deleteImageFromS3(existingEvent.imagePath);
-        }
-
-        finalImagePath = newImagePath;
-      } catch (uploadError) {
-        console.error('Error uploading updated event image:', uploadError);
-        return NextResponse.json(
-          { success: false, error: 'Failed to upload updated image' },
-          { status: 500 },
-        );
-      }
-    }
-
-    // Handle guest updates if provided
-    let newlyCreatedGuestIds = [];
-    if (guests && Array.isArray(guests)) {
-      try {
-        // Process each guest - update existing or create new
-        for (const guest of guests) {
-          if (
-            guest.id &&
-            typeof guest.id === 'string' &&
-            guest.id.length > 0 &&
-            !guest.id.startsWith('temp-')
-          ) {
-            // Update existing guest (has a valid database ID)
-            await prisma.guest.update({
-              where: { id: guest.id },
-              data: {
-                name: guest.name,
-                email: guest.email,
-                phone: guest.phone,
-                status: guest.status,
-              },
-            });
-          } else {
-            // Create new guest (no ID, temp ID, or invalid ID)
-            const newGuest = await prisma.guest.create({
-              data: {
-                eventId: id,
-                name: guest.name,
-                email: guest.email,
-                phone: guest.phone,
-                status: guest.status || 'PENDING',
-              },
-            });
-            newlyCreatedGuestIds.push(newGuest.id);
-          }
-        }
-      } catch (guestError) {
-        console.error('Error updating guests:', guestError);
-        // Don't fail the entire update if guest update fails
-      }
-    }
-
-    // Update the event
-    const event = await prisma.event.update({
-      where: { id },
-      data: {
-        title,
-        description,
-        startDateTime: startDateTime ? new Date(startDateTime) : undefined,
-        endDateTime: endDateTime ? new Date(endDateTime) : undefined,
-        location,
-        templateId,
-        jsonContent,
-        imagePath: finalImagePath,
-        status,
-        updatedAt: new Date(),
-      },
-      include: {
-        guests: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-            status: true,
-            response: true,
-            invitedAt: true,
-          },
-        },
-        User: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
-    });
-
-    // Generate standardized proxy URL for event image if exists
-    if (event.imagePath) {
-      event.s3ImageUrl = generateDirectS3Url(event.imagePath);
-    }
-
-    // Handle invitation sending if requested
-    if (invitationType && event.guests && event.guests.length > 0) {
-      try {
-        let guestsToInvite = [];
-
-        if (invitationType === 'all') {
-          // Send to all guests
-          guestsToInvite = event.guests || [];
-        } else if (invitationType === 'new') {
-          // Send only to newly created guests
-          if (newlyCreatedGuestIds.length > 0) {
-            guestsToInvite = (event.guests || []).filter((guest) =>
-              newlyCreatedGuestIds.includes(guest.id),
-            );
-          }
-        }
-
-        if (guestsToInvite.length > 0) {
-          // Update guest status and invitedAt timestamp
-          await prisma.guest.updateMany({
-            where: {
-              id: { in: guestsToInvite.map((g) => g.id) },
-            },
-            data: {
-              status: 'INVITED',
-              invitedAt: new Date(),
-            },
-          });
-
-          // Send actual email invitations
-          try {
-            const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-            const invitationResults = await sendBulkEventInvitations({
-              guests: guestsToInvite,
-              event: event,
-              baseUrl: baseUrl,
-            });
-
-            const failedInvitations = invitationResults.filter(
-              (r) => !r.success,
-            ).length;
-
-            if (failedInvitations > 0) {
-              console.warn(
-                `Failed to send invitations to ${failedInvitations} guests for event ${id}`,
-              );
-            }
-          } catch (emailError) {
-            console.error('Error sending email invitations:', emailError);
-            // Don't fail the entire update if email sending fails
-          }
-        }
-      } catch (invitationError) {
-        console.error('Error sending invitations:', invitationError);
-        // Don't fail the entire update if invitation sending fails
-      }
-    }
-
-    return NextResponse.json({
-      success: true,
-      data: event,
-      message: 'Event updated successfully',
-    });
-  } catch (error) {
-    console.error('Error updating event:', error);
-
-    // Handle specific database errors
-    if (error.code === 'P2025') {
-      return NextResponse.json(
-        { success: false, error: 'Event not found' },
-        { status: 404 },
-      );
-    }
-
-    return NextResponse.json(
-      { success: false, error: 'Failed to update event' },
-      { status: 500 },
-    );
-  }
-}
-
 // DELETE /api/events/[id] - Delete an event (hard delete)
 export async function DELETE(request, { params }) {
   try {
@@ -392,13 +80,14 @@ export async function DELETE(request, { params }) {
 
     // Check role-based access
     const accessCheck = await checkEventManagementAccess('delete events');
-    if (accessCheck.error) {
-      return accessCheck.error;
+    if (!accessCheck.allowed) {
+      return NextResponse.json(
+        { success: false, error: accessCheck.message },
+        { status: accessCheck.status },
+      );
     }
 
-    const { session } = accessCheck;
-
-    // Get the event with guests to check ownership and prepare for deletion
+    // Get the event with its guests for cleanup
     const event = await prisma.event.findUnique({
       where: { id },
       include: {
@@ -420,42 +109,40 @@ export async function DELETE(request, { params }) {
       );
     }
 
-    // Check if user has permission to delete this event
-    if (event.User.id !== session.user.id) {
-      return NextResponse.json(
-        { success: false, error: 'You can only delete your own events' },
-        { status: 403 },
-      );
-    }
-
-    // Smart S3 image cleanup - compare with template image
-    if (event.imagePath && event.templateId) {
+    // Handle S3 image cleanup before deleting the event
+    if (event.imagePath) {
       try {
-        // Fetch the template to compare image paths
-        const template = await prisma.template.findUnique({
-          where: { id: event.templateId },
-          select: { imagePath: true },
-        });
+        const bucket = process.env.AWS_S3_BUCKET_NAME;
 
-        if (template && template.imagePath !== event.imagePath) {
-          // User uploaded a new image (different from template), so delete it from S3
-          await deleteImageFromS3(event.imagePath);
-        } else if (template && template.imagePath === event.imagePath) {
-          // User used template image, don't delete from S3
-        } else {
-          // No template found or no template image, delete the event image
-          await deleteImageFromS3(event.imagePath);
+        if (bucket) {
+          // Check if this image is from a template
+          if (event.templateId) {
+            const template = await prisma.template.findUnique({
+              where: { id: event.templateId },
+              select: { imagePath: true },
+            });
+
+            if (template && template.imagePath !== event.imagePath) {
+              // User uploaded a new image (different from template), so delete it from S3
+              await deleteImageFromS3(event.imagePath);
+            } else if (template && template.imagePath === event.imagePath) {
+              // User used template image, don't delete from S3
+            } else {
+              // No template found or no template image, delete the event image
+              await deleteImageFromS3(event.imagePath);
+            }
+          } else {
+            // Event has image but no template, delete the image
+            try {
+              await deleteImageFromS3(event.imagePath);
+            } catch (s3Error) {
+              console.error('Error deleting S3 image:', s3Error);
+              // Continue with event deletion even if S3 deletion fails
+            }
+          }
         }
       } catch (s3Error) {
         console.error('Error handling S3 image cleanup:', s3Error);
-        // Continue with event deletion even if S3 deletion fails
-      }
-    } else if (event.imagePath && !event.templateId) {
-      // Event has image but no template, delete the image
-      try {
-        await deleteImageFromS3(event.imagePath);
-      } catch (s3Error) {
-        console.error('Error deleting S3 image:', s3Error);
         // Continue with event deletion even if S3 deletion fails
       }
     }
