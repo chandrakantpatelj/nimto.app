@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { apiFetch } from '@/lib/api';
+import { formatEventDate, formatTime } from '@/lib/date-utils';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -114,20 +115,6 @@ export default function InvitedEventsPage() {
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
-      });
-    } catch (error) {
-      console.warn('Invalid date format:', dateString);
-      return 'Invalid Date';
-    }
-  };
-
-  const formatEventDate = (dateString) => {
-    try {
-      if (!dateString) return 'N/A';
-      return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
       });
     } catch (error) {
       console.warn('Invalid date format:', dateString);
@@ -279,17 +266,17 @@ export default function InvitedEventsPage() {
 
                       {/* Event Details */}
                       <div className="space-y-2 mb-4">
-                        {event.date && (
+                        {event.startDateTime && (
                           <div className="flex items-center gap-2 text-white text-sm drop-shadow-sm">
                             <CalendarDays className="h-4 w-4" />
                             <span className="font-medium">
-                              {formatEventDate(event.date)}
+                              {formatEventDate(event.startDateTime)}
                             </span>
-                            {event.time && (
+                            {event.startDateTime && (
                               <>
                                 <span className="text-white/60">•</span>
                                 <span className="font-medium">
-                                  {event.time}
+                                  {formatTime(event.startDateTime)}
                                 </span>
                               </>
                             )}

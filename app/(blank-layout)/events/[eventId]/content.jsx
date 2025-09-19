@@ -82,7 +82,6 @@ function EditEventContent() {
 
       try {
         // Get thumbnail data for upload
-        console.log('pixieEditorRef.current', pixieEditorRef.current);
         if (pixieEditorRef.current?.getThumbnailData) {
           try {
             const thumbnailData =
@@ -164,7 +163,6 @@ function EditEventContent() {
 
       if (data.success) {
         if (thumbnailData) {
-          console.log('data', data);
           try {
             const thumbnailResponse = await fetch(
               `/api/event/${data.data.id}/upload-thumbnail`,
@@ -193,7 +191,6 @@ function EditEventContent() {
             toastWarning('Event created but thumbnail upload failed');
           }
         } else {
-          console.log('No thumbnail data available in local state');
         }
         let message = 'Event updated successfully';
         if (invitationType === 'all') {
