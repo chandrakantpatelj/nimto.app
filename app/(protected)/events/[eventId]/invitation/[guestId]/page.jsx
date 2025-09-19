@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import { ArrowLeft, CalendarDays, Clock, MapPin, User } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { apiFetch } from '@/lib/api';
+import { formatEventDate } from '@/lib/date-utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import RSVPForm from '@/components/rsvp/rsvp-form';
@@ -79,20 +80,6 @@ export default function EventInvitationPage() {
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
-      });
-    } catch (error) {
-      console.warn('Invalid date format:', dateString);
-      return 'Invalid Date';
-    }
-  };
-
-  const formatEventDate = (dateString) => {
-    try {
-      if (!dateString) return 'N/A';
-      return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
       });
     } catch (error) {
       console.warn('Invalid date format:', dateString);
@@ -268,7 +255,7 @@ export default function EventInvitationPage() {
                 <div className="space-y-3">
                   {/* Event Details - Improved Layout */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                    {event.date && (
+                    {event.startDateTime && (
                       <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100 shadow-sm hover:shadow-md transition-all duration-300 group">
                         <div className="p-2.5 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg group-hover:scale-110 transition-transform duration-200">
                           <CalendarDays className="h-4 w-4 text-white" />
@@ -278,7 +265,7 @@ export default function EventInvitationPage() {
                             Event Date
                           </span>
                           <p className="text-blue-700 font-medium text-sm truncate">
-                            {formatEventDate(event.date)}
+                            {formatEventDate(event.startDateTime)}
                           </p>
                         </div>
                       </div>

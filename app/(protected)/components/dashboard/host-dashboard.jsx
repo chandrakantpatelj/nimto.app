@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { apiFetch } from '@/lib/api';
+import { formatDate, isFutureDate } from '@/lib/date-utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -63,14 +64,9 @@ export function HostDashboard() {
 
       // Calculate statistics
       const totalEvents = events.length;
-      const upcomingEvents = events.filter((event) => {
-        try {
-          return event.date && new Date(event.date) > new Date();
-        } catch (error) {
-          console.warn('Invalid date format:', event.date);
-          return false;
-        }
-      }).length;
+      const upcomingEvents = events.filter((event) =>
+        isFutureDate(event.startDateTime),
+      ).length;
 
       // Get guest statistics
       let totalGuests = 0;
@@ -145,20 +141,6 @@ export function HostDashboard() {
         return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const formatDate = (dateString) => {
-    try {
-      if (!dateString) return 'N/A';
-      return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      });
-    } catch (error) {
-      console.warn('Invalid date format:', dateString);
-      return 'Invalid Date';
     }
   };
 
@@ -348,7 +330,7 @@ export function HostDashboard() {
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <CalendarDays className="h-3 w-3 sm:h-4 sm:w-4" />
-                        {formatDate(event.date)}
+                        {formatDate(event.startDateTime)}
                       </div>
                       {event.location && (
                         <div className="flex items-center gap-1">

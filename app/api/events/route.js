@@ -51,7 +51,7 @@ export async function GET(request) {
     }
 
     if (date) {
-      where.date = new Date(date);
+      where.startDateTime = new Date(date);
     }
 
     if (search) {
@@ -146,8 +146,8 @@ export async function POST(request) {
     const {
       title,
       description,
-      date,
-      time,
+      startDateTime,
+      endDateTime,
       location,
       templateId,
       jsonContent,
@@ -155,12 +155,20 @@ export async function POST(request) {
       status,
     } = body;
 
+    // Validate required startDateTime
+    if (!startDateTime) {
+      return NextResponse.json(
+        { success: false, error: 'startDateTime is required' },
+        { status: 400 },
+      );
+    }
+
     const event = await prisma.event.create({
       data: {
         title,
         description,
-        date: new Date(date),
-        time,
+        startDateTime: new Date(startDateTime),
+        endDateTime: endDateTime ? new Date(endDateTime) : null,
         location,
         templateId,
         jsonContent,

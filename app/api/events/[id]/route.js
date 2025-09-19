@@ -135,8 +135,8 @@ export async function PUT(request, { params }) {
     const {
       title,
       description,
-      date,
-      time,
+      startDateTime,
+      endDateTime,
       location,
       templateId,
       jsonContent,
@@ -291,8 +291,8 @@ export async function PUT(request, { params }) {
       data: {
         title,
         description,
-        date: date ? new Date(date) : undefined,
-        time,
+        startDateTime: startDateTime ? new Date(startDateTime) : undefined,
+        endDateTime: endDateTime ? new Date(endDateTime) : undefined,
         location,
         templateId,
         jsonContent,

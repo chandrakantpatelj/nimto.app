@@ -64,8 +64,7 @@ function NewEventFromTemplateContent() {
           title: templateData.name,
           templateId: templateData.id,
           description: '',
-          date: '',
-          time: '',
+          startDateTime: null,
           location: '',
           status: 'DRAFT',
           guests: [],
@@ -131,9 +130,9 @@ function NewEventFromTemplateContent() {
 
   const handlePublishEvent = () => {
     // Validate required fields
-    if (!eventData.title || !eventData.date) {
+    if (!eventData.title || !eventData.startDateTime) {
       showCustomToast(
-        'Please fill in all required fields (title and date)',
+        'Please fill in all required fields (title and start date)',
         'error',
       );
       return;

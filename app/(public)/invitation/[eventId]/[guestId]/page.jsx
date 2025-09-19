@@ -3,12 +3,17 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { format } from 'date-fns';
 import { ArrowLeft, CalendarDays, Clock, MapPin, User } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
+import {
+  getCategoryTheme,
+  getFallbackGradientClasses,
+  getHeaderGradientClasses,
+} from '@/lib/category-themes';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import RSVPForm from '@/components/rsvp/rsvp-form';
-import { getCategoryTheme, getHeaderGradientClasses, getFallbackGradientClasses } from '@/lib/category-themes';
 
 export default function PublicEventInvitationPage() {
   const [event, setEvent] = useState(null);
@@ -33,14 +38,14 @@ export default function PublicEventInvitationPage() {
 
       // First, get the guest record to get the email
       const guestResponse = await apiFetch(`/api/public/guests/${guestId}`);
-      
+
       if (!guestResponse.ok) {
         throw new Error('Guest invitation not found or invalid');
       }
 
       const guestData = await guestResponse.json();
       const guestRecord = guestData.data;
-      
+
       if (!guestRecord || guestRecord.eventId !== eventId) {
         throw new Error('Invalid invitation link');
       }
@@ -125,7 +130,8 @@ export default function PublicEventInvitationPage() {
         <div className="text-center">
           <h2 className="text-xl font-semibold mb-2">Invitation Not Found</h2>
           <p className="text-muted-foreground">
-            The invitation you're looking for doesn't exist or is no longer valid.
+            The invitation you're looking for doesn't exist or is no longer
+            valid.
           </p>
           <Link href="/">
             <Button className="mt-4" variant="outline">
@@ -157,13 +163,15 @@ export default function PublicEventInvitationPage() {
     user: {
       name: guest.name,
       email: guest.email,
-    }
+    },
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 dark:from-gray-900 dark:to-slate-900/50">
       {/* Enhanced Header with Better Layout */}
-      <div className={`${getHeaderGradientClasses(category)} text-white shadow-xl relative overflow-hidden`}>
+      <div
+        className={`${getHeaderGradientClasses(category)} text-white shadow-xl relative overflow-hidden`}
+      >
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="relative z-10 px-4 sm:px-6 py-6">
           <div className="max-w-7xl mx-auto">
@@ -199,10 +207,13 @@ export default function PublicEventInvitationPage() {
                   <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20">
                     <div
                       className={`w-2 h-2 rounded-full ${
-                        userGuest.status === 'CONFIRMED' ? 'bg-green-400' :
-                        userGuest.status === 'PENDING' ? 'bg-yellow-400' :
-                        userGuest.status === 'DECLINED' ? 'bg-red-400' :
-                        'bg-gray-400'
+                        userGuest.status === 'CONFIRMED'
+                          ? 'bg-green-400'
+                          : userGuest.status === 'PENDING'
+                            ? 'bg-yellow-400'
+                            : userGuest.status === 'DECLINED'
+                              ? 'bg-red-400'
+                              : 'bg-gray-400'
                       }`}
                     ></div>
                     <span className="text-white text-sm font-medium capitalize">
@@ -242,13 +253,17 @@ export default function PublicEventInvitationPage() {
                       {event.title}
                     </h2>
                     <p className="text-lg sm:text-xl opacity-90 drop-shadow">
-                      {formatEventDate(event.date)} {event.time && `• ${event.time}`}
+                      {formatEventDate(event.startDateTime)}{' '}
+                      {event.startDateTime &&
+                        `• ${format(new Date(event.startDateTime), 'h:mm a')}`}
                     </p>
                   </div>
                 </div>
               ) : (
                 /* Fallback when no image */
-                <div className={`relative w-full h-[200px] sm:h-[250px] ${getFallbackGradientClasses(category)} flex items-center justify-center`}>
+                <div
+                  className={`relative w-full h-[200px] sm:h-[250px] ${getFallbackGradientClasses(category)} flex items-center justify-center`}
+                >
                   <div className="text-center text-white p-6">
                     <div className="mb-3 text-4xl sm:text-5xl">
                       {categoryTheme.icon}
@@ -257,7 +272,9 @@ export default function PublicEventInvitationPage() {
                       {event.title}
                     </h2>
                     <p className="text-lg sm:text-xl opacity-90 drop-shadow">
-                      {formatEventDate(event.date)} {event.time && `• ${event.time}`}
+                      {formatEventDate(event.startDateTime)}{' '}
+                      {event.startDateTime &&
+                        `• ${format(new Date(event.startDateTime), 'h:mm a')}`}
                     </p>
                   </div>
                   {/* Decorative elements */}
@@ -294,12 +311,12 @@ export default function PublicEventInvitationPage() {
                           Date
                         </span>
                         <p className="text-blue-700 dark:text-blue-200 font-medium">
-                          {formatEventDate(event.date)}
+                          {formatEventDate(event.startDateTime)}
                         </p>
                       </div>
                     </div>
 
-                    {event.time && (
+                    {event.startDateTime && (
                       <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20 rounded-lg border border-purple-100 dark:border-purple-800 shadow-sm hover:shadow-md transition-all duration-300">
                         <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-lg">
                           <Clock className="h-5 w-5 text-white" />
@@ -309,7 +326,7 @@ export default function PublicEventInvitationPage() {
                             Time
                           </span>
                           <p className="text-purple-700 dark:text-purple-200 font-medium">
-                            {event.time}
+                            {format(new Date(event.startDateTime), 'h:mm a')}
                           </p>
                         </div>
                       </div>
@@ -381,10 +398,13 @@ export default function PublicEventInvitationPage() {
                     <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-3 py-1.5">
                       <div
                         className={`w-2 h-2 rounded-full ${
-                          userGuest.status === 'CONFIRMED' ? 'bg-green-400' :
-                          userGuest.status === 'PENDING' ? 'bg-yellow-400' :
-                          userGuest.status === 'DECLINED' ? 'bg-red-400' :
-                          'bg-gray-400'
+                          userGuest.status === 'CONFIRMED'
+                            ? 'bg-green-400'
+                            : userGuest.status === 'PENDING'
+                              ? 'bg-yellow-400'
+                              : userGuest.status === 'DECLINED'
+                                ? 'bg-red-400'
+                                : 'bg-gray-400'
                         }`}
                       ></div>
                       <span className="text-white text-xs font-medium capitalize">

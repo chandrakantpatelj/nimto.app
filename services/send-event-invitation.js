@@ -2,7 +2,7 @@ import { sendEmail } from './send-email.js';
 
 export async function sendEventInvitation({ guest, event, invitationUrl }) {
   const { name, email, phone } = guest;
-  const { title, description, date, time, location } = event;
+  const { title, description, startDateTime, location } = event;
 
   // Use email if available, otherwise use phone
   const contactInfo = email || phone;
@@ -11,12 +11,18 @@ export async function sendEventInvitation({ guest, event, invitationUrl }) {
     return false;
   }
 
-  // Format the event date
-  const eventDate = new Date(date).toLocaleDateString('en-US', {
+  // Format the event date and time
+  const eventDateTime = new Date(startDateTime);
+  const eventDate = eventDateTime.toLocaleDateString('en-US', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
     day: 'numeric',
+  });
+  const eventTime = eventDateTime.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
   });
 
   const subject = `You're invited to ${title}!`;
@@ -27,7 +33,7 @@ export async function sendEventInvitation({ guest, event, invitationUrl }) {
     description: `
       <p><strong>Event Details:</strong></p>
       <p><strong>Date:</strong> ${eventDate}</p>
-      ${time ? `<p><strong>Time:</strong> ${time}</p>` : ''}
+      <p><strong>Time:</strong> ${eventTime}</p>
       ${location ? `<p><strong>Location:</strong> ${location}</p>` : ''}
       ${description ? `<p><strong>Description:</strong> ${description}</p>` : ''}
       <p>Please click the button below to view the full invitation and respond.</p>

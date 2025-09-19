@@ -36,7 +36,7 @@ export async function GET(request) {
           select: {
             id: true,
             title: true,
-            date: true,
+            startDateTime: true,
             location: true,
           },
         },
@@ -126,7 +126,7 @@ export async function POST(request) {
           select: {
             id: true,
             title: true,
-            date: true,
+            startDateTime: true,
             location: true,
             description: true,
           },
@@ -148,7 +148,7 @@ export async function POST(request) {
         event: {
           title: guest.event.title,
           description: guest.event.description,
-          date: guest.event.date,
+          startDateTime: guest.event.startDateTime,
           location: guest.event.location,
         },
         invitationUrl,
@@ -224,7 +224,7 @@ export async function PUT(request) {
           select: {
             id: true,
             title: true,
-            date: true,
+            startDateTime: true,
             location: true,
             description: true,
           },

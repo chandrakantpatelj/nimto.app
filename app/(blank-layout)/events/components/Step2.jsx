@@ -1,26 +1,61 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useEventActions, useEvents } from '@/store/hooks';
 import { format } from 'date-fns';
 import { CalendarDays, Info, MapPin, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
-import { TimeField } from '@/components/ui/datefield';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { SeparateDateTimeFields } from '@/components/ui/separate-datetime-fields';
 import { Textarea } from '@/components/ui/textarea';
 
 function Step2({ thumbnailData, session }) {
   const { selectedEvent: eventData } = useEvents();
   const { updateSelectedEvent: updateEventData } = useEventActions();
-  const [datePickerOpen, setDatePickerOpen] = useState(false);
+
+  // Function to format time for display (12-hour format with AM/PM)
+  const formatTimeForDisplay = (time24) => {
+    if (!time24) return '';
+    const [hours, minutes] = time24.split(':');
+    const hour = parseInt(hours, 10);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour % 12 || 12;
+    return `${displayHour}:${minutes} ${ampm}`;
+  };
+
+  // Handle start date and time change
+  const handleStartDateTimeChange = (dateTime) => {
+    if (dateTime) {
+      updateEventData({
+        startDateTime: dateTime.toISOString(),
+      });
+      // Scroll to show event details card after selection
+      setTimeout(() => scrollToEventDetails(), 100);
+    } else {
+      // Handle clearing the start date/time
+      updateEventData({
+        startDateTime: null,
+      });
+    }
+  };
+
+  // Handle end date and time change
+  const handleEndDateTimeChange = (dateTime) => {
+    if (dateTime) {
+      updateEventData({
+        endDateTime: dateTime.toISOString(),
+      });
+      // Scroll to show event details card after selection
+      setTimeout(() => scrollToEventDetails(), 100);
+    } else {
+      // Handle clearing the end date/time
+      updateEventData({
+        endDateTime: null,
+      });
+    }
+  };
 
   // Function to scroll left side to show event details card
   const scrollToEventDetails = () => {
@@ -32,10 +67,6 @@ function Step2({ thumbnailData, session }) {
       });
     }
   };
-
-  // Get today's date to disable past dates
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // Set to start of day
 
   return (
     <div className="flex h-[calc(100vh-var(--header-height))] bg-background">
@@ -147,20 +178,48 @@ function Step2({ thumbnailData, session }) {
                       <CalendarDays className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-1">
-                        When
+                      <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                        WHEN
                       </p>
-                      <p className="text-base text-foreground font-medium">
-                        {eventData.date
-                          ? format(
-                              new Date(eventData.date),
-                              'EEEE, MMMM do, yyyy',
-                            )
-                          : 'Pick a date & time'}
-                      </p>
-                      {eventData.time && (
-                        <p className="text-sm text-muted-foreground mt-1 font-medium">
-                          {eventData.time}
+                      {eventData.startDateTime ? (
+                        <div className="space-y-1">
+                          <p className="text-base text-foreground font-medium">
+                            {format(
+                              new Date(eventData.startDateTime),
+                              'EEEE, MMMM d, yyyy',
+                            )}
+                            <span className="text-gray-600">
+                              ,{' '}
+                              {formatTimeForDisplay(
+                                format(
+                                  new Date(eventData.startDateTime),
+                                  'HH:mm',
+                                ),
+                              )}
+                            </span>
+                          </p>
+                          {eventData.endDateTime && (
+                            <p className="text-base text-foreground font-medium">
+                              to{' '}
+                              {format(
+                                new Date(eventData.endDateTime),
+                                'EEEE, MMMM d, yyyy',
+                              )}
+                              <span className="text-gray-600">
+                                ,{' '}
+                                {formatTimeForDisplay(
+                                  format(
+                                    new Date(eventData.endDateTime),
+                                    'HH:mm',
+                                  ),
+                                )}
+                              </span>
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        <p className="text-base text-foreground font-medium">
+                          Pick a date & time
                         </p>
                       )}
                     </div>
@@ -260,62 +319,13 @@ function Step2({ thumbnailData, session }) {
 
             {/* Date & Time */}
             <div>
-              <Label className="text-sm font-semibold text-foreground mb-3 block">
-                Date & Time *
-              </Label>
-              <div className="space-y-4">
-                <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        'w-full h-12 justify-start text-left font-normal border-gray-300 hover:border-blue-500 focus:border-blue-500 focus:ring-blue-500 rounded-lg',
-                        !eventData.date && 'text-gray-500',
-                      )}
-                    >
-                      <CalendarDays className="mr-3 h-5 w-5" />
-                      {eventData.date ? (
-                        format(new Date(eventData.date), 'PPP')
-                      ) : (
-                        <span>Select a date</span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent
-                    className="w-auto p-0 shadow-xl border-0 rounded-xl"
-                    align="start"
-                  >
-                    <Calendar
-                      mode="single"
-                      selected={
-                        eventData.date ? new Date(eventData.date) : undefined
-                      }
-                      onSelect={(date) => {
-                        updateEventData({
-                          date: date ? date.toISOString() : null,
-                        });
-                        setDatePickerOpen(false);
-                        // Scroll to show event details card after date selection
-                        setTimeout(() => scrollToEventDetails(), 200);
-                      }}
-                      disabled={[{ before: today }]}
-                      initialFocus
-                      className="rounded-xl"
-                    />
-                  </PopoverContent>
-                </Popover>
-
-                <TimeField
-                  value={eventData.time || ''}
-                  onChange={(time) => {
-                    updateEventData({ time });
-                    // Scroll to show event details card after time selection
-                    setTimeout(() => scrollToEventDetails(), 100);
-                  }}
-                  placeholder="Select time"
-                  className="w-full h-12"
-                />
-              </div>
+              <SeparateDateTimeFields
+                startValue={eventData.startDateTime}
+                endValue={eventData.endDateTime}
+                onStartChange={handleStartDateTimeChange}
+                onEndChange={handleEndDateTimeChange}
+                className="border-gray-300 hover:border-blue-500 focus:border-blue-500 focus:ring-blue-500 rounded-lg"
+              />
             </div>
 
             {/* Location */}

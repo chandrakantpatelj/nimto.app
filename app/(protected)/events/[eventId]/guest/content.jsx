@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Calendar, Clock, MapPin, Users } from 'lucide-react';
+import { formatDate, formatTime } from '@/lib/date-utils';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { GuestListTable } from './components';
@@ -20,24 +21,6 @@ export function ManageGuestContent({ event }) {
     setGuests(updatedGuests);
   };
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
-
-  const formatTime = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
   return (
     <div className="space-y-6">
       {/* Event Overview Card */}
@@ -53,11 +36,18 @@ export function ManageGuestContent({ event }) {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
               <div className="flex items-center gap-2 text-gray-600">
                 <Calendar className="w-4 h-4" />
-                <span>{formatDate(event.date)}</span>
+                <span>
+                  {formatDate(event.startDateTime, {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })}
+                </span>
               </div>
               <div className="flex items-center gap-2 text-gray-600">
                 <Clock className="w-4 h-4" />
-                <span>{formatTime(event.date)}</span>
+                <span>{formatTime(event.startDateTime)}</span>
               </div>
               {event.location && (
                 <div className="flex items-center gap-2 text-gray-600">
