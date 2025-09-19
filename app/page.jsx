@@ -6,12 +6,30 @@ import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { FileText, ArrowRight, Moon, Sun, LayoutDashboard, Calendar, Mail } from 'lucide-react';
+import { 
+  FileText, 
+  ArrowRight, 
+  Moon, 
+  Sun, 
+  LayoutDashboard, 
+  Calendar, 
+  Mail,
+  Upload,
+  Gift,
+  ClipboardList,
+  CheckCircle,
+  Smartphone,
+  Users,
+  Palette,
+  Heart,
+  Star,
+  Sparkles
+} from 'lucide-react';
 import { useRoleBasedAccess } from '@/hooks/use-role-based-access';
 import { HomeTemplatesPreview } from '@/app/components/home-templates-preview';
 import { apiFetch } from '@/lib/api';
 
-export default function ComingSoonPage() {
+export default function HomePage() {
   const { data: session, status } = useSession();
   const { theme, setTheme } = useTheme();
   const { roles } = useRoleBasedAccess();
@@ -49,7 +67,7 @@ export default function ComingSoonPage() {
   // Show loading state while checking authentication
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 w-full flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-gray-900 w-full flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600 dark:text-gray-300">Loading...</p>
@@ -59,9 +77,9 @@ export default function ComingSoonPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 w-full flex flex-col">
+    <div className="min-h-screen bg-white dark:bg-gray-900 w-full flex flex-col">
       {/* Header */}
-      <header className="w-full px-6 py-4">
+      <header className="w-full px-6 py-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center space-x-2">
@@ -70,6 +88,25 @@ export default function ComingSoonPage() {
             </div>
             <span className="text-xl font-bold text-gray-900 dark:text-white">Nimto</span>
           </div>
+
+          {/* Navigation Menu */}
+          <nav className="hidden md:flex items-center space-x-8">
+            <Link href="/events" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+              Create Invitation
+            </Link>
+            <Link href="/templates" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+              Templates
+            </Link>
+            <Link href="/store-client" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+              Gift Cards
+            </Link>
+            <Link href="/events" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+              SignUp Sheets
+            </Link>
+            <Link href="/templates" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+              Ideas
+            </Link>
+          </nav>
 
           {/* Theme Switch and Auth Buttons */}
           <div className="flex items-center space-x-3">
@@ -114,7 +151,7 @@ export default function ComingSoonPage() {
             ) : (
               <>
                 <Button variant="ghost" asChild>
-                  <Link href="/signin">Sign In</Link>
+                  <Link href="/signin">Log In</Link>
                 </Button>
                 <Button variant="primary" asChild>
                   <Link href="/signup">Sign Up</Link>
@@ -125,270 +162,313 @@ export default function ComingSoonPage() {
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center px-6 py-12">
-        <div className="max-w-4xl mx-auto text-center">
-          {/* Hero Section */}
-          <div className="space-y-8">
-            <div className="space-y-4">
-              {isAuthenticated ? (
-                <>
-                  <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white">
-                    Welcome{' '}
-                    <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                      Back!
-                    </span>
-                  </h1>
-                  <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-                    {roles.isAttendee ? (
-                      <>
-                        Check out your invited events and manage your RSVPs. 
-                        Let's see what's coming up!
-                      </>
-                    ) : (
-                      <>
-                        Ready to create stunning templates and manage your events? 
-                        Let's get started!
-                      </>
-                    )}
-                  </p>
-                </>
-              ) : (
-                <>
-                  <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white">
-                    Create{' '}
-                    <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                      Amazing Events
-                    </span>
-                  </h1>
-                  <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-                    Design stunning invitations, manage RSVPs, and host unforgettable events with our all-in-one platform.
-                  </p>
-                </>
-              )}
+      {/* Hero Banner */}
+      <section className="w-full bg-gradient-to-r from-blue-600 to-purple-600 py-20">
+        <div className="max-w-7xl mx-auto px-6 text-center">
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6">
+            Make Every Event Memorable
+          </h1>
+          <p className="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto mb-8">
+            Create beautiful invitations, track RSVPs, and bring people together
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Button size="lg" variant="destructive" asChild className="bg-red-600 hover:bg-red-700 text-white">
+              <Link href="/signup">Get Started Free</Link>
+            </Button>
+            <Button size="lg" variant="outline" asChild className="bg-white text-purple-600 border-white hover:bg-gray-100">
+              <Link href="/templates">Browse Templates</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* What would you like to create? Section */}
+      <section className="w-full py-20 bg-white dark:bg-gray-900">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+              What would you like to create?
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {/* Make an Invitation Card */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow p-6 text-center">
+              <div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/30 rounded-xl flex items-center justify-center mx-auto mb-6">
+                <FileText className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                Make an Invitation
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                Create stunning digital invitations for any occasion. Choose from hundreds of templates.
+              </p>
+              <Button variant="primary" asChild className="w-full">
+                <Link href="/events">Start Creating</Link>
+              </Button>
             </div>
 
-            {/* Features Preview */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
-              <div className="p-6 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-200/50 dark:border-gray-700/50">
-                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  Event Management
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300">
-                  Create, organize, and manage events with ease
-                </p>
+            {/* Upload Your Own Design Card */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow p-6 text-center">
+              <div className="w-24 h-24 bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900/30 dark:to-purple-800/30 rounded-xl flex items-center justify-center mx-auto mb-6">
+                <Upload className="w-12 h-12 text-purple-600 dark:text-purple-400" />
               </div>
-
-              <div className="p-6 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-200/50 dark:border-gray-700/50">
-                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  RSVP
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300">
-                  Easy event registration and attendance management
-                </p>
-              </div>
-
-              <div className="p-6 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-200/50 dark:border-gray-700/50">
-                <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  Seamless Experience
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300">
-                  Intuitive interface designed for the best user experience
-                </p>
-              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                Upload Your Own Design
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                Add your personal touch with custom designs and photos for unique invitations.
+              </p>
+              <Button variant="primary" asChild className="w-full">
+                <Link href="/events">Upload Design</Link>
+              </Button>
             </div>
 
-            {/* Invited Events Section for Attendees */}
-            {isAuthenticated && roles.isAttendee && (
-              <div className="mt-16">
-                <div className="text-center mb-8">
-                  <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                    Your Invited Events
-                  </h2>
-                  <p className="text-lg text-gray-600 dark:text-gray-300">
-                    Events you've been invited to attend
-                  </p>
-                </div>
-                
-                {eventsLoading ? (
-                  <div className="flex justify-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                  </div>
-                ) : invitedEvents.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {invitedEvents.slice(0, 3).map((event) => {
-                      const userGuest = event.guests?.[0];
-                      return (
-                        <div key={event.id} className="p-6 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-200/50 dark:border-gray-700/50 hover:shadow-lg transition-shadow">
-                          <div className="flex items-center justify-between mb-4">
-                            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                              <Calendar className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                            </div>
-                            {userGuest && (
-                              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                userGuest.status === 'CONFIRMED' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
-                                userGuest.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                                'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
-                              }`}>
-                                {userGuest.status}
-                              </span>
-                            )}
-                          </div>
-                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
-                            {event.title}
-                          </h3>
-                          {event.date && (
-                            <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-                              {new Date(event.date).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric'
-                              })}
-                            </p>
-                          )}
-                          {event.location && (
-                            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-1">
-                              📍 {event.location}
-                            </p>
-                          )}
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            asChild 
-                            className="w-full"
-                          >
-                            <Link href={`/events/${event.id}/invitation/${userGuest?.id}`}>
-                              View Event
-                            </Link>
-                          </Button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <Mail className="h-16 w-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                      No Events Yet
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-300">
-                      You haven't been invited to any events yet. Check back later!
-                    </p>
-                  </div>
-                )}
+            {/* Send Gift Cards Card */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow p-6 text-center">
+              <div className="w-24 h-24 bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900/30 dark:to-green-800/30 rounded-xl flex items-center justify-center mx-auto mb-6">
+                <Gift className="w-12 h-12 text-green-600 dark:text-green-400" />
               </div>
-            )}
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                Send Gift Cards
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                Shop digital gift cards from top retailers and send them instantly to guests.
+              </p>
+              <Button variant="primary" asChild className="w-full">
+                <Link href="/store-client">Browse Cards</Link>
+              </Button>
+            </div>
 
-            {/* Templates Preview Section */}
-            {(!isAuthenticated || !roles.isAttendee) && (
-              <div className="mt-16">
-                <HomeTemplatesPreview />
+            {/* Create SignUp Sheet Card */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow p-6 text-center">
+              <div className="w-24 h-24 bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/30 dark:to-orange-800/30 rounded-xl flex items-center justify-center mx-auto mb-6">
+                <ClipboardList className="w-12 h-12 text-orange-600 dark:text-orange-400" />
               </div>
-            )}
-            {/* CTA Section */}
-            <div className="mt-16 space-y-6">
-              {isAuthenticated ? (
-                <>
-                  <p className="text-lg text-gray-600 dark:text-gray-300">
-                    {roles.isAttendee ? (
-                      <>
-                        Ready to manage your event invitations and RSVPs?
-                      </>
-                    ) : roles.isSuperAdmin ? (
-                      <>
-                        Welcome back! Ready to create amazing templates?
-                      </>
-                    ) : (
-                      <>
-                        Welcome back! Ready to create amazing templates?
-                      </>
-                    )}
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                    <Button size="lg" variant="primary" asChild className="flex items-center gap-2">
-                      <Link href={
-                        roles.isSuperAdmin ? "/dashboard" : 
-                        roles.isAttendee ? "/invited-events" : 
-                        "/templates"
-                      }>
-                        {roles.isSuperAdmin ? (
-                          <>
-                            <LayoutDashboard className="h-5 w-5" />
-                            Go to Dashboard
-                          </>
-                        ) : roles.isAttendee ? (
-                          <>
-                            <Calendar className="h-5 w-5" />
-                            Go to Events
-                          </>
-                        ) : (
-                          <>
-                            <FileText className="h-5 w-5" />
-                            Go to Templates
-                          </>
-                        )}
-                        <ArrowRight className="h-5 w-5" />
-                      </Link>
-                    </Button>
-                    <Button size="lg" variant="outline" asChild>
-                      <Link href={
-                        roles.isSuperAdmin ? "/templates" : 
-                        roles.isAttendee ? "/dashboard" : 
-                        "/events"
-                      }>
-                        {roles.isSuperAdmin ? "View Templates" : 
-                         roles.isAttendee ? "View Dashboard" : 
-                         "View Events"}
-                      </Link>
-                    </Button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <p className="text-lg text-gray-600 dark:text-gray-300">
-                    Join thousands of event organizers creating memorable experiences!
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                    <Button size="lg" variant="primary" asChild>
-                      <Link href="/signup">Start Creating Events</Link>
-                    </Button>
-                    <Button size="lg" variant="outline" asChild>
-                      <Link href="/signin">Sign In to Continue</Link>
-                    </Button>
-                  </div>
-                </>
-              )}
-
-             
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                Create SignUp Sheet
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                Organize volunteers and coordinate what guests should bring to your event.
+              </p>
+              <Button variant="primary" asChild className="w-full">
+                <Link href="/events">Create Sheet</Link>
+              </Button>
             </div>
           </div>
         </div>
-      </main>
+      </section>
+
+      {/* Why Choose Our Platform? Section */}
+      <section className="w-full py-20 bg-gray-50 dark:bg-gray-800">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+              Why Choose Our Platform?
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {/* Easy to Use */}
+            <div className="text-center">
+              <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                Easy to Use
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300">
+                Intuitive design tools make creating invitations simple and fun.
+              </p>
+            </div>
+
+            {/* Mobile Friendly */}
+            <div className="text-center">
+              <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Smartphone className="w-8 h-8 text-green-600 dark:text-green-400" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                Mobile Friendly
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300">
+                Create and manage events from any device, anywhere.
+              </p>
+            </div>
+
+            {/* Track RSVPs */}
+            <div className="text-center">
+              <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Users className="w-8 h-8 text-green-600 dark:text-green-400" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                Track RSVPs
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300">
+                Real-time RSVP tracking and guest management tools.
+              </p>
+            </div>
+
+            {/* Beautiful Templates */}
+            <div className="text-center">
+              <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Palette className="w-8 h-8 text-green-600 dark:text-green-400" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                Beautiful Templates
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300">
+                Hundreds of professionally designed templates for every occasion.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Templates Preview Section */}
+      {(!isAuthenticated || !roles.isAttendee) && (
+        <section className="w-full py-20 bg-white dark:bg-gray-900">
+          <div className="max-w-7xl mx-auto px-6">
+            <HomeTemplatesPreview />
+          </div>
+        </section>
+      )}
+
+      {/* Invited Events Section for Attendees */}
+      {isAuthenticated && roles.isAttendee && (
+        <section className="w-full py-20 bg-white dark:bg-gray-900">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+                Your Invited Events
+              </h2>
+              <p className="text-lg text-gray-600 dark:text-gray-300">
+                Events you've been invited to attend
+              </p>
+            </div>
+            
+            {eventsLoading ? (
+              <div className="flex justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              </div>
+            ) : invitedEvents.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {invitedEvents.slice(0, 3).map((event) => {
+                  const userGuest = event.guests?.[0];
+                  return (
+                    <div key={event.id} className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                          <Calendar className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        {userGuest && (
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            userGuest.status === 'CONFIRMED' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                            userGuest.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                            'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
+                          }`}>
+                            {userGuest.status}
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
+                        {event.title}
+                      </h3>
+                      {event.date && (
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                          {new Date(event.date).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </p>
+                      )}
+                      {event.location && (
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-1">
+                          📍 {event.location}
+                        </p>
+                      )}
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        asChild 
+                        className="w-full"
+                      >
+                        <Link href={`/events/${event.id}/invitation/${userGuest?.id}`}>
+                          View Event
+                        </Link>
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <Mail className="h-16 w-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                  No Events Yet
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300">
+                  You haven't been invited to any events yet. Check back later!
+                </p>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* Footer */}
-      <footer className="w-full px-6 py-8 border-t border-gray-200/50 dark:border-gray-700/50 mt-auto">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-gray-600 dark:text-gray-400">
-              © 2025 Nimto. All rights reserved.
+      <footer className="w-full bg-gray-800 dark:bg-gray-900 py-12">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+            {/* Create */}
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-4">Create</h3>
+              <ul className="space-y-2">
+                <li><Link href="/events" className="text-gray-300 hover:text-white transition-colors">Invitations</Link></li>
+                <li><Link href="/templates" className="text-gray-300 hover:text-white transition-colors">eCards</Link></li>
+                <li><Link href="/events" className="text-gray-300 hover:text-white transition-colors">Announcements</Link></li>
+                <li><Link href="/events" className="text-gray-300 hover:text-white transition-colors">SignUp Sheets</Link></li>
+              </ul>
+            </div>
+
+            {/* Occasions */}
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-4">Occasions</h3>
+              <ul className="space-y-2">
+                <li><Link href="/templates" className="text-gray-300 hover:text-white transition-colors">Birthday Parties</Link></li>
+                <li><Link href="/templates" className="text-gray-300 hover:text-white transition-colors">Weddings</Link></li>
+                <li><Link href="/templates" className="text-gray-300 hover:text-white transition-colors">Baby Showers</Link></li>
+                <li><Link href="/templates" className="text-gray-300 hover:text-white transition-colors">Holidays</Link></li>
+              </ul>
+            </div>
+
+            {/* Support */}
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-4">Support</h3>
+              <ul className="space-y-2">
+                <li><Link href="/help" className="text-gray-300 hover:text-white transition-colors">Help Center</Link></li>
+                <li><Link href="/contact" className="text-gray-300 hover:text-white transition-colors">Contact Us</Link></li>
+                <li><Link href="/privacy" className="text-gray-300 hover:text-white transition-colors">Privacy Policy</Link></li>
+                <li><Link href="/terms" className="text-gray-300 hover:text-white transition-colors">Terms of Service</Link></li>
+              </ul>
+            </div>
+
+            {/* Company */}
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-4">Company</h3>
+              <ul className="space-y-2">
+                <li><Link href="/about" className="text-gray-300 hover:text-white transition-colors">About Us</Link></li>
+                <li><Link href="/careers" className="text-gray-300 hover:text-white transition-colors">Careers</Link></li>
+                <li><Link href="/press" className="text-gray-300 hover:text-white transition-colors">Press</Link></li>
+                <li><Link href="/blog" className="text-gray-300 hover:text-white transition-colors">Blog</Link></li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-700 pt-8 text-center">
+            <p className="text-gray-400">
+              ©2024 Nimto. All rights reserved.
             </p>
-            
-          
           </div>
         </div>
       </footer>
