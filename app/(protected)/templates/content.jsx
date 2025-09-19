@@ -198,7 +198,7 @@ export function EnhancedTemplateManagement() {
                 }`}
               >
                 {/* Rectangular card inside circular background */}
-                <div className="absolute top-30 w-20 h-28 sm:w-24 sm:h-32 md:w-28 md:h-36 bg-white rounded-lg shadow-md border border-gray-100 flex flex-col items-center justify-center pt-4 pb-2 px-2">
+                <div className="absolute top-10 w-20 h-28 sm:w-24 sm:h-32 md:w-28 md:h-36 bg-white rounded-lg shadow-md border border-gray-100 flex flex-col items-center justify-center pt-4 pb-2 px-2">
                   <div className="text-center">
                     <span
                       className={`font-bold text-sm sm:text-base md:text-lg ${
@@ -251,9 +251,9 @@ export function EnhancedTemplateManagement() {
                     }`}
                   >
                     {/* Rectangular card inside circular background */}
-                    <div className="relative w-20 h-28 sm:w-24 sm:h-32 md:w-28 md:h-36 bg-white rounded-lg shadow-md border border-gray-100 flex flex-col items-center justify-center pt-4 pb-2 px-2">
+                    <div className="absolute top-10 w-20 h-28 sm:w-24 sm:h-32 md:w-28 md:h-36 bg-white rounded-lg shadow-md border border-gray-100 flex flex-col items-center justify-center">
                       {category.thumbnailUrl ? (
-                        <div className="w-full h-full flex items-center justify-center pt-2">
+                        <div className="w-full h-full flex items-center justify-center pt-0">
                           <img
                             src={category.thumbnailUrl}
                             alt={category.name}

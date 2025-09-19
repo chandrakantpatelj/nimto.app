@@ -29,6 +29,8 @@ import {
 } from 'lucide-react';
 import { useRoleBasedAccess } from '@/hooks/use-role-based-access';
 import { HomeTemplatesPreview } from '@/app/components/home-templates-preview';
+import { DynamicCategories } from '@/app/components/dynamic-categories';
+import { EnhancedTemplatesDisplay } from '@/app/components/enhanced-templates-display';
 import { apiFetch } from '@/lib/api';
 
 export default function HomePage() {
@@ -235,7 +237,14 @@ export default function HomePage() {
       {(!isAuthenticated || !roles.isAttendee) && (
         <section className="w-full py-20 bg-white dark:bg-gray-900">
           <div className="max-w-7xl mx-auto px-6">
-            <HomeTemplatesPreview />
+            {selectedCategory || searchQuery ? (
+              <EnhancedTemplatesDisplay 
+                selectedCategory={selectedCategory}
+                searchQuery={searchQuery}
+              />
+            ) : (
+              <HomeTemplatesPreview />
+            )}
           </div>
         </section>
       )}
@@ -246,74 +255,17 @@ export default function HomePage() {
           <div className="max-w-7xl mx-auto px-6">
             <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-                Browse by Category
+                Browse Invitation Categories
               </h2>
               <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
                 Find the perfect template for your special occasion
               </p>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-              {/* Birthday */}
-              <div className="group cursor-pointer" onClick={() => handleCategorySelect('Birthday')}>
-                <div className={`bg-white dark:bg-gray-800 rounded-xl p-6 text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${selectedCategory === 'Birthday' ? 'ring-2 ring-blue-500' : ''}`}>
-                  <div className="w-16 h-16 bg-pink-100 dark:bg-pink-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl">🎂</span>
-                  </div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white">Birthday</h3>
-                </div>
-              </div>
-
-              {/* Wedding */}
-              <div className="group cursor-pointer" onClick={() => handleCategorySelect('Wedding')}>
-                <div className={`bg-white dark:bg-gray-800 rounded-xl p-6 text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${selectedCategory === 'Wedding' ? 'ring-2 ring-blue-500' : ''}`}>
-                  <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl">💒</span>
-                  </div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white">Wedding</h3>
-                </div>
-              </div>
-
-              {/* Baby Shower */}
-              <div className="group cursor-pointer" onClick={() => handleCategorySelect('Baby Shower')}>
-                <div className={`bg-white dark:bg-gray-800 rounded-xl p-6 text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${selectedCategory === 'Baby Shower' ? 'ring-2 ring-blue-500' : ''}`}>
-                  <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl">👶</span>
-                  </div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white">Baby Shower</h3>
-                </div>
-              </div>
-
-              {/* Holiday */}
-              <div className="group cursor-pointer" onClick={() => handleCategorySelect('Holiday')}>
-                <div className={`bg-white dark:bg-gray-800 rounded-xl p-6 text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${selectedCategory === 'Holiday' ? 'ring-2 ring-blue-500' : ''}`}>
-                  <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl">🎄</span>
-                  </div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white">Holiday</h3>
-                </div>
-              </div>
-
-              {/* Corporate */}
-              <div className="group cursor-pointer" onClick={() => handleCategorySelect('Corporate')}>
-                <div className={`bg-white dark:bg-gray-800 rounded-xl p-6 text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${selectedCategory === 'Corporate' ? 'ring-2 ring-blue-500' : ''}`}>
-                  <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl">💼</span>
-                  </div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white">Corporate</h3>
-                </div>
-              </div>
-
-              {/* Graduation */}
-              <div className="group cursor-pointer" onClick={() => handleCategorySelect('Graduation')}>
-                <div className={`bg-white dark:bg-gray-800 rounded-xl p-6 text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${selectedCategory === 'Graduation' ? 'ring-2 ring-blue-500' : ''}`}>
-                  <div className="w-16 h-16 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl">🎓</span>
-                  </div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white">Graduation</h3>
-                </div>
-              </div>
-            </div>
+            <DynamicCategories 
+              onCategorySelect={handleCategorySelect}
+              selectedCategory={selectedCategory}
+            />
 
             <div className="text-center mt-12">
               <Button variant="outline" size="lg" asChild>
@@ -325,7 +277,7 @@ export default function HomePage() {
       )}
 
       {/* Search Templates Section */}
-      {(!isAuthenticated || !roles.isAttendee) && (
+      {(!isAuthenticated || !roles.isAttendee) && !selectedCategory && !searchQuery && (
         <section className="w-full py-20 bg-white dark:bg-gray-900">
           <div className="max-w-4xl mx-auto px-6 text-center">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
