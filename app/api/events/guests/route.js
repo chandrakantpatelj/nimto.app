@@ -96,6 +96,21 @@ export async function POST(request) {
       );
     }
 
+    // Convert response to proper enum value
+    let guestResponse = null;
+    if (response) {
+      const normalizedResponse = response.toString().toLowerCase();
+      if (normalizedResponse === 'yes') {
+        guestResponse = 'YES';
+      } else if (normalizedResponse === 'no') {
+        guestResponse = 'NO';
+      } else if (normalizedResponse === 'maybe') {
+        guestResponse = 'MAYBE';
+      } else {
+        guestResponse = response; // Keep original if it's already uppercase
+      }
+    }
+
     const guest = await prisma.guest.create({
       data: {
         eventId,
@@ -103,7 +118,7 @@ export async function POST(request) {
         email,
         phone,
         status: status || 'PENDING',
-        response,
+        response: guestResponse,
         invitedAt: new Date(),
       },
       include: {
