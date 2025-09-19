@@ -62,7 +62,8 @@ export async function GET(request) {
           select: {
             id: true,
             title: true,
-            date: true,
+            startDateTime: true,
+            endDateTime: true,
             location: true,
             description: true,
             imagePath: true,
@@ -205,7 +206,8 @@ export async function PUT(request) {
           select: {
             id: true,
             title: true,
-            date: true,
+            startDateTime: true,
+            endDateTime: true,
             location: true,
           },
         },

@@ -1,9 +1,20 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import {
+  ArrowRight,
+  Calendar,
+  FileText,
+  LayoutDashboard,
+  Mail,
+  Moon,
+  Sun,
+} from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useTheme } from 'next-themes';
-import { useEffect, useState } from 'react';
+import { apiFetch } from '@/lib/api';
+import { useRoleBasedAccess } from '@/hooks/use-role-based-access';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -25,7 +36,7 @@ import {
   Star,
   Sparkles,
   Search,
-  Filter
+  Filter,
 } from 'lucide-react';
 import { useRoleBasedAccess } from '@/hooks/use-role-based-access';
 import { HomeTemplatesPreview } from '@/app/components/home-templates-preview';
@@ -58,7 +69,9 @@ export default function HomePage() {
 
     setIsSearching(true);
     try {
-      const response = await apiFetch(`/api/template?search=${encodeURIComponent(query)}&limit=12`);
+      const response = await apiFetch(
+        `/api/template?search=${encodeURIComponent(query)}&limit=12`,
+      );
       if (response.ok) {
         const result = await response.json();
         setSearchResults(result.data || []);
@@ -75,7 +88,9 @@ export default function HomePage() {
     setSelectedCategory(category);
     setIsSearching(true);
     try {
-      const response = await apiFetch(`/api/template?category=${encodeURIComponent(category)}&limit=12`);
+      const response = await apiFetch(
+        `/api/template?category=${encodeURIComponent(category)}&limit=12`,
+      );
       if (response.ok) {
         const result = await response.json();
         setSearchResults(result.data || []);
@@ -99,7 +114,9 @@ export default function HomePage() {
       if (isAuthenticated && roles.isAttendee && session?.user?.email) {
         try {
           setEventsLoading(true);
-          const response = await apiFetch(`/api/attendee/events?email=${session.user.email}`);
+          const response = await apiFetch(
+            `/api/attendee/events?email=${session.user.email}`,
+          );
           if (response.ok) {
             const data = await response.json();
             setInvitedEvents(data?.data || []);
@@ -137,24 +154,41 @@ export default function HomePage() {
             <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-lg">N</span>
             </div>
-            <span className="text-xl font-bold text-gray-900 dark:text-white">Nimto</span>
+            <span className="text-xl font-bold text-gray-900 dark:text-white">
+              Nimto
+            </span>
           </div>
 
           {/* Navigation Menu */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link href="/events" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+            <Link
+              href="/events"
+              className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            >
               Create Invitation
             </Link>
-            <Link href="/templates" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+            <Link
+              href="/templates"
+              className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            >
               Templates
             </Link>
-            <Link href="/store-client" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+            <Link
+              href="/store-client"
+              className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            >
               Gift Cards
             </Link>
-            <Link href="/events" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+            <Link
+              href="/events"
+              className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            >
               SignUp Sheets
             </Link>
-            <Link href="/templates" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+            <Link
+              href="/templates"
+              className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            >
               Ideas
             </Link>
           </nav>
@@ -174,12 +208,20 @@ export default function HomePage() {
 
             {/* Auth Buttons or Role-based Navigation */}
             {isAuthenticated ? (
-              <Button variant="primary" asChild className="flex items-center gap-2">
-                <Link href={
-                  roles.isSuperAdmin ? "/dashboard" :
-                    roles.isAttendee ? "/invited-events" :
-                      "/templates"
-                }>
+              <Button
+                variant="primary"
+                asChild
+                className="flex items-center gap-2"
+              >
+                <Link
+                  href={
+                    roles.isSuperAdmin
+                      ? '/dashboard'
+                      : roles.isAttendee
+                        ? '/invited-events'
+                        : '/templates'
+                  }
+                >
                   {roles.isSuperAdmin ? (
                     <>
                       <LayoutDashboard className="h-4 w-4" />
@@ -223,10 +265,20 @@ export default function HomePage() {
             Create beautiful invitations, track RSVPs, and bring people together
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button size="lg" variant="destructive" asChild className="bg-red-600 hover:bg-red-700 text-white">
+            <Button
+              size="lg"
+              variant="destructive"
+              asChild
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
               <Link href="/signup">Get Started Free</Link>
             </Button>
-            <Button size="lg" variant="outline" asChild className="bg-white text-purple-600 border-white hover:bg-gray-100">
+            <Button
+              size="lg"
+              variant="outline"
+              asChild
+              className="bg-white text-purple-600 border-white hover:bg-gray-100"
+            >
               <Link href="/templates">Browse Templates</Link>
             </Button>
           </div>
@@ -238,7 +290,7 @@ export default function HomePage() {
         <section className="w-full py-20 bg-white dark:bg-gray-900">
           <div className="max-w-7xl mx-auto px-6">
             {selectedCategory || searchQuery ? (
-              <EnhancedTemplatesDisplay 
+              <EnhancedTemplatesDisplay
                 selectedCategory={selectedCategory}
                 searchQuery={searchQuery}
               />
@@ -262,7 +314,7 @@ export default function HomePage() {
               </p>
             </div>
 
-            <DynamicCategories 
+            <DynamicCategories
               onCategorySelect={handleCategorySelect}
               selectedCategory={selectedCategory}
             />
@@ -277,182 +329,249 @@ export default function HomePage() {
       )}
 
       {/* Search Templates Section */}
-      {(!isAuthenticated || !roles.isAttendee) && !selectedCategory && !searchQuery && (
-        <section className="w-full py-20 bg-white dark:bg-gray-900">
-          <div className="max-w-4xl mx-auto px-6 text-center">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-              Find Your Perfect Template
-            </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-300 mb-12">
-              Search through hundreds of professionally designed templates
-            </p>
+      {(!isAuthenticated || !roles.isAttendee) &&
+        !selectedCategory &&
+        !searchQuery && (
+          <section className="w-full py-20 bg-white dark:bg-gray-900">
+            <div className="max-w-4xl mx-auto px-6 text-center">
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+                Find Your Perfect Template
+              </h2>
+              <p className="text-lg text-gray-600 dark:text-gray-300 mb-12">
+                Search through hundreds of professionally designed templates
+              </p>
 
-            {/* Search Bar */}
-            <div className="relative max-w-2xl mx-auto mb-8">
-              <div className="relative">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                  placeholder="Search templates by occasion, style, or keyword..."
-                  className="w-full px-6 py-4 pl-14 pr-4 text-lg border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-                <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
-                  <Search className="w-6 h-6 text-gray-400" />
-                </div>
-                <Button
-                  onClick={() => handleSearch()}
-                  disabled={isSearching}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 hover:bg-blue-700"
-                >
-                  {isSearching ? 'Searching...' : 'Search'}
-                </Button>
-              </div>
-            </div>
-
-            {/* Popular Searches */}
-            <div className="mb-8">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Popular Searches</h3>
-              <div className="flex flex-wrap justify-center gap-3">
-                {['Birthday Party', 'Wedding Invitation', 'Baby Shower', 'Holiday Party', 'Corporate Event', 'Graduation', 'Anniversary', 'Housewarming'].map((term) => (
-                  <button
-                    key={term}
-                    onClick={() => handlePopularSearch(term)}
-                    className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+              {/* Search Bar */}
+              <div className="relative max-w-2xl mx-auto mb-8">
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                    placeholder="Search templates by occasion, style, or keyword..."
+                    className="w-full px-6 py-4 pl-14 pr-4 text-lg border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
+                    <Search className="w-6 h-6 text-gray-400" />
+                  </div>
+                  <Button
+                    onClick={() => handleSearch()}
+                    disabled={isSearching}
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 hover:bg-blue-700"
                   >
-                    {term}
-                  </button>
-                ))}
+                    {isSearching ? 'Searching...' : 'Search'}
+                  </Button>
+                </div>
+              </div>
+
+              {/* Popular Searches */}
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                  Popular Searches
+                </h3>
+                <div className="flex flex-wrap justify-center gap-3">
+                  {[
+                    'Birthday Party',
+                    'Wedding Invitation',
+                    'Baby Shower',
+                    'Holiday Party',
+                    'Corporate Event',
+                    'Graduation',
+                    'Anniversary',
+                    'Housewarming',
+                  ].map((term) => (
+                    <button
+                      key={term}
+                      onClick={() => handlePopularSearch(term)}
+                      className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                    >
+                      {term}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="p-6 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                  <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <svg
+                      className="w-6 h-6 text-blue-600 dark:text-blue-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                    Save Favorites
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Save templates you love for later
+                  </p>
+                </div>
+
+                <div className="p-6 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                  <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <svg
+                      className="w-6 h-6 text-green-600 dark:text-green-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                    Filter & Sort
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Find exactly what you're looking for
+                  </p>
+                </div>
+
+                <div className="p-6 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                  <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <svg
+                      className="w-6 h-6 text-purple-600 dark:text-purple-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 10V3L4 14h7v7l9-11h-7z"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                    Quick Preview
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    See templates in action instantly
+                  </p>
+                </div>
               </div>
             </div>
-
-            {/* Quick Actions */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="p-6 bg-gray-50 dark:bg-gray-800 rounded-xl">
-                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                  </svg>
-                </div>
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Save Favorites</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-300">Save templates you love for later</p>
-              </div>
-
-              <div className="p-6 bg-gray-50 dark:bg-gray-800 rounded-xl">
-                <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
-                  </svg>
-                </div>
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Filter & Sort</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-300">Find exactly what you're looking for</p>
-              </div>
-
-              <div className="p-6 bg-gray-50 dark:bg-gray-800 rounded-xl">
-                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                </div>
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Quick Preview</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-300">See templates in action instantly</p>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
+          </section>
+        )}
 
       {/* Search Results Section */}
-      {(!isAuthenticated || !roles.isAttendee) && (searchResults.length > 0 || isSearching) && (
-        <section className="w-full py-20 bg-gray-50 dark:bg-gray-800">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-                {isSearching ? 'Searching...' : 'Search Results'}
-              </h2>
-              {searchQuery && (
-                <p className="text-lg text-gray-600 dark:text-gray-300">
-                  Results for "{searchQuery}"
-                </p>
-              )}
-              {selectedCategory && (
-                <p className="text-lg text-gray-600 dark:text-gray-300">
-                  Templates in "{selectedCategory}" category
-                </p>
-              )}
-            </div>
-
-            {isSearching ? (
-              <div className="flex justify-center items-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                <span className="ml-4 text-gray-600 dark:text-gray-300">Searching templates...</span>
+      {(!isAuthenticated || !roles.isAttendee) &&
+        (searchResults.length > 0 || isSearching) && (
+          <section className="w-full py-20 bg-gray-50 dark:bg-gray-800">
+            <div className="max-w-7xl mx-auto px-6">
+              <div className="text-center mb-16">
+                <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+                  {isSearching ? 'Searching...' : 'Search Results'}
+                </h2>
+                {searchQuery && (
+                  <p className="text-lg text-gray-600 dark:text-gray-300">
+                    Results for "{searchQuery}"
+                  </p>
+                )}
+                {selectedCategory && (
+                  <p className="text-lg text-gray-600 dark:text-gray-300">
+                    Templates in "{selectedCategory}" category
+                  </p>
+                )}
               </div>
-            ) : searchResults.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {searchResults.map((template) => (
-                  <div key={template.id} className="group relative rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
-                    {/* Template Background Image */}
-                    <div className="relative aspect-[3/4] overflow-hidden">
-                      {template.templateThumbnailUrl || template.s3ImageUrl ? (
-                        <img
-                          src={template.templateThumbnailUrl || template.s3ImageUrl}
-                          alt={template.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20"></div>
-                      )}
 
-                      {/* Dark Overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+              {isSearching ? (
+                <div className="flex justify-center items-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                  <span className="ml-4 text-gray-600 dark:text-gray-300">
+                    Searching templates...
+                  </span>
+                </div>
+              ) : searchResults.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {searchResults.map((template) => (
+                    <div
+                      key={template.id}
+                      className="group relative rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300"
+                    >
+                      {/* Template Background Image */}
+                      <div className="relative aspect-[3/4] overflow-hidden">
+                        {template.templateThumbnailUrl ||
+                        template.s3ImageUrl ? (
+                          <img
+                            src={
+                              template.templateThumbnailUrl ||
+                              template.s3ImageUrl
+                            }
+                            alt={template.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20"></div>
+                        )}
 
-                      {/* Content Overlay */}
-                      <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                        <h3 className="font-bold text-lg mb-2 line-clamp-2">
-                          {template.name}
-                        </h3>
+                        {/* Dark Overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
 
-                        {/* Template Meta Info */}
-                        <div className="space-y-1 text-sm opacity-90">
-                          <div className="flex items-center">
-                            <Calendar className="h-3 w-3 mr-1.5" />
-                            <span>{template.category || 'Event Template'}</span>
+                        {/* Content Overlay */}
+                        <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                          <h3 className="font-bold text-lg mb-2 line-clamp-2">
+                            {template.name}
+                          </h3>
+
+                          {/* Template Meta Info */}
+                          <div className="space-y-1 text-sm opacity-90">
+                            <div className="flex items-center">
+                              <Calendar className="h-3 w-3 mr-1.5" />
+                              <span>
+                                {template.category || 'Event Template'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Hover Action Buttons */}
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                          <div className="flex flex-col gap-2">
+                            <Button
+                              asChild
+                              className="bg-white text-gray-900 hover:bg-gray-100 font-medium"
+                            >
+                              <Link href={`/events/design/${template.id}`}>
+                                Use Template
+                              </Link>
+                            </Button>
                           </div>
                         </div>
                       </div>
-
-                      {/* Hover Action Buttons */}
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                        <div className="flex flex-col gap-2">
-                          <Button
-                            asChild
-                            className="bg-white text-gray-900 hover:bg-gray-100 font-medium"
-                          >
-                            <Link href={`/events/design/${template.id}`}>
-                              Use Template
-                            </Link>
-                          </Button>
-                        </div>
-                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <Search className="h-16 w-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                  No templates found
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300">
-                  Try adjusting your search terms or browse our categories
-                </p>
-              </div>
-            )}
-          </div>
-        </section>
-      )}
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Search className="h-16 w-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                    No templates found
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-300">
+                    Try adjusting your search terms or browse our categories
+                  </p>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
 
       {/* What would you like to create? Section */}
       <section className="w-full py-20 bg-gray-50 dark:bg-gray-800">
@@ -473,7 +592,8 @@ export default function HomePage() {
                 Make an Invitation
               </h3>
               <p className="text-gray-600 dark:text-gray-300 mb-6">
-                Create stunning digital invitations for any occasion. Choose from hundreds of templates.
+                Create stunning digital invitations for any occasion. Choose
+                from hundreds of templates.
               </p>
               <Button variant="primary" asChild className="w-full">
                 <Link href="/events">Start Creating</Link>
@@ -489,7 +609,8 @@ export default function HomePage() {
                 Upload Your Own Design
               </h3>
               <p className="text-gray-600 dark:text-gray-300 mb-6">
-                Add your personal touch with custom designs and photos for unique invitations.
+                Add your personal touch with custom designs and photos for
+                unique invitations.
               </p>
               <Button variant="primary" asChild className="w-full">
                 <Link href="/events">Upload Design</Link>
@@ -505,7 +626,8 @@ export default function HomePage() {
                 Send Gift Cards
               </h3>
               <p className="text-gray-600 dark:text-gray-300 mb-6">
-                Shop digital gift cards from top retailers and send them instantly to guests.
+                Shop digital gift cards from top retailers and send them
+                instantly to guests.
               </p>
               <Button variant="primary" asChild className="w-full">
                 <Link href="/store-client">Browse Cards</Link>
@@ -521,7 +643,8 @@ export default function HomePage() {
                 Create SignUp Sheet
               </h3>
               <p className="text-gray-600 dark:text-gray-300 mb-6">
-                Organize volunteers and coordinate what guests should bring to your event.
+                Organize volunteers and coordinate what guests should bring to
+                your event.
               </p>
               <Button variant="primary" asChild className="w-full">
                 <Link href="/events">Create Sheet</Link>
@@ -589,7 +712,8 @@ export default function HomePage() {
                 Beautiful Templates
               </h3>
               <p className="text-gray-600 dark:text-gray-300">
-                Hundreds of professionally designed templates for every occasion.
+                Hundreds of professionally designed templates for every
+                occasion.
               </p>
             </div>
           </div>
@@ -618,16 +742,24 @@ export default function HomePage() {
                 {invitedEvents.slice(0, 3).map((event) => {
                   const userGuest = event.guests?.[0];
                   return (
-                    <div key={event.id} className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow">
+                    <div
+                      key={event.id}
+                      className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow"
+                    >
                       <div className="flex items-center justify-between mb-4">
                         <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
                           <Calendar className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                         </div>
                         {userGuest && (
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${userGuest.status === 'CONFIRMED' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
-                              userGuest.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                                'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
-                            }`}>
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${
+                              userGuest.status === 'CONFIRMED'
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                                : userGuest.status === 'PENDING'
+                                  ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+                                  : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
+                            }`}
+                          >
                             {userGuest.status}
                           </span>
                         )}
@@ -635,13 +767,16 @@ export default function HomePage() {
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
                         {event.title}
                       </h3>
-                      {event.date && (
+                      {event.startDateTime && (
                         <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-                          {new Date(event.date).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                          })}
+                          {new Date(event.startDateTime).toLocaleDateString(
+                            'en-US',
+                            {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                            },
+                          )}
                         </p>
                       )}
                       {event.location && (
@@ -655,7 +790,9 @@ export default function HomePage() {
                         asChild
                         className="w-full"
                       >
-                        <Link href={`/events/${event.id}/invitation/${userGuest?.id}`}>
+                        <Link
+                          href={`/events/${event.id}/invitation/${userGuest?.id}`}
+                        >
                           View Event
                         </Link>
                       </Button>
@@ -686,21 +823,79 @@ export default function HomePage() {
             <div>
               <h3 className="text-lg font-semibold text-white mb-4">Create</h3>
               <ul className="space-y-2">
-                <li><Link href="/events" className="text-gray-300 hover:text-white transition-colors">Invitations</Link></li>
-                <li><Link href="/templates" className="text-gray-300 hover:text-white transition-colors">eCards</Link></li>
-                <li><Link href="/events" className="text-gray-300 hover:text-white transition-colors">Announcements</Link></li>
-                <li><Link href="/events" className="text-gray-300 hover:text-white transition-colors">SignUp Sheets</Link></li>
+                <li>
+                  <Link
+                    href="/events"
+                    className="text-gray-300 hover:text-white transition-colors"
+                  >
+                    Invitations
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/templates"
+                    className="text-gray-300 hover:text-white transition-colors"
+                  >
+                    eCards
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/events"
+                    className="text-gray-300 hover:text-white transition-colors"
+                  >
+                    Announcements
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/events"
+                    className="text-gray-300 hover:text-white transition-colors"
+                  >
+                    SignUp Sheets
+                  </Link>
+                </li>
               </ul>
             </div>
 
             {/* Occasions */}
             <div>
-              <h3 className="text-lg font-semibold text-white mb-4">Occasions</h3>
+              <h3 className="text-lg font-semibold text-white mb-4">
+                Occasions
+              </h3>
               <ul className="space-y-2">
-                <li><Link href="/templates" className="text-gray-300 hover:text-white transition-colors">Birthday Parties</Link></li>
-                <li><Link href="/templates" className="text-gray-300 hover:text-white transition-colors">Weddings</Link></li>
-                <li><Link href="/templates" className="text-gray-300 hover:text-white transition-colors">Baby Showers</Link></li>
-                <li><Link href="/templates" className="text-gray-300 hover:text-white transition-colors">Holidays</Link></li>
+                <li>
+                  <Link
+                    href="/templates"
+                    className="text-gray-300 hover:text-white transition-colors"
+                  >
+                    Birthday Parties
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/templates"
+                    className="text-gray-300 hover:text-white transition-colors"
+                  >
+                    Weddings
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/templates"
+                    className="text-gray-300 hover:text-white transition-colors"
+                  >
+                    Baby Showers
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/templates"
+                    className="text-gray-300 hover:text-white transition-colors"
+                  >
+                    Holidays
+                  </Link>
+                </li>
               </ul>
             </div>
 
@@ -708,10 +903,38 @@ export default function HomePage() {
             <div>
               <h3 className="text-lg font-semibold text-white mb-4">Support</h3>
               <ul className="space-y-2">
-                <li><Link href="/help" className="text-gray-300 hover:text-white transition-colors">Help Center</Link></li>
-                <li><Link href="/contact" className="text-gray-300 hover:text-white transition-colors">Contact Us</Link></li>
-                <li><Link href="/privacy" className="text-gray-300 hover:text-white transition-colors">Privacy Policy</Link></li>
-                <li><Link href="/terms" className="text-gray-300 hover:text-white transition-colors">Terms of Service</Link></li>
+                <li>
+                  <Link
+                    href="/help"
+                    className="text-gray-300 hover:text-white transition-colors"
+                  >
+                    Help Center
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/contact"
+                    className="text-gray-300 hover:text-white transition-colors"
+                  >
+                    Contact Us
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/privacy"
+                    className="text-gray-300 hover:text-white transition-colors"
+                  >
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/terms"
+                    className="text-gray-300 hover:text-white transition-colors"
+                  >
+                    Terms of Service
+                  </Link>
+                </li>
               </ul>
             </div>
 
@@ -719,18 +942,44 @@ export default function HomePage() {
             <div>
               <h3 className="text-lg font-semibold text-white mb-4">Company</h3>
               <ul className="space-y-2">
-                <li><Link href="/about" className="text-gray-300 hover:text-white transition-colors">About Us</Link></li>
-                <li><Link href="/careers" className="text-gray-300 hover:text-white transition-colors">Careers</Link></li>
-                <li><Link href="/press" className="text-gray-300 hover:text-white transition-colors">Press</Link></li>
-                <li><Link href="/blog" className="text-gray-300 hover:text-white transition-colors">Blog</Link></li>
+                <li>
+                  <Link
+                    href="/about"
+                    className="text-gray-300 hover:text-white transition-colors"
+                  >
+                    About Us
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/careers"
+                    className="text-gray-300 hover:text-white transition-colors"
+                  >
+                    Careers
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/press"
+                    className="text-gray-300 hover:text-white transition-colors"
+                  >
+                    Press
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/blog"
+                    className="text-gray-300 hover:text-white transition-colors"
+                  >
+                    Blog
+                  </Link>
+                </li>
               </ul>
             </div>
           </div>
 
           <div className="border-t border-gray-700 pt-8 text-center">
-            <p className="text-gray-400">
-              ©2025 Nimto. All rights reserved.
-            </p>
+            <p className="text-gray-400">©2025 Nimto. All rights reserved.</p>
           </div>
         </div>
       </footer>
