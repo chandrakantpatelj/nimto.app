@@ -22,7 +22,7 @@ export async function GET(request, { params }) {
           select: {
             id: true,
             title: true,
-            date: true,
+            startDateTime: true,
             location: true,
           },
         },
@@ -92,7 +92,7 @@ export async function PUT(request, { params }) {
           select: {
             id: true,
             title: true,
-            date: true,
+            startDateTime: true,
             location: true,
           },
         },

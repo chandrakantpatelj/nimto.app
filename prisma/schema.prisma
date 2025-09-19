@@ -211,8 +211,8 @@ model Event {
   id                   String      @id @default(cuid())
   title                String
   description          String?
-  date                 DateTime
-  time                 String?
+  startDateTime        DateTime    // Required start date and time
+  endDateTime          DateTime?   // Optional end date and time
   location             String?
   templateId           String?
   jsonContent          String?

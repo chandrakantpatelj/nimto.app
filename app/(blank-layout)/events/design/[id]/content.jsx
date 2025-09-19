@@ -63,8 +63,7 @@ function EditEventContent() {
           title: templateData.name,
           templateId: templateData.id,
           description: '',
-          date: '',
-          time: '',
+          startDateTime: null,
           location: '',
           status: 'DRAFT',
           guests: [],
@@ -133,8 +132,8 @@ function EditEventContent() {
 
   const handlePublishEvent = () => {
     // Validate required fields
-    if (!eventData.title || !eventData.date) {
-      toastError('Please fill in all required fields (title and date)');
+    if (!eventData.title || !eventData.startDateTime) {
+      toastError('Please fill in all required fields (title and start date)');
       return;
     }
 

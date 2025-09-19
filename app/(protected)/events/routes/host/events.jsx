@@ -16,6 +16,7 @@ import {
   Users,
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
+import { formatDate, formatTime } from '@/lib/date-utils';
 import { toAbsoluteUrl } from '@/lib/helpers';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -89,25 +90,6 @@ const Events = () => {
   const handleDeleteFailed = (eventId) => {
     // Stop the loading state for the failed event
     setDeletingEventId(null);
-  };
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    });
-  };
-
-  const formatTime = (timeString) => {
-    if (!timeString) return '';
-    const time = new Date(`2000-01-01T${timeString}`);
-    return time.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    });
   };
 
   // Events are now filtered by Redux useFilteredEvents hook
@@ -224,12 +206,18 @@ const Events = () => {
 
                 <div className="flex items-center gap-2 text-white/90 text-sm">
                   <CalendarDays className="w-4 h-4" />
-                  <span className="font-medium">{formatDate(event.date)}</span>
-                  {event.time && (
+                  <span className="font-medium">
+                    {formatDate(event.startDateTime, {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                    })}
+                  </span>
+                  {event.startDateTime && (
                     <>
                       <span className="text-white/60">•</span>
                       <span className="font-medium">
-                        {formatTime(event.time)}
+                        {formatTime(event.startDateTime)}
                       </span>
                     </>
                   )}

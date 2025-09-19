@@ -23,7 +23,7 @@ export async function POST(request, { params }) {
         id: true,
         title: true,
         description: true,
-        date: true,
+        startDateTime: true,
         location: true,
       },
     });
@@ -94,7 +94,7 @@ export async function POST(request, { params }) {
           event: {
             title: event.title,
             description: event.description,
-            date: event.date,
+            startDateTime: event.startDateTime,
             location: event.location,
           },
           invitationUrl,

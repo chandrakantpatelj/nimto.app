@@ -178,12 +178,72 @@ const authOptions = {
           token.status = user.status;
           token.roleId = user.roleId;
           token.roleName = role?.slug;
+        } else if (token.id) {
+          // Performance-optimized strategy: Smart caching with intelligent refresh
+          const now = Date.now();
+          const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
+          const lastFetch = token.lastFetch || 0;
+
+          // Check if we need to refresh data
+          const shouldRefresh =
+            !token.lastFetch || // First time
+            now - lastFetch > CACHE_DURATION || // Cache expired
+            token.forceRefresh; // Manual refresh requested
+
+          if (shouldRefresh) {
+            try {
+              const currentUser = await prisma.user.findUnique({
+                where: {
+                  id: token.id,
+                  isTrashed: false,
+                  status: 'ACTIVE',
+                },
+                include: {
+                  role: {
+                    select: {
+                      id: true,
+                      slug: true,
+                      name: true,
+                    },
+                  },
+                },
+              });
+
+              if (!currentUser) {
+                console.log(
+                  `User ${token.id} not found or inactive, invalidating session`,
+                );
+                return null;
+              }
+
+              // Update token with fresh data and cache timestamp
+              token.roleId = currentUser.roleId;
+              token.roleName = currentUser.role?.slug;
+              token.status = currentUser.status;
+              token.email = currentUser.email;
+              token.name = currentUser.name;
+              token.avatar = currentUser.avatar;
+              token.lastFetch = now;
+              token.forceRefresh = false; // Reset force refresh flag
+            } catch (error) {
+              console.error('Error fetching user data in JWT callback:', error);
+              // On database error, return null to invalidate session
+              return null;
+            }
+          } else {
+            // Use cached data - no database query needed
+          }
         }
       }
 
       return token;
     },
     async session({ session, token }) {
+      // If token is null (user not found/deleted), return null to invalidate session
+      if (!token) {
+        return null;
+      }
+
       if (session.user) {
         session.user.id = token.id;
         session.user.email = token.email;

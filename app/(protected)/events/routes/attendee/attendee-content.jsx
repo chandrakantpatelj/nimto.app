@@ -14,6 +14,7 @@ import {
   Trash2,
   Users,
 } from 'lucide-react';
+import { formatDate, formatTime } from '@/lib/date-utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -45,8 +46,8 @@ export function AttendeeEventContent() {
       s3ImageUrl: event.s3ImageUrl || '',
       title: event.title,
       description: event.description,
-      date: event.date,
-      time: event.time,
+      startDateTime: event.startDateTime,
+      endDateTime: event.endDateTime,
       location: event.location,
       status: event.status,
       guests: event.guests,
@@ -54,21 +55,6 @@ export function AttendeeEventContent() {
 
     // Navigate to design page
     router.push(`/events/${event.id}`);
-  };
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
-
-  const formatTime = (timeString) => {
-    if (!timeString) return '';
-    return timeString;
   };
 
   const getStatusColor = (status) => {
@@ -246,13 +232,20 @@ export function AttendeeEventContent() {
               <div className="space-y-2">
                 <div className="flex items-center text-sm text-gray-600">
                   <CalendarDays className="w-4 h-4 mr-2 flex-shrink-0" />
-                  <span>{formatDate(event.date)}</span>
+                  <span>
+                    {formatDate(event.startDateTime, {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
+                  </span>
                 </div>
 
-                {event.time && (
+                {event.startDateTime && (
                   <div className="flex items-center text-sm text-gray-600">
                     <Clock className="w-4 h-4 mr-2 flex-shrink-0" />
-                    <span>{formatTime(event.time)}</span>
+                    <span>{formatTime(event.startDateTime)}</span>
                   </div>
                 )}
 
