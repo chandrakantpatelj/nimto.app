@@ -40,14 +40,23 @@ export default function PublicEventInvitationPage() {
       const guestResponse = await apiFetch(`/api/public/guests/${guestId}`);
 
       if (!guestResponse.ok) {
-        throw new Error('Guest invitation not found or invalid');
+        const errorData = await guestResponse.json().catch(() => ({}));
+        const errorInfo = {
+          message: errorData.message || 'Guest invitation not found or invalid',
+          errorType: errorData.errorType || 'UNKNOWN_ERROR',
+          originalError: errorData.error || 'Unknown error'
+        };
+        throw errorInfo;
       }
 
       const guestData = await guestResponse.json();
       const guestRecord = guestData.data;
 
       if (!guestRecord || guestRecord.eventId !== eventId) {
-        throw new Error('Invalid invitation link');
+        const error = new Error('The invitation link appears to be corrupted or invalid. Please check the link and try again.');
+        error.errorType = 'INVALID_LINK';
+        error.originalError = 'Invalid invitation link';
+        throw error;
       }
 
       setGuest(guestRecord);
@@ -60,8 +69,15 @@ export default function PublicEventInvitationPage() {
 
       setEvent(eventWithGuest);
     } catch (err) {
-      console.error('Error fetching invitation:', err);
-      setError(err.message);
+      console.error('Error fetching invitation:', {
+        eventId,
+        guestId,
+        error: err,
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        url: window.location.href
+      });
+      setError(err);
     } finally {
       setLoading(false);
     }
@@ -106,19 +122,157 @@ export default function PublicEventInvitationPage() {
   }
 
   if (error) {
+    const getErrorIcon = (errorType) => {
+      switch (errorType) {
+        case 'EVENT_CANCELLED':
+          return '❌';
+        case 'EVENT_COMPLETED':
+          return '✅';
+        case 'EVENT_REMOVED':
+          return '🗑️';
+        case 'EVENT_NOT_FOUND':
+          return '🔍';
+        case 'INVALID_INVITATION':
+          return '🔗';
+        case 'INVALID_LINK':
+          return '⚠️';
+        default:
+          return '❓';
+      }
+    };
+
+    const getErrorTitle = (errorType) => {
+      switch (errorType) {
+        case 'EVENT_CANCELLED':
+          return 'Event Cancelled';
+        case 'EVENT_COMPLETED':
+          return 'Event Completed';
+        case 'EVENT_REMOVED':
+          return 'Event Removed';
+        case 'EVENT_NOT_FOUND':
+          return 'Event Not Found';
+        case 'INVALID_INVITATION':
+          return 'Invalid Invitation';
+        case 'INVALID_LINK':
+          return 'Invalid Link';
+        default:
+          return 'Error';
+      }
+    };
+
+    const getErrorSuggestions = (errorType) => {
+      switch (errorType) {
+        case 'EVENT_CANCELLED':
+          return [
+            'Contact the event organizer for more information',
+            'Check if the event has been rescheduled',
+            'Look for alternative events on our platform'
+          ];
+        case 'EVENT_COMPLETED':
+          return [
+            'This event has already taken place',
+            'Check with the organizer for future events',
+            'Browse other upcoming events on our platform',
+            'Thank you for your interest in the event!'
+          ];
+        case 'EVENT_REMOVED':
+          return [
+            'The host/organizer may have deleted this event',
+            'Contact the organizer directly for updates',
+            'The event may have been removed from the platform',
+            'Browse other available events'
+          ];
+        case 'EVENT_NOT_FOUND':
+          return [
+            'The event may have been deleted by the host',
+            'Check with the person who sent you this invitation',
+            'Verify the invitation link is correct',
+            'The host account may have been removed'
+          ];
+        case 'INVALID_INVITATION':
+          return [
+            'Double-check the invitation link',
+            'Contact the event organizer for a new invitation',
+            'Make sure you\'re using the correct link'
+          ];
+        case 'INVALID_LINK':
+          return [
+            'Copy and paste the link again',
+            'Check for any missing characters',
+            'Ask the organizer to resend the invitation'
+          ];
+        default:
+          return [
+            'Try refreshing the page',
+            'Check your internet connection',
+            'Contact support if the problem persists'
+          ];
+      }
+    };
+
+    const errorType = error.errorType || 'UNKNOWN_ERROR';
+    const errorMessage = error.message || (typeof error === 'string' ? error : 'An unexpected error occurred');
+    const suggestions = getErrorSuggestions(errorType);
+
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold mb-2 text-red-600">Error</h2>
-          <p className="text-muted-foreground">{error}</p>
-          <div className="mt-4 space-x-2">
-            <Button onClick={fetchEventAndGuest} variant="outline">
-              Try Again
-            </Button>
-            <Link href="/">
-              <Button variant="outline">Go to Home</Button>
-            </Link>
-          </div>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 dark:from-gray-900 dark:to-slate-900/50 flex items-center justify-center p-4">
+        <div className="max-w-2xl w-full">
+          <Card className="border-0 shadow-2xl bg-white dark:bg-gray-800">
+            <CardContent className="p-8 text-center">
+              {/* Error Icon */}
+              <div className="text-6xl mb-6">
+                {getErrorIcon(errorType)}
+              </div>
+              
+              {/* Error Title */}
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                {getErrorTitle(errorType)}
+              </h1>
+              
+              {/* Error Message */}
+              <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
+                {errorMessage}
+              </p>
+              
+              {/* Suggestions */}
+              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 mb-8">
+                <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-300 mb-4">
+                  What you can do:
+                </h3>
+                <ul className="text-left space-y-2">
+                  {suggestions.map((suggestion, index) => (
+                    <li key={`suggestion-${index}-${suggestion.slice(0, 20)}`} className="flex items-start gap-3 text-blue-800 dark:text-blue-200">
+                      <span className="text-blue-500 dark:text-blue-400 mt-1">•</span>
+                      <span>{suggestion}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button 
+                  onClick={fetchEventAndGuest} 
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  🔄 Try Again
+                </Button>
+                <Link href="/">
+                  <Button className="flex items-center gap-2">
+                    🏠 Go to Home
+                  </Button>
+                </Link>
+              </div>
+              
+              {/* Contact Information */}
+              <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-600">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Need help? Contact our support team or reach out to the event organizer.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
@@ -126,18 +280,75 @@ export default function PublicEventInvitationPage() {
 
   if (!event || !guest) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold mb-2">Invitation Not Found</h2>
-          <p className="text-muted-foreground">
-            The invitation you're looking for doesn't exist or is no longer
-            valid.
-          </p>
-          <Link href="/">
-            <Button className="mt-4" variant="outline">
-              Go to Home
-            </Button>
-          </Link>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 dark:from-gray-900 dark:to-slate-900/50 flex items-center justify-center p-4">
+        <div className="max-w-2xl w-full">
+          <Card className="border-0 shadow-2xl bg-white dark:bg-gray-800">
+            <CardContent className="p-8 text-center">
+              {/* Error Icon */}
+              <div className="text-6xl mb-6">
+                🔍
+              </div>
+              
+              {/* Error Title */}
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                Invitation Not Found
+              </h1>
+              
+              {/* Error Message */}
+              <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
+                The invitation you're looking for doesn't exist or is no longer
+            valid. This could happen if the event has been completed, cancelled, removed by the host, or the invitation link is incorrect.
+              </p>
+              
+              {/* Suggestions */}
+              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 mb-8">
+                <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-300 mb-4">
+                  What you can do:
+                </h3>
+                <ul className="text-left space-y-2">
+                  <li className="flex items-start gap-3 text-blue-800 dark:text-blue-200">
+                    <span className="text-blue-500 dark:text-blue-400 mt-1">•</span>
+                    <span>Check with the person who sent you this invitation</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-blue-800 dark:text-blue-200">
+                    <span className="text-blue-500 dark:text-blue-400 mt-1">•</span>
+                    <span>Verify the invitation link is complete and correct</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-blue-800 dark:text-blue-200">
+                    <span className="text-blue-500 dark:text-blue-400 mt-1">•</span>
+                    <span>Contact the event organizer for a new invitation</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-blue-800 dark:text-blue-200">
+                    <span className="text-blue-500 dark:text-blue-400 mt-1">•</span>
+                    <span>The host may have deleted the event or their account</span>
+                  </li>
+                </ul>
+              </div>
+              
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button 
+                  onClick={fetchEventAndGuest} 
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  🔄 Try Again
+                </Button>
+                <Link href="/">
+                  <Button className="flex items-center gap-2">
+                    🏠 Go to Home
+                  </Button>
+                </Link>
+              </div>
+              
+              {/* Contact Information */}
+              <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-600">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Need help? Contact our support team or reach out to the event organizer.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );

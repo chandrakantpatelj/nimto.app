@@ -34,15 +34,61 @@ export async function GET(request, { params }) {
 
     if (!guest) {
       return NextResponse.json(
-        { success: false, error: 'Guest record not found' },
+        { 
+          success: false, 
+          error: 'Guest invitation not found or invalid',
+          errorType: 'INVALID_INVITATION',
+          message: 'The invitation link you clicked is not valid. Please check the link or contact the event organizer.'
+        },
         { status: 404 },
       );
     }
 
     // Check if event is valid and not trashed
-    if (!guest.event || guest.event.isTrashed || guest.event.status === 'CANCELLED') {
+    if (!guest.event) {
       return NextResponse.json(
-        { success: false, error: 'Event is no longer available' },
+        { 
+          success: false, 
+          error: 'Event not found',
+          errorType: 'EVENT_NOT_FOUND',
+          message: 'The event associated with this invitation no longer exists.'
+        },
+        { status: 404 },
+      );
+    }
+
+    if (guest.event.isTrashed) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Event has been removed',
+          errorType: 'EVENT_REMOVED',
+          message: 'This event has been removed by the host/organizer and is no longer available. The host may have deleted the event or it may have been removed from the platform.'
+        },
+        { status: 404 },
+      );
+    }
+
+    if (guest.event.status === 'CANCELLED') {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Event has been cancelled',
+          errorType: 'EVENT_CANCELLED',
+          message: 'This event has been cancelled by the organizer. Please contact them for more information.'
+        },
+        { status: 404 },
+      );
+    }
+
+    if (guest.event.status === 'COMPLETED') {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Event has already been completed',
+          errorType: 'EVENT_COMPLETED',
+          message: 'This event has already taken place and is no longer accepting RSVPs. Thank you for your interest!'
+        },
         { status: 404 },
       );
     }
@@ -62,9 +108,20 @@ export async function GET(request, { params }) {
       data: guest,
     });
   } catch (error) {
-    console.error('Error fetching public guest:', error);
+    console.error('Error fetching public guest:', {
+      guestId,
+      error: error.message,
+      stack: error.stack,
+      timestamp: new Date().toISOString()
+    });
+    
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch guest information' },
+      { 
+        success: false, 
+        error: 'Failed to fetch guest information',
+        errorType: 'SERVER_ERROR',
+        message: 'We encountered an unexpected error while loading your invitation. Please try again or contact support if the problem persists.'
+      },
       { status: 500 },
     );
   }

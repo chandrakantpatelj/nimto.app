@@ -161,6 +161,12 @@ const TemplateDesignLayout = ({
       // Call the parent's save function with template data and uploaded file
       const thumbnailData = await pixieEditorRef.current.getThumbnailData();
 
+      // Clean up the object URL after a delay to free memory
+      if (thumbnailData.objectUrl) {
+        setTimeout(() => {
+          URL.revokeObjectURL(thumbnailData.objectUrl);
+        }, 10000); // 10 seconds delay
+      }
       await onSave(templateData, uploadedImageFile, thumbnailData);
     } catch (err) {
       toastError(err.message || 'Failed to save template');
