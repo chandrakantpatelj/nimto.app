@@ -5,11 +5,19 @@ import Link from 'next/link';
 import {
   ArrowRight,
   Calendar,
+  CheckCircle,
+  ClipboardList,
   FileText,
+  Gift,
   LayoutDashboard,
   Mail,
   Moon,
+  Palette,
+  Search,
+  Smartphone,
   Sun,
+  Upload,
+  Users,
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useTheme } from 'next-themes';
@@ -17,32 +25,9 @@ import { apiFetch } from '@/lib/api';
 import { useRoleBasedAccess } from '@/hooks/use-role-based-access';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import {
-  FileText,
-  ArrowRight,
-  Moon,
-  Sun,
-  LayoutDashboard,
-  Calendar,
-  Mail,
-  Upload,
-  Gift,
-  ClipboardList,
-  CheckCircle,
-  Smartphone,
-  Users,
-  Palette,
-  Heart,
-  Star,
-  Sparkles,
-  Search,
-  Filter,
-} from 'lucide-react';
-import { useRoleBasedAccess } from '@/hooks/use-role-based-access';
-import { HomeTemplatesPreview } from '@/app/components/home-templates-preview';
 import { DynamicCategories } from '@/app/components/dynamic-categories';
 import { EnhancedTemplatesDisplay } from '@/app/components/enhanced-templates-display';
-import { apiFetch } from '@/lib/api';
+import { HomeTemplatesPreview } from '@/app/components/home-templates-preview';
 
 export default function HomePage() {
   const { data: session, status } = useSession();
