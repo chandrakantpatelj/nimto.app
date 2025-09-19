@@ -39,6 +39,7 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [isUpdatingResponse, setIsUpdatingResponse] = useState(false);
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({
@@ -143,6 +144,14 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
       const result = await response.json();
 
       setSubmitSuccess(true);
+      setIsUpdatingResponse(false); // Reset update mode
+
+      // Update form data with the response from server
+      setFormData(prev => ({
+        ...prev,
+        status: result.data.status,
+        response: result.data.response,
+      }));
 
       // Call the callback to update parent component
       if (onRSVPUpdate) {
@@ -194,7 +203,9 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
     !userGuest?.status ||
     userGuest.status === 'PENDING' ||
     userGuest.status === 'INVITED' ||
-    formData.status === 'PENDING';
+    formData.status === 'PENDING' ||
+    isUpdatingResponse;
+
 
   // If user has already responded and doesn't want to update, show response summary
   if (
@@ -257,9 +268,10 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
               variant="outline"
               size="sm"
               onClick={() => {
+                setIsUpdatingResponse(true);
                 setFormData((prev) => ({
                   ...prev,
-                  status: 'PENDING',
+                  status: userGuest.status, // Keep current status but allow form to show
                 }));
               }}
             >
@@ -303,10 +315,13 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
           <div className="p-2 bg-white/20 rounded-lg">
             <MessageSquare className="h-5 w-5" />
           </div>
-          RSVP Response
+          {isUpdatingResponse ? 'Update RSVP Response' : 'RSVP Response'}
         </CardTitle>
         <p className="text-green-100 text-base font-medium">
-          Please fill out the form below to respond to this invitation.
+          {isUpdatingResponse 
+            ? 'Update your response below if your plans have changed.'
+            : 'Please fill out the form below to respond to this invitation.'
+          }
         </p>
 
         {/* Event Settings Info */}
@@ -682,22 +697,41 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
           )}
 
           {/* Submit Button */}
-          <Button
-            type="submit"
-            disabled={
-              isSubmitting || !formData.status || formData.status === 'PENDING'
-            }
-            className="w-full"
-          >
-            {isSubmitting ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Submitting...
-              </>
-            ) : (
-              'Submit RSVP'
+          <div className="flex gap-3">
+            {isUpdatingResponse && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setIsUpdatingResponse(false);
+                  setFormData(prev => ({
+                    ...prev,
+                    status: userGuest.status,
+                    response: userGuest.response,
+                  }));
+                }}
+                className="flex-1"
+              >
+                Cancel Update
+              </Button>
             )}
-          </Button>
+            <Button
+              type="submit"
+              disabled={
+                isSubmitting || !formData.status || formData.status === 'PENDING'
+              }
+              className={isUpdatingResponse ? "flex-1" : "w-full"}
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  {isUpdatingResponse ? 'Updating...' : 'Submitting...'}
+                </>
+              ) : (
+                isUpdatingResponse ? 'Update RSVP' : 'Submit RSVP'
+              )}
+            </Button>
+          </div>
         </form>
       </CardContent>
     </Card>

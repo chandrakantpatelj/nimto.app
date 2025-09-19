@@ -1,78 +1,50 @@
 'use client';
 
-import {
-  composeRenderProps,
-  DateField as DateFieldRa,
-  DateInput as DateInputRa,
-  DateSegment as DateSegmentRa,
-  TimeField as TimeFieldRa,
-} from 'react-aria-components';
+import React, { forwardRef, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { inputVariants } from '@/components/ui/input';
+import { Input } from './input';
 
-function DateField({ className, children, ...props }) {
-  return (
-    <DateFieldRa
-      className={composeRenderProps(className, (className) => cn(className))}
-      data-slot="datefield"
-      {...props}
-    >
-      {children}
-    </DateFieldRa>
-  );
-}
+// DateInput component for date selection
+export const DateInput = forwardRef(
+  (
+    { className, value, onChange, placeholder = 'Select date', ...props },
+    ref,
+  ) => {
+    const [inputValue, setInputValue] = useState(value || '');
 
-function TimeField({ className, children, ...props }) {
-  return (
-    <TimeFieldRa
-      className={composeRenderProps(className, (className) => cn(className))}
-      data-slot="datefield"
-      {...props}
-    >
-      {children}
-    </TimeFieldRa>
-  );
-}
+    const handleChange = (e) => {
+      const newValue = e.target.value;
+      setInputValue(newValue);
+      if (onChange) {
+        onChange(newValue);
+      }
+    };
 
-function DateSegment({ className, ...props }) {
-  return (
-    <DateSegmentRa
-      className={composeRenderProps(className, (className) =>
-        cn(
-          `
-            text-foreground inline-flex rounded px-0.5 caret-transparent outline-hidden data-[type=literal]:text-muted-foreground/70 data-[type=literal]:px-0
-            data-placeholder:text-muted-foreground/70
-            data-invalid:data-focused:bg-destructive data-invalid:data-placeholder:text-destructive data-invalid:text-destructive data-invalid:data-focused:data-placeholder:text-destructive-foreground data-invalid:data-focused:text-destructive-foreground 
-            data-focused:bg-accent data-focused:data-placeholder:text-foreground data-focused:text-foreground             
-            data-disabled:cursor-not-allowed data-disabled:opacity-50
-          `,
-          className,
-        ),
-      )}
-      {...props}
-      data-invalid
-    />
-  );
-}
+    return (
+      <Input
+        ref={ref}
+        type="date"
+        value={inputValue}
+        onChange={handleChange}
+        placeholder={placeholder}
+        className={cn('w-full', className)}
+        {...props}
+      />
+    );
+  },
+);
 
-const dateInputStyles = `
-  relative inline-flex items-center overflow-hidden whitespace-nowrap
-  data-focus-within:ring-ring/30 data-focus-within:border-ring data-focus-within:outline-none data-focus-within:ring-[3px] 
-  data-focus-within:has-aria-invalid:ring-destructive/20 dark:data-focus-within:has-aria-invalid:ring-destructive/40 data-focus-within:has-aria-invalid:border-destructive
-`;
+DateInput.displayName = 'DateInput';
 
-function DateInput({ className, variant = 'md', ...props }) {
-  return (
-    <DateInputRa
-      data-slot="input"
-      className={composeRenderProps(className, (className) =>
-        cn(inputVariants({ variant }), dateInputStyles, className),
-      )}
-      {...props}
-    >
-      {(segment) => <DateSegment segment={segment} />}
-    </DateInputRa>
-  );
-}
+// TimeField component for time selection
+export const TimeField = forwardRef(
+  ({ children, className, ...props }, ref) => {
+    return (
+      <div ref={ref} className={cn('relative', className)} {...props}>
+        {children}
+      </div>
+    );
+  },
+);
 
-export { DateField, DateInput, DateSegment, TimeField, dateInputStyles };
+TimeField.displayName = 'TimeField';

@@ -17,6 +17,12 @@ import {
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { apiFetch } from '@/lib/api';
+import {
+  formatDate,
+  formatEventDate,
+  formatTime,
+  isFutureDate,
+} from '@/lib/date-utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -87,27 +93,14 @@ export function AttendeeDashboard() {
 
       // Get upcoming events (confirmed events with future dates)
       const upcomingEvents = guests
-        .filter((guest) => {
-          try {
-            return (
-              guest.status === 'CONFIRMED' &&
-              guest.event &&
-              guest.event.date &&
-              new Date(guest.event.date) > new Date()
-            );
-          } catch (error) {
-            console.warn('Invalid date format:', guest.event?.date);
-            return false;
-          }
-        })
+        .filter(
+          (guest) =>
+            guest.status === 'CONFIRMED' &&
+            guest.event &&
+            isFutureDate(guest.event.startDateTime),
+        )
         .map((guest) => guest.event)
-        .sort((a, b) => {
-          try {
-            return new Date(a.date) - new Date(b.date);
-          } catch (error) {
-            return 0;
-          }
-        })
+        .sort((a, b) => new Date(a.startDateTime) - new Date(b.startDateTime))
         .slice(0, 5);
 
       // Get recent invitations (last 10)
@@ -160,36 +153,6 @@ export function AttendeeDashboard() {
         return <XCircle className="h-4 w-4 text-red-600" />;
       default:
         return <Clock className="h-4 w-4 text-gray-600" />;
-    }
-  };
-
-  const formatDate = (dateString) => {
-    try {
-      if (!dateString) return 'N/A';
-      return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } catch (error) {
-      console.warn('Invalid date format:', dateString);
-      return 'Invalid Date';
-    }
-  };
-
-  const formatEventDate = (dateString) => {
-    try {
-      if (!dateString) return 'N/A';
-      return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      });
-    } catch (error) {
-      console.warn('Invalid date format:', dateString);
-      return 'Invalid Date';
     }
   };
 
@@ -305,7 +268,7 @@ export function AttendeeDashboard() {
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <CalendarDays className="h-3 w-3 sm:h-4 sm:w-4" />
-                        {formatEventDate(event.date)}
+                        {formatEventDate(event.startDateTime)}
                       </div>
                       {event.location && (
                         <div className="flex items-center gap-1">
@@ -313,10 +276,10 @@ export function AttendeeDashboard() {
                           <span className="truncate">{event.location}</span>
                         </div>
                       )}
-                      {event.time && (
+                      {event.startDateTime && (
                         <div className="flex items-center gap-1">
                           <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
-                          {event.time}
+                          {formatTime(event.startDateTime)}
                         </div>
                       )}
                     </div>
@@ -380,10 +343,10 @@ export function AttendeeDashboard() {
                         {getStatusIcon(invitation.status)}
                         Invited {formatDate(invitation.invitedAt)}
                       </div>
-                      {invitation.event?.date && (
+                      {invitation.event?.startDateTime && (
                         <div className="flex items-center gap-1">
                           <CalendarDays className="h-3 w-3 sm:h-4 sm:w-4" />
-                          {formatEventDate(invitation.event.date)}
+                          {formatEventDate(invitation.event.startDateTime)}
                         </div>
                       )}
                       {invitation.event?.location && (

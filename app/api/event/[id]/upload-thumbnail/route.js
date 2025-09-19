@@ -97,7 +97,7 @@ export async function POST(request, { params }) {
 
     // Upload to S3
     const s3Client = createS3Client();
-    const { bucket, region, endpoint } = getS3Config();
+    const { bucket } = getS3Config();
 
     if (!bucket) {
       return NextResponse.json(

@@ -34,7 +34,6 @@ async function checkImageExists(s3Client, bucket, key) {
 async function deleteImageFromS3(s3Client, bucket, key) {
   try {
     await s3Client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));
-    console.log(`Deleted image from S3: ${key}`);
     return true;
   } catch (error) {
     console.error(`Failed to delete image from S3: ${key}`, error);
@@ -71,8 +70,7 @@ export async function POST(request) {
     const {
       title,
       description,
-      date,
-      time,
+      startDateTime,
       location,
       templateId,
       jsonContent,
@@ -85,9 +83,16 @@ export async function POST(request) {
     } = body;
 
     // Validate required fields
-    if (!title || !date) {
+    if (!title) {
       return NextResponse.json(
-        { success: false, error: 'Title and date are required' },
+        { success: false, error: 'Title is required' },
+        { status: 400 },
+      );
+    }
+
+    if (!startDateTime) {
+      return NextResponse.json(
+        { success: false, error: 'Event start date and time are required' },
         { status: 400 },
       );
     }
@@ -100,15 +105,6 @@ export async function POST(request) {
       );
     }
 
-    // Debug: Log session data
-    console.log('Session data:', {
-      userId: session.user.id,
-      userEmail: session.user.email,
-      userName: session.user.name,
-      roleId: session.user.roleId,
-      roleName: session.user.roleName,
-    });
-
     // Try to find user by session ID first
     let user = await prisma.user.findUnique({
       where: { id: session.user.id },
@@ -117,31 +113,17 @@ export async function POST(request) {
 
     // If not found by ID, try to find by email (common issue with NextAuth)
     if (!user && session.user.email) {
-      console.log(
-        'User not found by ID, trying to find by email:',
-        session.user.email,
-      );
       user = await prisma.user.findUnique({
         where: { email: session.user.email },
         select: { id: true, name: true, email: true },
       });
 
       if (user) {
-        console.log('Found user by email, but ID mismatch:', {
-          sessionUserId: session.user.id,
-          databaseUserId: user.id,
-          email: user.email,
-        });
-        console.log('Using database user ID for event creation');
       }
     }
 
     // If still not found, try to find by name (last resort)
     if (!user && session.user.name) {
-      console.log(
-        'User not found by ID or email, trying to find by name:',
-        session.user.name,
-      );
       user = await prisma.user.findFirst({
         where: {
           name: session.user.name,
@@ -149,15 +131,6 @@ export async function POST(request) {
         },
         select: { id: true, name: true, email: true },
       });
-
-      if (user) {
-        console.log('Found user by name and email:', {
-          sessionUserId: session.user.id,
-          databaseUserId: user.id,
-          email: user.email,
-          name: user.name,
-        });
-      }
     }
 
     if (!user) {
@@ -193,7 +166,7 @@ export async function POST(request) {
     // Validate date format
     let eventDate;
     try {
-      eventDate = new Date(date);
+      eventDate = new Date(startDateTime);
       if (isNaN(eventDate.getTime())) {
         throw new Error('Invalid date format');
       }
@@ -211,24 +184,12 @@ export async function POST(request) {
       );
     }
 
-    // Debug logging
-    console.log('Creating event with data:', {
-      title,
-      date: eventDate,
-      sessionUserId: session.user.id,
-      databaseUserId: user.id,
-      userExists: !!user,
-      userEmail: user?.email,
-      guestsCount: guests.length,
-    });
-
     // First create the event to get the event ID
     const event = await prisma.event.create({
       data: {
         title,
         description,
-        date: eventDate,
-        time,
+        startDateTime: eventDate,
         location,
         templateId,
         jsonContent,
@@ -289,7 +250,6 @@ export async function POST(request) {
         });
 
         await s3Client.send(uploadCommand);
-        console.log(`Uploaded new event image to S3: ${newImagePath}`);
 
         // If template has an existing image, delete it from S3 (optional cleanup)
         if (templateImagePath && templateImagePath !== newImagePath) {
@@ -370,8 +330,8 @@ export async function POST(request) {
               subtitle: `Join us for this special event`,
               description: `
                 <p><strong>Event Details:</strong></p>
-                <p><strong>Date:</strong> ${new Date(date).toLocaleDateString()}</p>
-                <p><strong>Time:</strong> ${time || 'TBD'}</p>
+                <p><strong>Date:</strong> ${eventDate.toLocaleDateString()}</p>
+                <p><strong>Time:</strong> ${eventDate.toLocaleTimeString()}</p>
                 <p><strong>Location:</strong> ${location || 'TBD'}</p>
                 ${description ? `<p><strong>Description:</strong> ${description}</p>` : ''}
                 <p>Please click the button below to view the full invitation and respond.</p>

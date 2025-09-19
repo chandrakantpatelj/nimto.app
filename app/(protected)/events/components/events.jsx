@@ -16,6 +16,7 @@ import {
   Users,
 } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
+import { formatDate, formatTime } from '@/lib/date-utils';
 import { toAbsoluteUrl } from '@/lib/helpers';
 import {
   AlertDialog,
@@ -131,21 +132,6 @@ const Events = () => {
   useEffect(() => {
     fetchEvents();
   }, []);
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
-
-  const formatTime = (timeString) => {
-    if (!timeString) return '';
-    return timeString;
-  };
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -349,13 +335,20 @@ const Events = () => {
                   <div className="space-y-2">
                     <div className="flex items-center text-sm text-gray-600">
                       <CalendarDays className="w-4 h-4 mr-2 flex-shrink-0" />
-                      <span>{formatDate(event.date)}</span>
+                      <span>
+                        {formatDate(event.startDateTime, {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        })}
+                      </span>
                     </div>
 
-                    {event.time && (
+                    {event.startDateTime && (
                       <div className="flex items-center text-sm text-gray-600">
                         <Clock className="w-4 h-4 mr-2 flex-shrink-0" />
-                        <span>{formatTime(event.time)}</span>
+                        <span>{formatTime(event.startDateTime)}</span>
                       </div>
                     )}
 

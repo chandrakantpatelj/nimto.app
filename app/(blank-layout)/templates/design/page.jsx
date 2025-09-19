@@ -95,6 +95,7 @@ function CreateTemplate() {
         throw new Error(result.error || 'Failed to create template');
       }
     } catch (err) {
+      console.error('Error creating template:', err);
       setError(err.message);
       throw err; // Re-throw to let the layout handle the error display
     } finally {
