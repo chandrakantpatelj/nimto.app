@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { apiFetch } from '@/lib/api';
+import { Button } from '@/components/ui/button';
+
 
 export function DynamicCategories({ onCategorySelect, selectedCategory }) {
   const [categories, setCategories] = useState([]);
@@ -14,7 +16,7 @@ export function DynamicCategories({ onCategorySelect, selectedCategory }) {
         setLoading(true);
         setError(null);
         
-        const response = await apiFetch('/api/template-categories');
+        const response = await apiFetch('/api/template-categories1');
         if (response.ok) {
           const result = await response.json();
           if (result.success) {
@@ -48,12 +50,11 @@ export function DynamicCategories({ onCategorySelect, selectedCategory }) {
     return (
       <div className="text-center py-8">
         <p className="text-red-600 dark:text-red-400 mb-4">Error loading categories: {error}</p>
-        <button 
-          onClick={() => window.location.reload()} 
-          className="text-blue-600 hover:text-blue-800 underline"
+        <Button 
+          onClick={() => window.location.reload()}           
         >
           Try Again
-        </button>
+        </Button>
       </div>
     );
   }
