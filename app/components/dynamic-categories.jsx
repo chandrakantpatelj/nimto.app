@@ -16,7 +16,7 @@ export function DynamicCategories({ onCategorySelect, selectedCategory }) {
         setLoading(true);
         setError(null);
         
-        const response = await apiFetch('/api/template-categories1');
+        const response = await apiFetch('/api/template-categories');
         if (response.ok) {
           const result = await response.json();
           if (result.success) {
