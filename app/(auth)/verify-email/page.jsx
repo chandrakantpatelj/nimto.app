@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense, useCallback, useEffect, useState } from 'react';
-import Link from 'next/dist/client/link';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AlertCircle, LoaderCircleIcon } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
