@@ -1,140 +1,34 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Calendar } from 'lucide-react';
-import { apiFetch } from '@/lib/api';
-
-// Cache management utilities
-const CACHE_KEY = 'homeTemplatesCache';
-const CACHE_TIMESTAMP_KEY = 'homeTemplatesCacheTimestamp';
-const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
-
-const clearTemplatesCache = () => {
-  localStorage.removeItem(CACHE_KEY);
-  localStorage.removeItem(CACHE_TIMESTAMP_KEY);
-};
-
-const getCachedTemplates = () => {
-  const cachedTemplates = localStorage.getItem(CACHE_KEY);
-  const cacheTimestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY);
-  const now = Date.now();
-
-  if (cachedTemplates && cacheTimestamp && (now - parseInt(cacheTimestamp)) < CACHE_EXPIRY) {
-    try {
-      return JSON.parse(cachedTemplates);
-    } catch (parseError) {
-      console.warn('Failed to parse cached templates:', parseError);
-      return null;
-    }
-  }
-  return null;
-};
-
-const setCachedTemplates = (templates) => {
-  localStorage.setItem(CACHE_KEY, JSON.stringify(templates));
-  localStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString());
-};
-
-// Export cache utilities for use in other components
-export { clearTemplatesCache, getCachedTemplates, setCachedTemplates };
+import { 
+  useFeaturedTemplates, 
+  useFeaturedTemplatesLoading, 
+  useFeaturedTemplatesError,
+  useTemplateActions 
+} from '@/store/hooks';
 
 export function HomeTemplatesPreview() {
-  const [templates, setTemplates] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // Redux state
+  const templates = useFeaturedTemplates();
+  const loading = useFeaturedTemplatesLoading();
+  const error = useFeaturedTemplatesError();
+  const { fetchFeaturedTemplates, clearFeaturedTemplatesError } = useTemplateActions();
 
   // Force refresh function (useful for manual refresh or when templates are updated)
   const refreshTemplates = async () => {
-    clearTemplatesCache();
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const response = await apiFetch('/api/template?limit=6');
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: Failed to fetch templates`);
-      }
-
-      const result = await response.json();
-      if (result.success) {
-        const templateData = result.data || [];
-        setTemplates(templateData);
-        setCachedTemplates(templateData);
-      } else {
-        throw new Error(result.error || 'Failed to fetch templates');
-      }
-    } catch (err) {
-      console.error('Error refreshing templates:', err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+    clearFeaturedTemplatesError();
+    await fetchFeaturedTemplates();
   };
 
+  // Load featured templates on component mount
   useEffect(() => {
-    const fetchTemplates = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        // Check if this is a page refresh (performance.navigation.type === 1)
-        const isPageRefresh = performance.navigation && performance.navigation.type === 1;
-        
-        // If it's a page refresh, clear cache and fetch fresh data
-        if (isPageRefresh) {
-          clearTemplatesCache();
-        }
-
-        // Check for cached templates first (only if not a page refresh)
-        if (!isPageRefresh) {
-          const cachedTemplates = getCachedTemplates();
-          if (cachedTemplates) {
-            setTemplates(cachedTemplates);
-            setLoading(false);
-            return;
-          }
-        }
-
-        // Fetch fresh data from API
-        const response = await apiFetch('/api/template?limit=6');
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: Failed to fetch templates`);
-        }
-
-        const result = await response.json();
-        if (result.success) {
-          const templateData = result.data || [];
-          setTemplates(templateData);
-          setCachedTemplates(templateData);
-        } else {
-          throw new Error(result.error || 'Failed to fetch templates');
-        }
-      } catch (err) {
-        console.error('Error fetching templates:', err);
-        setError(err.message);
-        
-        // Try to use cached data as fallback even if expired
-        const fallbackTemplates = localStorage.getItem(CACHE_KEY);
-        if (fallbackTemplates) {
-          try {
-            const parsedTemplates = JSON.parse(fallbackTemplates);
-            setTemplates(parsedTemplates);
-            setError(null); // Clear error if we have fallback data
-          } catch (parseError) {
-            console.warn('Failed to parse fallback cached templates:', parseError);
-          }
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTemplates();
-  }, []);
+    fetchFeaturedTemplates();
+  }, [fetchFeaturedTemplates]);
 
   const handleTemplateSelect = (template, source = 'home') => {
     console.log('Home page: Storing template for event creation:', {

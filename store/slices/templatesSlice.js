@@ -12,6 +12,11 @@ const initialState = {
   searchQuery: '',
   selectedCategory: null,
   customTemplates: [],
+  // Featured templates cache
+  featuredTemplates: [],
+  featuredTemplatesLoading: false,
+  featuredTemplatesError: null,
+  featuredTemplatesLastFetched: null,
   // Active filters state for persistence
   activeFilters: {
     searchQuery: '',
@@ -25,13 +30,53 @@ const initialState = {
 };
 
 // Async thunks
+export const fetchFeaturedTemplates = createAsyncThunk(
+  'templates/fetchFeaturedTemplates',
+  async (_, { rejectWithValue, getState }) => {
+    try {
+      const state = getState();
+      const { featuredTemplatesLastFetched } = state.templates;
+      
+      // Check if we have cached data that's less than 5 minutes old
+      const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+      const now = Date.now();
+      
+      if (featuredTemplatesLastFetched && 
+          (now - featuredTemplatesLastFetched) < CACHE_DURATION) {
+        // Return cached data from state
+        return state.templates.featuredTemplates;
+      }
+
+      const response = await fetch('/api/template?limit=6');
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch featured templates');
+      }
+
+      const result = await response.json();
+      
+      if (result.success) {
+        return {
+          templates: result.data || [],
+          timestamp: now
+        };
+      } else {
+        throw new Error(result.error || 'Failed to fetch featured templates');
+      }
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 export const fetchTemplates = createAsyncThunk(
   'templates/fetchTemplates',
-  async (queryParams = '', { rejectWithValue }) => {
+  async (queryParams, { rejectWithValue }) => {
+    const params = queryParams || '';
     try {
       // Build URL with query parameters
-      const url = queryParams
-        ? `/api/template?${queryParams}`
+      const url = params
+        ? `/api/template?${params}`
         : '/api/template';
 
       const response = await fetch(url);
@@ -196,6 +241,13 @@ const templatesSlice = createSlice({
     clearCategoriesError: (state) => {
       state.categoriesError = null;
     },
+    clearFeaturedTemplatesError: (state) => {
+      state.featuredTemplatesError = null;
+    },
+    clearFeaturedTemplatesCache: (state) => {
+      state.featuredTemplates = [];
+      state.featuredTemplatesLastFetched = null;
+    },
     setLoading: (state, action) => {
       state.isLoading = action.payload;
     },
@@ -254,6 +306,28 @@ const templatesSlice = createSlice({
       .addCase(fetchTemplates.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
+      })
+      // Fetch featured templates
+      .addCase(fetchFeaturedTemplates.pending, (state) => {
+        state.featuredTemplatesLoading = true;
+        state.featuredTemplatesError = null;
+      })
+      .addCase(fetchFeaturedTemplates.fulfilled, (state, action) => {
+        state.featuredTemplatesLoading = false;
+        // Handle both cached and fresh data
+        if (action.payload.templates) {
+          // Fresh data from API
+          state.featuredTemplates = action.payload.templates;
+          state.featuredTemplatesLastFetched = action.payload.timestamp;
+        } else {
+          // Cached data (already in state)
+          state.featuredTemplates = action.payload;
+        }
+        state.featuredTemplatesError = null;
+      })
+      .addCase(fetchFeaturedTemplates.rejected, (state, action) => {
+        state.featuredTemplatesLoading = false;
+        state.featuredTemplatesError = action.payload;
       })
       // Fetch template by ID
       .addCase(fetchTemplateById.pending, (state) => {
@@ -348,6 +422,8 @@ export const {
   clearSelectedTemplate,
   clearError,
   clearCategoriesError,
+  clearFeaturedTemplatesError,
+  clearFeaturedTemplatesCache,
   setLoading,
   setActiveFilters,
   clearActiveFilters,
