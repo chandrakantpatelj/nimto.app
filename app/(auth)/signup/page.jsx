@@ -36,7 +36,8 @@ export default function Page() {
   const [passwordVisible, setPasswordVisible] = useState(false);
   
   // Get callback URL from search params, default to templates
-  const callbackUrl = searchParams.get('callbackUrl') || '/templates';
+  const rawCallbackUrl = searchParams.get('callbackUrl');
+  const callbackUrl = rawCallbackUrl ? decodeURIComponent(rawCallbackUrl) : '/templates';
   const [passwordConfirmationVisible, setPasswordConfirmationVisible] =
     useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -78,7 +79,10 @@ export default function Page() {
           'Content-Type': 'application/json',
           'x-recaptcha-token': token,
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify({
+          ...values,
+          callbackUrl: callbackUrl,
+        }),
       });
 
       if (!response.ok) {

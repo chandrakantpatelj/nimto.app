@@ -30,7 +30,8 @@ export default function Page() {
   const [error, setError] = useState(null);
   
   // Get callback URL from search params, default to templates
-  const callbackUrl = searchParams.get('callbackUrl') || '/templates';
+  const rawCallbackUrl = searchParams.get('callbackUrl');
+  const callbackUrl = rawCallbackUrl ? decodeURIComponent(rawCallbackUrl) : '/templates';
   const prefilledEmail = searchParams.get('email') || '';
   const showVerificationMessage = searchParams.get('verification') === 'true';
 
@@ -78,10 +79,25 @@ export default function Page() {
         } catch {
           setError(response.error);
         }
-      } else if (response?.ok && response.url) {
-        // Successful login: redirect and refresh session
-        router.push(response.url);
-        router.refresh();
+      } else if (response?.ok) {
+        // Successful login: redirect to callbackUrl or default
+        const redirectUrl = response.url || callbackUrl || '/templates';
+        
+        // Use window.location.href as fallback for more reliable redirects
+        try {
+          router.push(redirectUrl);
+          router.refresh();
+          
+          // Fallback: if router.push doesn't work within 2 seconds, use window.location
+          setTimeout(() => {
+            if (window.location.pathname === '/signin') {
+              window.location.href = redirectUrl;
+            }
+          }, 2000);
+        } catch (redirectError) {
+          console.error('Router redirect failed, using window.location:', redirectError);
+          window.location.href = redirectUrl;
+        }
       } else {
         setError('Authentication failed. Please try again.');
       }

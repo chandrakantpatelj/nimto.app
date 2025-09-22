@@ -29,7 +29,24 @@ export default function Page() {
           setError(null);
           setMessage('Your email has been successfully verified!');
           setTimeout(() => {
-            router.push('/'); // Redirect to home page
+            // Get callbackUrl from search params, default to templates
+            const rawCallbackUrl = searchParams?.get('callbackUrl');
+            const callbackUrl = rawCallbackUrl ? decodeURIComponent(rawCallbackUrl) : '/templates';
+            
+            // Use window.location.href as fallback for more reliable redirects
+            try {
+              router.push(callbackUrl);
+              
+              // Fallback: if router.push doesn't work within 1 second, use window.location
+              setTimeout(() => {
+                if (window.location.pathname === '/verify-email') {
+                  window.location.href = callbackUrl;
+                }
+              }, 1000);
+            } catch (redirectError) {
+              console.error('Router redirect failed, using window.location:', redirectError);
+              window.location.href = callbackUrl;
+            }
           }, 2000);
         } else {
           setMessage(null);
@@ -40,7 +57,7 @@ export default function Page() {
         setError('An error occurred during verification.');
       }
     },
-    [router],
+    [router, searchParams],
   );
 
   useEffect(() => {
