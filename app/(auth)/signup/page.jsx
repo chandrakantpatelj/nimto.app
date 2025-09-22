@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 import { useForm } from 'react-hook-form';
-import { useToast } from '@/providers/toast-provider';
 import { apiFetch } from '@/lib/api';
 import { Alert, AlertIcon, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -34,11 +33,11 @@ import { getSignupSchema } from '../forms/signup-schema';
 export default function Page() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { toastSuccess } = useToast();
   const [passwordVisible, setPasswordVisible] = useState(false);
   
   // Get callback URL from search params, default to templates
-  const callbackUrl = searchParams.get('callbackUrl') || '/templates';
+  const rawCallbackUrl = searchParams.get('callbackUrl');
+  const callbackUrl = rawCallbackUrl ? decodeURIComponent(rawCallbackUrl) : '/templates';
   const [passwordConfirmationVisible, setPasswordConfirmationVisible] =
     useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -80,19 +79,21 @@ export default function Page() {
           'Content-Type': 'application/json',
           'x-recaptcha-token': token,
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify({
+          ...values,
+          callbackUrl: callbackUrl,
+        }),
       });
 
       if (!response.ok) {
         const { message } = await response.json();
         setError(message);
       } else {
-        const { message } = await response.json();
-        toastSuccess(
-          message ||
-            'You have successfully signed up! Please check your email to verify your account.'
-        );
-        router.push(callbackUrl);
+        await response.json();
+        const values = form.getValues();
+        // Redirect to signin with email prefilled and verification message
+        const signinUrl = `/signin?email=${encodeURIComponent(values.email)}&verification=true&callbackUrl=${encodeURIComponent(callbackUrl)}`;
+        router.push(signinUrl);
       }
     } catch (err) {
       setError(

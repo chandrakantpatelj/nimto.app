@@ -1,11 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { RiErrorWarningFill } from '@remixicon/react';
-import { AlertCircle, Eye, EyeOff, LoaderCircleIcon } from 'lucide-react';
+import { AlertCircle, Eye, EyeOff, LoaderCircleIcon, Check } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 import { useForm } from 'react-hook-form';
 import { Alert, AlertIcon, AlertTitle } from '@/components/ui/alert';
@@ -31,16 +30,26 @@ export default function Page() {
   const [error, setError] = useState(null);
   
   // Get callback URL from search params, default to templates
-  const callbackUrl = searchParams.get('callbackUrl') || '/templates';
+  const rawCallbackUrl = searchParams.get('callbackUrl');
+  const callbackUrl = rawCallbackUrl ? decodeURIComponent(rawCallbackUrl) : '/templates';
+  const prefilledEmail = searchParams.get('email') || '';
+  const showVerificationMessage = searchParams.get('verification') === 'true';
 
   const form = useForm({
     resolver: zodResolver(getSigninSchema()),
     defaultValues: {
-      email: '',
+      email: prefilledEmail,
       password: '',
       rememberMe: false,
     },
   });
+
+  // Update form when email parameter changes
+  useEffect(() => {
+    if (prefilledEmail) {
+      form.setValue('email', prefilledEmail);
+    }
+  }, [prefilledEmail, form]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -70,10 +79,25 @@ export default function Page() {
         } catch {
           setError(response.error);
         }
-      } else if (response?.ok && response.url) {
-        // Successful login: redirect and refresh session
-        router.push(response.url);
-        router.refresh();
+      } else if (response?.ok) {
+        // Successful login: redirect to callbackUrl or default
+        const redirectUrl = response.url || callbackUrl || '/templates';
+        
+        // Use window.location.href as fallback for more reliable redirects
+        try {
+          router.push(redirectUrl);
+          router.refresh();
+          
+          // Fallback: if router.push doesn't work within 2 seconds, use window.location
+          setTimeout(() => {
+            if (window.location.pathname === '/signin') {
+              window.location.href = redirectUrl;
+            }
+          }, 2000);
+        } catch (redirectError) {
+          console.error('Router redirect failed, using window.location:', redirectError);
+          window.location.href = redirectUrl;
+        }
       } else {
         setError('Authentication failed. Please try again.');
       }
@@ -100,6 +124,20 @@ export default function Page() {
             Manage your events seamlessly.
           </p>
         </div>
+
+        {/* Verification Message */}
+        {showVerificationMessage && (
+          <Alert className="mb-4">
+            <AlertIcon>
+              <Check className="h-4 w-4" />
+            </AlertIcon>
+            <AlertTitle>
+              Please verify your account! We sent a verification email to{' '}
+              <span className="font-semibold">{prefilledEmail}</span>. 
+              Please check your email and click the verification link before signing in.
+            </AlertTitle>
+          </Alert>
+        )}
 
         {/* Social Login */}
         <div className="flex flex-col gap-3.5">
