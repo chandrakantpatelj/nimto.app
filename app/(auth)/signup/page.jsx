@@ -34,10 +34,12 @@ export default function Page() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [passwordVisible, setPasswordVisible] = useState(false);
-  
+
   // Get callback URL from search params, default to templates
   const rawCallbackUrl = searchParams.get('callbackUrl');
-  const callbackUrl = rawCallbackUrl ? decodeURIComponent(rawCallbackUrl) : '/templates';
+  const callbackUrl = rawCallbackUrl
+    ? decodeURIComponent(rawCallbackUrl)
+    : '/templates';
   const [passwordConfirmationVisible, setPasswordConfirmationVisible] =
     useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -116,7 +118,11 @@ export default function Page() {
           You have successfully signed up! Please check your email to verify
           your account and then{' '}
           <Link
-            href={callbackUrl !== '/templates' ? `/signin?callbackUrl=${encodeURIComponent(callbackUrl)}` : '/signin'}
+            href={
+              callbackUrl !== '/templates'
+                ? `/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`
+                : '/signin'
+            }
             className="text-primary hover:text-primary-darker"
           >
             Log in
@@ -133,9 +139,11 @@ export default function Page() {
         <form onSubmit={handleSubmit} className="block w-full space-y-5">
           <div className="space-y-1.5 pb-3">
             <h1 className="text-2xl font-semibold tracking-tight text-center">
-            Create an Account with Nimto
+              Create an Account with Nimto
             </h1>
-            <p className="mt-2 text-sm text-slate-600 text-center">Join us to start planning and attending amazing events!</p>
+            <p className="mt-2 text-sm text-slate-600 text-center">
+              Join us to start planning and attending amazing events!
+            </p>
           </div>
 
           <div className="flex flex-col gap-3.5">
@@ -357,7 +365,11 @@ export default function Page() {
           <div className="text-sm text-muted-foreground text-center">
             Already have an account?{' '}
             <Link
-              href={callbackUrl !== '/templates' ? `/signin?callbackUrl=${encodeURIComponent(callbackUrl)}` : '/signin'}
+              href={
+                callbackUrl !== '/templates'
+                  ? `/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`
+                  : '/signin'
+              }
               className="text-sm text-sm font-semibold text-foreground hover:text-primary"
             >
               Sign In
