@@ -3,34 +3,27 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
-  ArrowRight,
-  Calendar,
   CheckCircle,
   ClipboardList,
   FileText,
   Gift,
-  LayoutDashboard,
   Mail,
-  Moon,
   Palette,
   Search,
   Smartphone,
-  Sun,
   Upload,
   Users,
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
-import { useTheme } from 'next-themes';
 import { apiFetch } from '@/lib/api';
 import { useRoleBasedAccess } from '@/hooks/use-role-based-access';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
 import { DynamicCategories } from '@/app/components/dynamic-categories';
 import { HomeTemplatesPreview } from '@/app/components/home-templates-preview';
+import { Header } from '@/app/components/layouts/demo1/components/header';
 
 export default function HomePage() {
   const { data: session, status } = useSession();
-  const { theme, setTheme } = useTheme();
   const { roles } = useRoleBasedAccess();
   const isAuthenticated = status === 'authenticated' && session;
   const isLoading = status === 'loading';
@@ -44,10 +37,6 @@ export default function HomePage() {
   const [categoryResults, setCategoryResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isCategoryLoading, setIsCategoryLoading] = useState(false);
-
-  const handleThemeToggle = (checked) => {
-    setTheme(checked ? 'dark' : 'light');
-  };
 
   // Search templates function
   const handleSearch = async (query = searchQuery) => {
@@ -140,114 +129,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 w-full flex flex-col">
-      {/* Header */}
-      <header className="w-full px-6 py-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">N</span>
-            </div>
-            <span className="text-xl font-bold text-gray-900 dark:text-white">
-              Nimto
-            </span>
-          </div>
-
-          {/* Navigation Menu */}
-          <nav className="hidden md:flex items-center space-x-8">
-            <Link
-              href="/events"
-              className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-            >
-              Create Invitation
-            </Link>
-            <Link
-              href="/templates"
-              className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-            >
-              Templates
-            </Link>
-            <Link
-              href="/store-client"
-              className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-            >
-              Gift Cards
-            </Link>
-            <Link
-              href="/events"
-              className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-            >
-              SignUp Sheets
-            </Link>
-            <Link
-              href="/templates"
-              className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-            >
-              Ideas
-            </Link>
-          </nav>
-
-          {/* Theme Switch and Auth Buttons */}
-          <div className="flex items-center space-x-3">
-            {/* Theme Toggle */}
-            <div className="flex items-center space-x-2">
-              <Sun className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-              <Switch
-                checked={theme === 'dark'}
-                onCheckedChange={handleThemeToggle}
-                size="sm"
-              />
-              <Moon className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-            </div>
-
-            {/* Auth Buttons or Role-based Navigation */}
-            {isAuthenticated ? (
-              <Button
-                variant="primary"
-                asChild
-                className="flex items-center gap-2"
-              >
-                <Link
-                  href={
-                    roles.isSuperAdmin
-                      ? '/dashboard'
-                      : roles.isAttendee
-                        ? '/invited-events'
-                        : '/templates'
-                  }
-                >
-                  {roles.isSuperAdmin ? (
-                    <>
-                      <LayoutDashboard className="h-4 w-4" />
-                      Go to Dashboard
-                    </>
-                  ) : roles.isAttendee ? (
-                    <>
-                      <Calendar className="h-4 w-4" />
-                      Go to Events
-                    </>
-                  ) : (
-                    <>
-                      <FileText className="h-4 w-4" />
-                      Go to Templates
-                    </>
-                  )}
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-            ) : (
-              <>
-                <Button variant="ghost" asChild>
-                  <Link href="/signin">Log In</Link>
-                </Button>
-                <Button variant="primary" asChild>
-                  <Link href="/signup">Sign Up</Link>
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Hero Banner */}
       <section className="w-full bg-gradient-to-r from-blue-600 to-purple-600 py-20">
