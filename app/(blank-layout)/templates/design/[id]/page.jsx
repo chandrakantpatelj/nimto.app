@@ -100,7 +100,6 @@ function EditTemplate() {
         // Upload thumbnail if thumbnail data is available
         if (thumbnailData) {
           try {
-            toastInfo('Updating thumbnail...');
             const thumbnailResponse = await apiFetch(
               `/api/template/${templateId}/upload-thumbnail`,
               {
@@ -122,10 +121,6 @@ function EditTemplate() {
 
             const thumbnailResult = await thumbnailResponse.json();
             if (thumbnailResult.success) {
-              const message = thumbnailResult.data.isOverwrite
-                ? 'Thumbnail updated successfully'
-                : 'Thumbnail uploaded successfully';
-              toastSuccess(message);
             } else {
               throw new Error(
                 thumbnailResult.error || 'Failed to upload thumbnail',
