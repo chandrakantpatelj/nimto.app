@@ -75,7 +75,7 @@ function TemplateManagementPage() {
         <div className="relative bg-gradient-to-br from-purple-600 via-pink-500 to-red-500 text-white overflow-hidden">
           <div className="absolute inset-0 bg-black/10"></div>
           <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-pink-500/20"></div>
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 lg:py-24 xl:py-32">
+          {/* <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 lg:py-24 xl:py-32">
             <div className="text-center">
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6 leading-tight">
                 Your Template Gallery
@@ -90,7 +90,7 @@ function TemplateManagementPage() {
                 </Button>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
 
         
