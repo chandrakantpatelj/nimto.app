@@ -46,9 +46,7 @@ function CreateTemplate() {
         // Upload image if one was selected
         if (uploadedImageFile) {
           try {
-            toastInfo('Uploading image to S3...');
             await uploadTemplateImage(result.data.id, uploadedImageFile);
-            toastSuccess('Image uploaded successfully!');
           } catch (uploadError) {
             toastWarning('Template created but image upload failed');
           }
