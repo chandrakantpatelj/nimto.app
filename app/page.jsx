@@ -133,7 +133,7 @@ export default function HomePage() {
 
       {/* Hero Banner */}
       <section className="w-full bg-gradient-to-r from-blue-600 to-purple-600 py-20">
-        <div className="max-w-7xl mx-auto px-6 text-center">
+        <div className="max-w-7xl mx-auto px-6  lg:py-20 md:py-16 py-10 text-center">
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6">
             Make Every Event Memorable
           </h1>
