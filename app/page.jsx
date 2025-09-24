@@ -3,35 +3,27 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
-  ArrowRight,
-  Calendar,
   CheckCircle,
   ClipboardList,
   FileText,
   Gift,
-  LayoutDashboard,
   Mail,
-  Moon,
   Palette,
   Search,
   Smartphone,
-  Sun,
   Upload,
   Users,
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
-import { useTheme } from 'next-themes';
 import { apiFetch } from '@/lib/api';
 import { useRoleBasedAccess } from '@/hooks/use-role-based-access';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
 import { DynamicCategories } from '@/app/components/dynamic-categories';
-import { EnhancedTemplatesDisplay } from '@/app/components/enhanced-templates-display';
 import { HomeTemplatesPreview } from '@/app/components/home-templates-preview';
+import { Header } from '@/app/components/layouts/demo1/components/header';
 
 export default function HomePage() {
   const { data: session, status } = useSession();
-  const { theme, setTheme } = useTheme();
   const { roles } = useRoleBasedAccess();
   const isAuthenticated = status === 'authenticated' && session;
   const isLoading = status === 'loading';
@@ -42,11 +34,9 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [searchResults, setSearchResults] = useState([]);
+  const [categoryResults, setCategoryResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
-
-  const handleThemeToggle = (checked) => {
-    setTheme(checked ? 'dark' : 'light');
-  };
+  const [isCategoryLoading, setIsCategoryLoading] = useState(false);
 
   // Search templates function
   const handleSearch = async (query = searchQuery) => {
@@ -71,19 +61,19 @@ export default function HomePage() {
   // Handle category selection
   const handleCategorySelect = async (category) => {
     setSelectedCategory(category);
-    setIsSearching(true);
+    setIsCategoryLoading(true);
     try {
       const response = await apiFetch(
         `/api/template?category=${encodeURIComponent(category)}&limit=12`,
       );
       if (response.ok) {
         const result = await response.json();
-        setSearchResults(result.data || []);
+        setCategoryResults(result.data || []);
       }
     } catch (error) {
       console.error('Error filtering by category:', error);
     } finally {
-      setIsSearching(false);
+      setIsCategoryLoading(false);
     }
   };
 
@@ -91,6 +81,14 @@ export default function HomePage() {
   const handlePopularSearch = (term) => {
     setSearchQuery(term);
     handleSearch(term);
+  };
+
+  // Clear search results and reset to search interface
+  const clearSearch = () => {
+    setSearchQuery('');
+    setSearchResults([]);
+    setSelectedCategory('');
+    setCategoryResults([]);
   };
 
   // Fetch invited events for attendees
@@ -131,118 +129,11 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 w-full flex flex-col">
-      {/* Header */}
-      <header className="w-full px-6 py-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">N</span>
-            </div>
-            <span className="text-xl font-bold text-gray-900 dark:text-white">
-              Nimto
-            </span>
-          </div>
-
-          {/* Navigation Menu */}
-          <nav className="hidden md:flex items-center space-x-8">
-            <Link
-              href="/events"
-              className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-            >
-              Create Invitation
-            </Link>
-            <Link
-              href="/templates"
-              className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-            >
-              Templates
-            </Link>
-            <Link
-              href="/store-client"
-              className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-            >
-              Gift Cards
-            </Link>
-            <Link
-              href="/events"
-              className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-            >
-              SignUp Sheets
-            </Link>
-            <Link
-              href="/templates"
-              className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-            >
-              Ideas
-            </Link>
-          </nav>
-
-          {/* Theme Switch and Auth Buttons */}
-          <div className="flex items-center space-x-3">
-            {/* Theme Toggle */}
-            <div className="flex items-center space-x-2">
-              <Sun className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-              <Switch
-                checked={theme === 'dark'}
-                onCheckedChange={handleThemeToggle}
-                size="sm"
-              />
-              <Moon className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-            </div>
-
-            {/* Auth Buttons or Role-based Navigation */}
-            {isAuthenticated ? (
-              <Button
-                variant="primary"
-                asChild
-                className="flex items-center gap-2"
-              >
-                <Link
-                  href={
-                    roles.isSuperAdmin
-                      ? '/dashboard'
-                      : roles.isAttendee
-                        ? '/invited-events'
-                        : '/templates'
-                  }
-                >
-                  {roles.isSuperAdmin ? (
-                    <>
-                      <LayoutDashboard className="h-4 w-4" />
-                      Go to Dashboard
-                    </>
-                  ) : roles.isAttendee ? (
-                    <>
-                      <Calendar className="h-4 w-4" />
-                      Go to Events
-                    </>
-                  ) : (
-                    <>
-                      <FileText className="h-4 w-4" />
-                      Go to Templates
-                    </>
-                  )}
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-            ) : (
-              <>
-                <Button variant="ghost" asChild>
-                  <Link href="/signin">Log In</Link>
-                </Button>
-                <Button variant="primary" asChild>
-                  <Link href="/signup">Sign Up</Link>
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Hero Banner */}
       <section className="w-full bg-gradient-to-r from-blue-600 to-purple-600 py-20">
-        <div className="max-w-7xl mx-auto px-6 text-center">
+        <div className="max-w-7xl mx-auto px-6  lg:py-20 md:py-16 py-10 text-center">
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6">
             Make Every Event Memorable
           </h1>
@@ -270,18 +161,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Templates Preview Section */}
-      {(!isAuthenticated || !roles.isAttendee) && (
+      {/* Featured Templates Section - Hidden when category or search is active */}
+      {(!isAuthenticated || !roles.isAttendee) && 
+        !searchQuery && !selectedCategory && (
         <section className="w-full py-20 bg-white dark:bg-gray-900">
           <div className="max-w-7xl mx-auto px-6">
-            {selectedCategory || searchQuery ? (
-              <EnhancedTemplatesDisplay
-                selectedCategory={selectedCategory}
-                searchQuery={searchQuery}
-              />
-            ) : (
-              <HomeTemplatesPreview />
-            )}
+            <HomeTemplatesPreview />
           </div>
         </section>
       )}
@@ -317,7 +202,7 @@ export default function HomePage() {
       {(!isAuthenticated || !roles.isAttendee) &&
         !selectedCategory &&
         !searchQuery && (
-          <section className="w-full py-20 bg-white dark:bg-gray-900">
+          <section id="search-section" className="w-full py-20 bg-white dark:bg-gray-900">
             <div className="max-w-4xl mx-auto px-6 text-center">
               <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
                 Find Your Perfect Template
@@ -455,6 +340,132 @@ export default function HomePage() {
           </section>
         )}
 
+      {/* Category Filter Results Section */}
+      {(!isAuthenticated || !roles.isAttendee) && 
+        selectedCategory && !searchQuery && (
+        <section className="w-full py-20 bg-white dark:bg-gray-900">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+                {selectedCategory} Templates
+              </h2>
+              <p className="text-lg text-gray-600 dark:text-gray-300">
+                Templates in the "{selectedCategory}" category
+              </p>
+            </div>
+
+            {/* Clear Category Filter */}
+            <div className="text-center mb-12">
+              <button
+                onClick={() => {
+                  setSelectedCategory('');
+                  setCategoryResults([]);
+                }}
+                className="inline-flex items-center px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              >
+                ← Back to All Categories
+              </button>
+            </div>
+
+            {isCategoryLoading ? (
+              <div className="flex justify-center items-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                <span className="ml-4 text-gray-600 dark:text-gray-300">
+                  Loading {selectedCategory} templates...
+                </span>
+              </div>
+            ) : categoryResults.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {categoryResults.map((template) => (
+                  <div
+                    key={template.id}
+                    className="group relative rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300"
+                  >
+                    {/* Template Background Image */}
+                    <div className="relative aspect-[3/4] overflow-hidden">
+                      {template.templateThumbnailUrl ||
+                      template.s3ImageUrl ? (
+                        <img
+                          src={
+                            template.templateThumbnailUrl ||
+                            template.s3ImageUrl
+                          }
+                          alt={template.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20"></div>
+                      )}
+
+                      {/* Dark Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+
+                      {/* Content Overlay */}
+                      <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                        <h3 className="font-bold text-lg mb-2 line-clamp-2">
+                          {template.name}
+                        </h3>
+
+                        {/* Template Meta Info */}
+                        <div className="space-y-1 text-sm opacity-90">
+                          <div className="flex items-center">
+                            <Calendar className="h-3 w-3 mr-1.5" />
+                            <span>
+                              {template.category || 'Event Template'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Hover Action Buttons */}
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                        <div className="flex flex-col gap-2">
+                          <Button
+                            asChild
+                            className="bg-white text-gray-900 hover:bg-gray-100 font-medium"
+                          >
+                            <Link href={`/events/design/${template.id}`}>
+                              Use Template
+                            </Link>
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <Search className="h-16 w-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                  No templates found in "{selectedCategory}"
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300 mb-6">
+                  Try selecting a different category or browse all templates
+                </p>
+                <div className="flex justify-center gap-4">
+                  <Button
+                    onClick={() => {
+                      setSelectedCategory('');
+                      setCategoryResults([]);
+                    }}
+                    variant="outline"
+                  >
+                    Back to Categories
+                  </Button>
+                  <Button
+                    variant="primary"
+                    asChild
+                  >
+                    <Link href="/templates">Browse All Templates</Link>
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
       {/* Search Results Section */}
       {(!isAuthenticated || !roles.isAttendee) &&
         (searchResults.length > 0 || isSearching) && (
@@ -474,6 +485,49 @@ export default function HomePage() {
                     Templates in "{selectedCategory}" category
                   </p>
                 )}
+              </div>
+
+              {/* Persistent Search Bar in Results */}
+              <div className="max-w-4xl mx-auto mb-12">
+                <div className="relative max-w-2xl mx-auto mb-6">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                      placeholder="Search templates by occasion, style, or keyword..."
+                      className="w-full px-6 py-4 pl-14 pr-4 text-lg border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                    <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
+                      <Search className="w-6 h-6 text-gray-400" />
+                    </div>
+                    <Button
+                      onClick={() => handleSearch()}
+                      disabled={isSearching}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 hover:bg-blue-700"
+                    >
+                      {isSearching ? 'Searching...' : 'Search'}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Clear Search Button */}
+                <div className="text-center">
+                  <Button
+                    onClick={clearSearch}
+                    variant="outline"
+                    className="mr-4"
+                  >
+                    Clear Search
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    asChild
+                  >
+                    <a href="#search-section">Back to Search</a>
+                  </Button>
+                </div>
               </div>
 
               {isSearching ? (
@@ -549,9 +603,23 @@ export default function HomePage() {
                   <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                     No templates found
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-300">
+                  <p className="text-gray-600 dark:text-gray-300 mb-6">
                     Try adjusting your search terms or browse our categories
                   </p>
+                  <div className="flex justify-center gap-4">
+                    <Button
+                      onClick={clearSearch}
+                      variant="outline"
+                    >
+                      Clear Search
+                    </Button>
+                    <Button
+                      variant="primary"
+                      asChild
+                    >
+                      <a href="/templates">Browse All Templates</a>
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>

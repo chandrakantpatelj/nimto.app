@@ -69,19 +69,14 @@ function Step2({ thumbnailData, session }) {
   };
 
   return (
-    <div className="flex h-[calc(100vh-var(--header-height))] bg-background">
+    <div className="flex flex-col lg:flex-row h-[calc(100vh-var(--header-height))] bg-background">
       {/* Left Side - Preview */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Preview Content */}
-        <div className="flex-1 p-4 md:p-6 overflow-y-auto overflow-x-hidden">
+        <div className="flex-1 p-2 sm:p-4 md:p-6 overflow-y-auto overflow-x-hidden">
           <div className="max-w-5xl mx-auto">
             {/* Template Preview */}
             <div className="mb-8">
-              {/* <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-foreground">
-                  Template Preview
-                </h3>
-              </div> */}
               <div className="relative">
                 {thumbnailData?.objectUrl || eventData.s3ImageUrl ? (
                   <div className="flex justify-center items-center bg-background">
@@ -280,10 +275,15 @@ function Step2({ thumbnailData, session }) {
         </div>
       </div>
 
+      {/* Horizontal Divider Line for Mobile */}
+      <div className="w-full lg:hidden">
+        <div className="h-px bg-border mx-4"></div>
+      </div>
+
       {/* Right Side - Form */}
-      <div className="w-full lg:w-96 xl:w-[420px] bg-card border-t lg:border-t-0 lg:border-l border-border flex flex-col overflow-hidden">
+      <div className="w-full lg:w-96 xl:w-[420px] bg-card border-t lg:border-t-0 lg:border-l border-border flex flex-col overflow-hidden lg:mt-0 mt-4">
         {/* Form Header */}
-        <div className="p-6 border-b border-border bg-gradient-to-r from-muted/50 to-background flex-shrink-0">
+        <div className="p-4 sm:p-6 border-b border-border bg-gradient-to-r from-muted/50 to-background flex-shrink-0">
           <h3 className="text-xl font-bold text-foreground dark:text-white mb-2">
             Edit Invitation Details
           </h3>
@@ -293,8 +293,8 @@ function Step2({ thumbnailData, session }) {
         </div>
 
         {/* Form Content */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden p-6">
-          <div className="space-y-6">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* Event Title */}
             <div>
               <Label
@@ -379,5 +379,4 @@ function Step2({ thumbnailData, session }) {
     </div>
   );
 }
-
 export default Step2;

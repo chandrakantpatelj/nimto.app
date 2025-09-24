@@ -11,8 +11,11 @@ import {
 import {
   clearActiveFilters,
   clearAllTemplates,
+  clearFeaturedTemplatesCache,
+  clearFeaturedTemplatesError,
   createCustomTemplate,
   deleteTemplate,
+  fetchFeaturedTemplates,
   fetchTemplateById,
   fetchTemplateCategories,
   fetchTemplates,
@@ -116,6 +119,14 @@ export const useTemplateError = () =>
   useAppSelector((state) => state.templates.error);
 export const useActiveFilters = () =>
   useAppSelector((state) => state.templates.activeFilters);
+
+// Featured templates hooks
+export const useFeaturedTemplates = () =>
+  useAppSelector((state) => state.templates.featuredTemplates || []);
+export const useFeaturedTemplatesLoading = () =>
+  useAppSelector((state) => state.templates.featuredTemplatesLoading);
+export const useFeaturedTemplatesError = () =>
+  useAppSelector((state) => state.templates.featuredTemplatesError);
 export const useTheme = () => useAppSelector((state) => state.ui.theme);
 export const useModals = () => useAppSelector((state) => state.ui.modals);
 export const useNotifications = () =>
@@ -387,6 +398,19 @@ export const useTemplateActions = () => {
 
     clearAllTemplates: useCallback(() => {
       dispatch(clearAllTemplates());
+    }, [dispatch]),
+
+    // Featured templates actions
+    fetchFeaturedTemplates: useCallback(() => {
+      return dispatch(fetchFeaturedTemplates());
+    }, [dispatch]),
+
+    clearFeaturedTemplatesError: useCallback(() => {
+      dispatch(clearFeaturedTemplatesError());
+    }, [dispatch]),
+
+    clearFeaturedTemplatesCache: useCallback(() => {
+      dispatch(clearFeaturedTemplatesCache());
     }, [dispatch]),
   };
 };
