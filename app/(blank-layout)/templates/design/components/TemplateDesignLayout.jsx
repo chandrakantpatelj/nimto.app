@@ -595,7 +595,7 @@ const TemplateDesignLayout = ({
             sidebarExpanded ? 'ml-80' : 'ml-16'
           }`}
         >
-          <div className="w-[1000px] h-[600px] bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden relative">
+          <div className="w-[93vw] h-[92vh] bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden relative">
             {!imageUrl && !formData?.s3ImageUrl ? (
               /* Empty State - No Image */
               <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900">
@@ -652,7 +652,7 @@ const TemplateDesignLayout = ({
                       Upload Image
                     </button>
 
-                    <button
+                    {/* <button
                       onClick={() => {
                         // Start with blank canvas
                         setImageUrl('');
@@ -673,7 +673,7 @@ const TemplateDesignLayout = ({
                         />
                       </svg>
                       Start Blank
-                    </button>
+                    </button> */}
                   </div>
 
                   {/* Tips */}
@@ -694,8 +694,8 @@ const TemplateDesignLayout = ({
                 ref={pixieEditorRef}
                 initialImageUrl={imageUrl || formData?.s3ImageUrl}
                 initialContent={formData?.jsonContent}
-                width="1000px"
-                height="600px"
+                width="93vw"
+                height="92vh"
                 onImageSelect={handleImageSelect}
               />
             )}

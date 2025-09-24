@@ -87,9 +87,7 @@ export function DropdownMenuUser({ trigger }) {
           <div className="flex items-center gap-2">
             <img
               className="w-9 h-9 rounded-full border border-border"
-              src={toAbsoluteUrl(
-                session?.user?.avatar || '/media/avatars/300-2.png',
-              )}
+              src={session?.user?.avatar || '/media/avatars/300-2.png'}
               alt="User avatar"
             />
 

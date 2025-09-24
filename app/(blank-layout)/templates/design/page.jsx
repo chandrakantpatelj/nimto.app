@@ -57,7 +57,6 @@ function CreateTemplate() {
         // Upload thumbnail if thumbnail data is available
         if (thumbnailData) {
           try {
-            toastInfo('Uploading thumbnail...');
             const thumbnailResponse = await apiFetch(
               `/api/template/${result.data.id}/upload-thumbnail`,
               {
@@ -79,7 +78,6 @@ function CreateTemplate() {
 
             const thumbnailResult = await thumbnailResponse.json();
             console.log('Thumbnail upload successful:', thumbnailResult);
-            toastSuccess('Thumbnail uploaded successfully!');
           } catch (thumbnailError) {
             console.error('Thumbnail upload failed:', thumbnailError);
             toastWarning(
