@@ -12,39 +12,135 @@ export function CommonFooter() {
   }, []);
 
   return (
-    <footer className="footer border-t bg-background">
+    <footer className="footer border-t bg-background mt-auto">
       <Container>
-        <div className="flex flex-col md:flex-row justify-center md:justify-between items-center gap-3 py-5">
-          <div className="flex order-2 md:order-1 gap-2 font-normal text-sm">
-            <span className="text-muted-foreground">{currentYear} &copy;</span>
-            <span className="text-secondary-foreground">Nimto</span>
+        {/* Main Footer Content */}
+        <div className="py-8 md:py-12">
+          {/* Links Section */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 mb-8">
+            <div className="space-y-3">
+              <h3 className="font-semibold text-sm text-foreground">Legal</h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link
+                    href="/privacy-policy"
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors block py-1"
+                  >
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/terms-conditions"
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors block py-1"
+                  >
+                    Terms & Conditions
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            
+            <div className="space-y-3">
+              <h3 className="font-semibold text-sm text-foreground">Support</h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link
+                    href="/contact-us"
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors block py-1"
+                  >
+                    Contact Us
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/about-us"
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors block py-1"
+                  >
+                    About Us
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            
+            <div className="space-y-3">
+              <h3 className="font-semibold text-sm text-foreground">Product</h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link
+                    href="/templates"
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors block py-1"
+                  >
+                    Templates
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/events"
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors block py-1"
+                  >
+                    Events
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            
+            <div className="space-y-3">
+              <h3 className="font-semibold text-sm text-foreground">Company</h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link
+                    href="/about-us"
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors block py-1"
+                  >
+                    About
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/contact-us"
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors block py-1"
+                  >
+                    Careers
+                  </Link>
+                </li>
+              </ul>
+            </div>
           </div>
-          <nav className="flex order-1 md:order-2 gap-4 font-normal text-sm text-muted-foreground">
-            <Link
-              href="/privacy-policy"
-              className="hover:text-primary transition-colors"
-            >
-              Privacy Policy
-            </Link>
-            <Link
-              href="/terms-conditions"
-              className="hover:text-primary transition-colors"
-            >
-              Terms & Conditions
-            </Link>
-            <Link
-              href="/contact-us"
-              className="hover:text-primary transition-colors"
-            >
-              Contact Us
-            </Link>
-            <Link
-              href="/about-us"
-              className="hover:text-primary transition-colors"
-            >
-              About Us
-            </Link>
-          </nav>
+          
+          {/* Divider */}
+          <div className="border-t border-border pt-6 md:pt-8">
+            {/* Bottom Section */}
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+              {/* Copyright */}
+              <div className="flex flex-col sm:flex-row items-center gap-2 text-sm text-muted-foreground">
+                <span>{currentYear} &copy; Nimto. All rights reserved.</span>
+                <span className="hidden sm:inline">•</span>
+                <span>Made with ❤️ for event creators</span>
+              </div>
+              
+              {/* Social Links (Optional - can be added later) */}
+              <div className="flex items-center gap-4">
+                <Link
+                  href="/privacy-policy"
+                  className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Privacy
+                </Link>
+                <Link
+                  href="/terms-conditions"
+                  className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Terms
+                </Link>
+                <Link
+                  href="/contact-us"
+                  className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                >
+                  Contact
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
       </Container>
     </footer>
