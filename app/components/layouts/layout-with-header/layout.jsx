@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { CommonFooter } from '@/components/common/footer';
 
 function LayoutWithHeader({ children }) {
   useEffect(() => {
@@ -25,10 +26,11 @@ function LayoutWithHeader({ children }) {
   }, []);
   return (
     <>
-      <div className="custom-wrapper ps-0 flex grow flex-col">
+      <div className="custom-wrapper ps-0 flex grow flex-col min-h-screen">
         <main className="grow" role="content">
           {children}
         </main>
+        <CommonFooter />
       </div>
     </>
   );

@@ -13,7 +13,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { Footer } from './components/footer';
+import { CommonFooter } from '@/components/common/footer';
 import { Header } from './components/header';
 import { Navbar } from './components/navbar';
 import { Toolbar, ToolbarActions, ToolbarHeading } from './components/toolbar';
@@ -87,7 +87,7 @@ export function Demo2Layout({ children }) {
           {children}
         </main>
 
-        <Footer />
+        <CommonFooter />
       </div>
     </>
   );

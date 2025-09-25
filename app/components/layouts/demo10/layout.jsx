@@ -16,7 +16,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { StoreClientTopbar } from '@/app/(protected)/store-client/components/common/topbar';
-import { Footer } from './components/footer';
+import { CommonFooter } from '@/components/common/footer';
 import { Header } from './components/header';
 import { Sidebar } from './components/sidebar';
 import { Toolbar, ToolbarActions, ToolbarHeading } from './components/toolbar';
@@ -104,7 +104,7 @@ const Demo10Layout = ({ children }) => {
                 {children}
               </main>
 
-              <Footer />
+              <CommonFooter />
             </div>
           </div>
         </div>

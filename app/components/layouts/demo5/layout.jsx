@@ -14,7 +14,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { Footer } from './components/footer';
+import { CommonFooter } from '@/components/common/footer';
 import { Header } from './components/header';
 import { Navbar } from './components/navbar';
 import { Sidebar } from './components/sidebar';
@@ -92,7 +92,7 @@ const Demo5Layout = ({ children }) => {
 
             {children}
 
-            <Footer />
+            <CommonFooter />
           </main>
         </div>
       </div>
