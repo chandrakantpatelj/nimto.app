@@ -48,6 +48,8 @@ export function Demo1Layout({ children }) {
     };
   }, []); // Runs only once on mount
 
+  console.log('Demo1Layout');
+
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 w-full flex flex-col">
       <Header />
@@ -56,7 +58,7 @@ export function Demo1Layout({ children }) {
         {children}
       </main>
       
-      <CommonFooter />
+      {/* <CommonFooter /> */}
     </div>
   );
 }

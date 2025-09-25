@@ -22,7 +22,7 @@ export function BrandedLayout({ children }) {
             <CardContent className="p-6">{children}</CardContent>
           </Card>
         </div>
-        <CommonFooter />
+        {/* <CommonFooter /> */}
       </div>
     </>
   );
