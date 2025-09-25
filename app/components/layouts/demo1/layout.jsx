@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSettings } from '@/providers/settings-provider';
 import { Header } from './components/header';
-import { Sidebar } from './components/sidebar';
+import { CommonFooter } from '@/components/common/footer';
 
 export function Demo1Layout({ children }) {
   const isMobile = useIsMobile();
@@ -48,17 +48,17 @@ export function Demo1Layout({ children }) {
     };
   }, []); // Runs only once on mount
 
+  console.log('Demo1Layout');
+
   return (
-    <>
-      {!isMobile && <Sidebar />}
+    <div className="min-h-screen bg-white dark:bg-gray-900 w-full flex flex-col">
+      <Header />
 
-      <div className="wrapper flex grow flex-col">
-        <Header />
-
-        <main className="grow pt-5" role="content">
-          {children}
-        </main>
-      </div>
-    </>
+      <main className="grow pt-18" role="main">
+        {children}
+      </main>
+      
+      {/* <CommonFooter /> */}
+    </div>
   );
 }

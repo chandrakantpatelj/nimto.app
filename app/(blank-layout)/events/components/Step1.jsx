@@ -30,8 +30,6 @@ function Step1({ mode = 'create', pixieEditorRef: externalPixieRef }) {
 
   return (
     <div className="flex min-h-[calc(100vh-var(--header-height))] h-full bg-background">
-      {/* Left Side - Full Size Pixie Editor */}
-
       {/* Pixie Editor Container */}
       <div className=" p-4">
         <div className="h-[830px] w-[96.5vw] rounded-lg overflow-hidden border border-border bg-card">

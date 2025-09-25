@@ -1,26 +1,32 @@
 'use client';
 
 import { useState } from 'react';
+import { CheckCircle, FileImage, Loader2, Upload, XCircle } from 'lucide-react';
+import { useS3Upload } from '@/hooks/use-s3-upload';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Upload, CheckCircle, XCircle, FileImage } from 'lucide-react';
-import { useS3Upload } from '@/hooks/use-s3-upload';
 
-export function S3UploadComponent({ 
-  onUploadComplete, 
+export function S3UploadComponent({
+  onUploadComplete,
   directory = 'templates',
   maxSize = 5 * 1024 * 1024, // 5MB
   acceptedTypes = ['image/*'],
-  className = ''
+  className = '',
 }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadedImageUrl, setUploadedImageUrl] = useState('');
   const [error, setError] = useState('');
-  
-  const { uploadFile, uploading, uploadProgress, error: uploadError, reset } = useS3Upload();
+
+  const {
+    uploadFile,
+    uploading,
+    uploadProgress,
+    error: uploadError,
+    reset,
+  } = useS3Upload();
 
   const handleFileSelect = (event) => {
     const file = event.target.files[0];
@@ -32,10 +38,12 @@ export function S3UploadComponent({
       setSelectedFile(null);
       return;
     }
-    
+
     // Validate file size
     if (file.size > maxSize) {
-      setError(`File size must be less than ${(maxSize / 1024 / 1024).toFixed(0)}MB`);
+      setError(
+        `File size must be less than ${(maxSize / 1024 / 1024).toFixed(0)}MB`,
+      );
       setSelectedFile(null);
       return;
     }
@@ -55,25 +63,24 @@ export function S3UploadComponent({
 
     try {
       const result = await uploadFile(selectedFile, directory);
-      
+
       setUploadedImageUrl(result.url);
-      
+
       // Call the callback with upload result
       if (onUploadComplete) {
         onUploadComplete({
           url: result.url,
           key: result.key,
           fileName: result.fileName,
-          file: selectedFile
+          file: selectedFile,
         });
       }
-      
+
       setSelectedFile(null);
-      
+
       // Reset file input
       const fileInput = document.getElementById('s3-file-input');
       if (fileInput) fileInput.value = '';
-      
     } catch (err) {
       setError(err.message || 'Upload failed');
     }
@@ -91,7 +98,8 @@ export function S3UploadComponent({
           className="mt-1"
         />
         <p className="text-sm text-gray-500 mt-1">
-          Supported formats: JPG, PNG, GIF, WebP (Max {(maxSize / 1024 / 1024).toFixed(0)}MB)
+          Supported formats: JPG, PNG, GIF, WebP (Max{' '}
+          {(maxSize / 1024 / 1024).toFixed(0)}MB)
         </p>
       </div>
 

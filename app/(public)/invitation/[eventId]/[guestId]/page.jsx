@@ -223,17 +223,17 @@ export default function PublicEventInvitationPage() {
               <div className="text-6xl mb-6">
                 {getErrorIcon(errorType)}
               </div>
-              
+
               {/* Error Title */}
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
                 {getErrorTitle(errorType)}
               </h1>
-              
+
               {/* Error Message */}
               <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
                 {errorMessage}
               </p>
-              
+
               {/* Suggestions */}
               <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 mb-8">
                 <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-300 mb-4">
@@ -248,11 +248,11 @@ export default function PublicEventInvitationPage() {
                   ))}
                 </ul>
               </div>
-              
+
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button 
-                  onClick={fetchEventAndGuest} 
+                <Button
+                  onClick={fetchEventAndGuest}
                   variant="outline"
                   className="flex items-center gap-2"
                 >
@@ -264,7 +264,7 @@ export default function PublicEventInvitationPage() {
                   </Button>
                 </Link>
               </div>
-              
+
               {/* Contact Information */}
               <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-600">
                 <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -288,18 +288,18 @@ export default function PublicEventInvitationPage() {
               <div className="text-6xl mb-6">
                 🔍
               </div>
-              
+
               {/* Error Title */}
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
                 Invitation Not Found
               </h1>
-              
+
               {/* Error Message */}
               <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
                 The invitation you're looking for doesn't exist or is no longer
-            valid. This could happen if the event has been completed, cancelled, removed by the host, or the invitation link is incorrect.
+                valid. This could happen if the event has been completed, cancelled, removed by the host, or the invitation link is incorrect.
               </p>
-              
+
               {/* Suggestions */}
               <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 mb-8">
                 <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-300 mb-4">
@@ -324,11 +324,11 @@ export default function PublicEventInvitationPage() {
                   </li>
                 </ul>
               </div>
-              
+
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button 
-                  onClick={fetchEventAndGuest} 
+                <Button
+                  onClick={fetchEventAndGuest}
                   variant="outline"
                   className="flex items-center gap-2"
                 >
@@ -340,7 +340,7 @@ export default function PublicEventInvitationPage() {
                   </Button>
                 </Link>
               </div>
-              
+
               {/* Contact Information */}
               <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-600">
                 <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -417,15 +417,14 @@ export default function PublicEventInvitationPage() {
                 {userGuest && (
                   <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20">
                     <div
-                      className={`w-2 h-2 rounded-full ${
-                        userGuest.status === 'CONFIRMED'
+                      className={`w-2 h-2 rounded-full ${userGuest.status === 'CONFIRMED'
                           ? 'bg-green-400'
                           : userGuest.status === 'PENDING'
                             ? 'bg-yellow-400'
                             : userGuest.status === 'DECLINED'
                               ? 'bg-red-400'
                               : 'bg-gray-400'
-                      }`}
+                        }`}
                     ></div>
                     <span className="text-white text-sm font-medium capitalize">
                       {userGuest.status || 'Pending'}
@@ -443,65 +442,41 @@ export default function PublicEventInvitationPage() {
         <div className="absolute top-1/3 right-1/3 w-1 h-1 bg-white/30 rounded-full"></div>
       </div>
 
-      {/* Main Content */}
+      {/* Main Content - Portrait Layout */}
       <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
-        {/* Event Image Section - Full Width */}
-        <div className="mb-8">
-          <Card className="border-0 shadow-2xl overflow-hidden">
-            <CardContent className="p-0">
-              {event.s3ImageUrl ? (
-                <div className="relative w-full h-[300px] sm:h-[400px] lg:h-[500px] overflow-hidden">
-                  <img
-                    src={event.s3ImageUrl}
-                    alt={event.title}
-                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                  />
-                  {/* Enhanced overlay with gradient */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
-                  {/* Event title overlay */}
-                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2 drop-shadow-lg">
-                      {event.title}
-                    </h2>
-                    <p className="text-lg sm:text-xl opacity-90 drop-shadow">
-                      {formatEventDate(event.startDateTime)}{' '}
-                      {event.startDateTime &&
-                        `• ${format(new Date(event.startDateTime), 'h:mm a')}`}
-                    </p>
+        {/* Portrait Layout Grid - Image Left, Details Right */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+ 
+          {/* Left Column - Event Image */}
+          <div className="order-1 lg:order-1">
+            <div className="relative lg:sticky lg:top-6">                            
+              <div className="border-2  rounded-lg bg-white dark:bg-gray-800 shadow-lg">
+                {event.s3ImageUrl ? (
+                  <div className="relative w-full aspect-[3/4] bg-gray-50 dark:bg-gray-900 flex items-center justify-center rounded-lg overflow-hidden">
+                    <img
+                      src={event.s3ImageUrl}
+                      alt={event.title}
+                      className="w-full h-full object-cover rounded-lg"
+                    />
                   </div>
-                </div>
-              ) : (
-                /* Fallback when no image */
-                <div
-                  className={`relative w-full h-[200px] sm:h-[250px] ${getFallbackGradientClasses(category)} flex items-center justify-center`}
-                >
-                  <div className="text-center text-white p-6">
-                    <div className="mb-3 text-4xl sm:text-5xl">
-                      {categoryTheme.icon}
+                ) : (
+                  /* Fallback when no image */
+                  <div className={`relative w-full aspect-[3/4] ${getFallbackGradientClasses(category)} flex items-center justify-center rounded-lg`}>
+                    <div className="text-center text-white p-6">
+                      <div className="mb-4 text-5xl sm:text-6xl drop-shadow-lg">
+                        {categoryTheme.icon}
+                      </div>
                     </div>
-                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2 drop-shadow-lg">
-                      {event.title}
-                    </h2>
-                    <p className="text-lg sm:text-xl opacity-90 drop-shadow">
-                      {formatEventDate(event.startDateTime)}{' '}
-                      {event.startDateTime &&
-                        `• ${format(new Date(event.startDateTime), 'h:mm a')}`}
-                    </p>
                   </div>
-                  {/* Decorative elements */}
-                  <div className="absolute top-4 right-4 w-16 h-16 bg-white/10 dark:bg-white/20 rounded-full"></div>
-                  <div className="absolute bottom-4 left-4 w-12 h-12 bg-white/5 dark:bg-white/10 rounded-full"></div>
-                  <div className="absolute top-1/2 left-1/4 w-2 h-2 bg-white/20 dark:bg-white/30 rounded-full"></div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                )}
+              </div>
+            </div>
+          </div>
 
-        {/* Main Content Grid - Event Details & RSVP */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 lg:gap-8">
-          {/* Left Column - Event Details */}
-          <div className="xl:col-span-2">
+          {/* Right Column - Event Details & RSVP */}
+          <div className="order-2 lg:order-2 space-y-6">
+
+            {/* Event Details Card */}
             <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-blue-50/30 dark:from-gray-800 dark:to-slate-800/50 dark:border-gray-700">
               <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-t-lg">
                 <CardTitle className="text-xl font-bold flex items-center gap-3">
@@ -510,9 +485,9 @@ export default function PublicEventInvitationPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6 dark:text-gray-100">
-                <div className="space-y-6">
-                  {/* Event Details Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-4">
+                  {/* Event Details - Single Column for Portrait */}
+                  <div className="space-y-4">
                     <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-100 dark:border-blue-800 shadow-sm hover:shadow-md transition-all duration-300">
                       <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg">
                         <CalendarDays className="h-5 w-5 text-white" />
@@ -544,7 +519,7 @@ export default function PublicEventInvitationPage() {
                     )}
 
                     {event.location && (
-                      <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 rounded-lg border border-red-100 dark:border-red-800 shadow-sm hover:shadow-md transition-all duration-300 sm:col-span-2">
+                      <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 rounded-lg border border-red-100 dark:border-red-800 shadow-sm hover:shadow-md transition-all duration-300">
                         <div className="p-3 bg-gradient-to-br from-red-500 to-red-600 rounded-lg shadow-lg">
                           <MapPin className="h-5 w-5 text-white" />
                         </div>
@@ -560,7 +535,7 @@ export default function PublicEventInvitationPage() {
                     )}
 
                     {event.User && (
-                      <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border border-green-100 dark:border-green-800 shadow-sm hover:shadow-md transition-all duration-300 sm:col-span-2">
+                      <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border border-green-100 dark:border-green-800 shadow-sm hover:shadow-md transition-all duration-300">
                         <div className="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-lg">
                           <User className="h-5 w-5 text-white" />
                         </div>
@@ -578,13 +553,13 @@ export default function PublicEventInvitationPage() {
 
                   {/* Event Description */}
                   {event.description && (
-                    <div className="pt-6 border-t border-gray-200 dark:border-gray-600">
-                      <h3 className="font-bold mb-4 text-xl text-gray-800 dark:text-gray-200 flex items-center gap-2">
-                        <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full"></div>
+                    <div className="pt-4 border-t border-gray-200 dark:border-gray-600">
+                      <h3 className="font-bold mb-3 text-lg text-gray-800 dark:text-gray-200 flex items-center gap-2">
+                        <div className="w-1 h-5 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full"></div>
                         About This Event
                       </h3>
                       <div className="p-4 bg-gradient-to-br from-gray-50 to-blue-50/50 dark:from-gray-700/50 dark:to-blue-900/20 rounded-lg border border-gray-100 dark:border-gray-600">
-                        <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-base">
+                        <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm">
                           {event.description}
                         </p>
                       </div>
@@ -593,13 +568,10 @@ export default function PublicEventInvitationPage() {
                 </div>
               </CardContent>
             </Card>
-          </div>
 
-          {/* Right Column - RSVP Form */}
-          <div className="xl:col-span-1">
             {/* Guest Status Card */}
             {userGuest && (
-              <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-blue-50/30 dark:from-gray-800 dark:to-slate-800/50 dark:border-gray-700 mb-6">
+              <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-blue-50/30 dark:from-gray-800 dark:to-slate-800/50 dark:border-gray-700">
                 <CardHeader className="bg-gradient-to-r from-blue-400 to-purple-400 text-white rounded-t-lg pb-4">
                   <CardTitle className="text-lg font-bold flex items-center justify-between">
                     <span className="flex items-center gap-2">
@@ -608,15 +580,14 @@ export default function PublicEventInvitationPage() {
                     </span>
                     <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-3 py-1.5">
                       <div
-                        className={`w-2 h-2 rounded-full ${
-                          userGuest.status === 'CONFIRMED'
+                        className={`w-2 h-2 rounded-full ${userGuest.status === 'CONFIRMED'
                             ? 'bg-green-400'
                             : userGuest.status === 'PENDING'
                               ? 'bg-yellow-400'
                               : userGuest.status === 'DECLINED'
                                 ? 'bg-red-400'
                                 : 'bg-gray-400'
-                        }`}
+                          }`}
                       ></div>
                       <span className="text-white text-xs font-medium capitalize">
                         {userGuest.status || 'Pending'}

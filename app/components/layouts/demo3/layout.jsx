@@ -8,7 +8,7 @@ import { useBodyClass } from '@/hooks/use-body-class';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSettings } from '@/providers/settings-provider';
 import { Button } from '@/components/ui/button';
-import { Footer } from './components/footer';
+import { CommonFooter } from '@/components/common/footer';
 import { Header } from './components/header';
 import { Navbar } from './components/navbar';
 import { Sidebar } from './components/sidebar';
@@ -62,7 +62,7 @@ export function Demo3Layout({ children }) {
                   )}
                 {children}
               </main>
-              <Footer />
+              <CommonFooter />
             </div>
           </div>
         </div>

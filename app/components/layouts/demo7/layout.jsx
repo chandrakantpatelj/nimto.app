@@ -14,7 +14,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { Footer } from './components/footer';
+import { CommonFooter } from '@/components/common/footer';
 import { Header } from './components/header';
 import { Toolbar, ToolbarActions, ToolbarHeading } from './components/toolbar';
 
@@ -93,7 +93,7 @@ const Demo7Layout = ({ children }) => {
           {children}
         </div>
 
-        <Footer />
+        <CommonFooter />
       </div>
     </>
   );

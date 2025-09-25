@@ -25,7 +25,9 @@ function Step3() {
 
   const removeGuest = (guestId) => {
     updateSelectedEvent({
-      guests: (eventData?.guests || []).filter((guest) => (guest.id || guest.tempId) !== guestId),
+      guests: (eventData?.guests || []).filter(
+        (guest) => (guest.id || guest.tempId) !== guestId,
+      ),
     });
   };
 
@@ -40,20 +42,32 @@ function Step3() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [validationError, setValidationError] = useState('');
 
   const handleAddGuest = () => {
-    if (
-      newGuest.name.trim() &&
-      (newGuest.email.trim() || newGuest.phone.trim())
-    ) {
-      addGuest({
-        name: newGuest.name,
-        email: newGuest.email.trim() || null,
-        phone: newGuest.phone.trim() || null,
-        status: 'PENDING',
-      });
-      setNewGuest({ name: '', email: '', phone: '' });
+    // Clear previous validation error
+    setValidationError('');
+
+    // Validate name
+    if (!newGuest.name.trim()) {
+      setValidationError('Guest name is required');
+      return;
     }
+
+    // Validate that either email or phone is provided
+    if (!newGuest.email.trim() && !newGuest.phone.trim()) {
+      setValidationError('Either email or phone number is required');
+      return;
+    }
+
+    // Add guest if validation passes
+    addGuest({
+      name: newGuest.name,
+      email: newGuest.email.trim() || null,
+      phone: newGuest.phone.trim() || null,
+      status: 'PENDING',
+    });
+    setNewGuest({ name: '', email: '', phone: '' });
   };
 
   const handleRemoveGuest = (id) => {
@@ -62,6 +76,14 @@ function Step3() {
 
   const handleClearAll = () => {
     clearGuests();
+  };
+
+  const handleInputChange = (field, value) => {
+    setNewGuest({ ...newGuest, [field]: value });
+    // Clear validation error when user starts typing
+    if (validationError) {
+      setValidationError('');
+    }
   };
 
   const filteredGuests = (eventData?.guests || []).filter(
@@ -75,19 +97,22 @@ function Step3() {
 
   return (
     <div className="flex flex-1 overflow-hidden bg-background">
-      <main className="flex-1 overflow-auto p-8">
+      <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
         <div className="max-w-4xl mx-auto">
           {/* Main Card */}
-          <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-            <div className="space-y-8">
+          <div className="bg-card rounded-xl shadow-sm border border-border p-4 sm:p-6">
+            <div className="space-y-6 sm:space-y-8">
               {/* Add a Guest Section */}
               <div>
-                <h2 className="text-xl font-bold text-foreground dark:text-white mb-4">
+                <h2 className="text-lg sm:text-xl font-bold text-foreground dark:text-white mb-4">
                   Add a Guest
                 </h2>
-                <div className="flex gap-4">
+                <div className="flex flex-col lg:flex-row gap-4">
                   <div className="flex-1">
-                    <label htmlFor="guest-name" className="block text-sm font-medium text-foreground mb-2">
+                    <label
+                      htmlFor="guest-name"
+                      className="block text-sm font-medium text-foreground mb-2"
+                    >
                       Guest Name
                     </label>
                     <Input
@@ -95,13 +120,14 @@ function Step3() {
                       type="text"
                       placeholder="e.g., Jane Doe"
                       value={newGuest.name}
-                      onChange={(e) =>
-                        setNewGuest({ ...newGuest, name: e.target.value })
-                      }
+                      onChange={(e) => handleInputChange('name', e.target.value)}
                     />
                   </div>
                   <div className="flex-1">
-                    <label htmlFor="guest-email" className="block text-sm font-medium text-foreground mb-2">
+                    <label
+                      htmlFor="guest-email"
+                      className="block text-sm font-medium text-foreground mb-2"
+                    >
                       Email
                     </label>
                     <Input
@@ -109,13 +135,14 @@ function Step3() {
                       type="email"
                       placeholder="jane.doe@example.com"
                       value={newGuest.email}
-                      onChange={(e) =>
-                        setNewGuest({ ...newGuest, email: e.target.value })
-                      }
+                      onChange={(e) => handleInputChange('email', e.target.value)}
                     />
                   </div>
                   <div className="flex-1">
-                    <label htmlFor="guest-phone" className="block text-sm font-medium text-foreground mb-2">
+                    <label
+                      htmlFor="guest-phone"
+                      className="block text-sm font-medium text-foreground mb-2"
+                    >
                       Phone
                     </label>
                     <Input
@@ -123,24 +150,50 @@ function Step3() {
                       type="tel"
                       placeholder="+1234567890"
                       value={newGuest.phone}
-                      onChange={(e) =>
-                        setNewGuest({ ...newGuest, phone: e.target.value })
-                      }
+                      onChange={(e) => handleInputChange('phone', e.target.value)}
                     />
                   </div>
-                  <div className="flex items-end">
-                    <Button variant="primary" onClick={handleAddGuest}>
+                  <div className="flex items-end lg:items-end">
+                    <Button
+                      variant="primary"
+                      onClick={handleAddGuest}
+                      className="w-full lg:w-auto"
+                    >
                       <UserPlus className="w-4 h-4" />
                       Add Guest
                     </Button>
                   </div>
                 </div>
+                
+                {/* Validation Error Message */}
+                {validationError && (
+                  <div className="mt-3 p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800/50 rounded-lg">
+                    <div className="flex items-start gap-2">
+                      <div className="w-4 h-4 bg-red-100 dark:bg-red-900/50 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
+                        <svg
+                          className="w-2.5 h-2.5 text-red-600 dark:text-red-400"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </div>
+                      <p className="text-sm text-red-800 dark:text-red-200">
+                        {validationError}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Invited Guests Section */}
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-bold text-foreground dark:text-white">
+                  <h2 className="text-lg sm:text-xl font-bold text-foreground dark:text-white">
                     Invited Guests ({(eventData?.guests || []).length})
                   </h2>
                 </div>
@@ -176,7 +229,7 @@ function Step3() {
                 )}
 
                 {/* Search and Actions Bar */}
-                <div className="flex items-center gap-4 mb-6">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 mb-6">
                   <div className="flex-1 relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
@@ -184,23 +237,30 @@ function Step3() {
                       placeholder="Search guests..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
                     />
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsDrawerOpen(true)}
-                    className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
-                  >
-                    <Settings className="w-4 h-4" />
-                  </Button>
-                  <Button variant="destructive" onClick={handleClearAll}>
-                    Clear All
-                  </Button>
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsDrawerOpen(true)}
+                      className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+                    >
+                      <Settings className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={handleClearAll}
+                      className="text-sm"
+                    >
+                      Clear All
+                    </Button>
+                  </div>
                 </div>
 
-                {/* Guests Table */}
-                <div className="overflow-hidden border border-border rounded-lg">
+                {/* Guests Table - Desktop */}
+                <div className="hidden lg:block overflow-hidden border border-border rounded-lg">
                   <table className="w-full">
                     <thead className="bg-muted/50">
                       <tr>
@@ -256,6 +316,52 @@ function Step3() {
                       ))}
                     </tbody>
                   </table>
+                </div>
+
+                {/* Guests Cards - Mobile */}
+                <div className="lg:hidden space-y-3">
+                  {filteredGuests.map((guest) => (
+                    <div
+                      key={guest.id || guest.tempId}
+                      className="bg-card border border-border rounded-lg p-4 hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <h3 className="text-sm font-medium text-foreground mb-1">
+                            {guest.name}
+                          </h3>
+                          <div className="space-y-1">
+                            {guest.email && (
+                              <p className="text-xs text-muted-foreground">
+                                📧 {guest.email}
+                              </p>
+                            )}
+                            {guest.phone && (
+                              <p className="text-xs text-muted-foreground">
+                                📞 {guest.phone}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200">
+                            {guest.status}
+                          </span>
+                          <Button
+                            variant="destructive"
+                            appearance="ghost"
+                            size="sm"
+                            onClick={() =>
+                              handleRemoveGuest(guest.id || guest.tempId)
+                            }
+                            className="p-1"
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
                 {/* Empty State */}

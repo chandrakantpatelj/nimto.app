@@ -39,7 +39,18 @@ export default withAuth(
         pathname.startsWith('/signup') ||
         pathname.startsWith('/reset-password'))
     ) {
-      // Redirect based on user role
+      // Check if there's a callbackUrl parameter to preserve the intended destination
+      const callbackUrl = req.nextUrl.searchParams.get('callbackUrl');
+      if (callbackUrl) {
+        try {
+          const decodedCallbackUrl = decodeURIComponent(callbackUrl);
+          return redirect(decodedCallbackUrl, req);
+        } catch (error) {
+          console.error('Error decoding callbackUrl:', error);
+        }
+      }
+      
+      // Fallback: Redirect based on user role
       const userRole = getRoleSlug(token.roleName);
       if (userRole === 'attendee') {
         return redirect('/invited-events', req);
