@@ -162,11 +162,22 @@ export function Header() {
             <div className="flex items-center space-x-2 sm:space-x-3 p-1">
               <Link href="/" className="flex items-center space-x-2 sm:space-x-3 group" onClick={closeMobileMenu}>
                 <img
+                  src={toAbsoluteUrl('/media/app/nimto-main-logo.svg')}
+                  className="dark:hidden w-[175px]"
+                  alt=""
+                />
+      
+                <img
+                  src={toAbsoluteUrl('/media/app/nimto-main-logo-dark.svg')}
+                  className="hidden dark:block w-[175px]"
+                  alt=""
+                />
+                {/*<img
                   src={toAbsoluteUrl(`/media/Nimto-Main-Logo.svg`)}                  
                   alt="image"
                   className="w-[200px]"
                 />
-                {/* <Image
+                <Image
                   src="/media/Nimto-Main-Logo.svg" // replace with your actual logo file name
                   alt="App Logo"
                   width={180} // adjust size as needed

@@ -185,6 +185,6 @@ export const config = {
     '/public-profile/:path*',
     '/account/:path*',
     '/events', // Add /events to matcher to handle authentication
-    '/((?!api|_next/static|_next/image|favicon.ico|signin|signup|verify-email|reset-password|unauthorized|events/design|events/[a-zA-Z0-9_-]+|invitation|pixie-assets|^/$).*)',
+    '/((?!api|_next/static|_next/image|public|media|favicon.ico|signin|signup|verify-email|reset-password|unauthorized|events/design|events/[a-zA-Z0-9_-]+|invitation|pixie-assets|^/$).*)',
   ],
 };
