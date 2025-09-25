@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSettings } from '@/providers/settings-provider';
 import { Header } from './components/header';
+import { CommonFooter } from '@/components/common/footer';
 
 export function Demo1Layout({ children }) {
   const isMobile = useIsMobile();
@@ -54,6 +55,8 @@ export function Demo1Layout({ children }) {
       <main className="grow pt-18" role="main">
         {children}
       </main>
+      
+      <CommonFooter />
     </div>
   );
 }
