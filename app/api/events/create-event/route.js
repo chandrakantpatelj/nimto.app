@@ -282,6 +282,22 @@ export async function POST(request) {
     // Create guests
     const createdGuests = [];
     if (guests.length > 0) {
+      // Validate guest data
+      for (const guest of guests) {
+        if (!guest.name || !guest.name.trim()) {
+          return NextResponse.json(
+            { success: false, error: 'Guest name is required' },
+            { status: 400 },
+          );
+        }
+        if (!guest.contact || !guest.contact.trim()) {
+          return NextResponse.json(
+            { success: false, error: 'Guest contact information (email or phone) is required' },
+            { status: 400 },
+          );
+        }
+      }
+
       const guestData = guests.map((guest) => ({
         name: guest.name,
         email: guest.contact,

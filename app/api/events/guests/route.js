@@ -84,6 +84,22 @@ export async function POST(request) {
 
     const { eventId, name, email, phone, status, response } = body;
 
+    // Validate required fields
+    if (!name || !name.trim()) {
+      return NextResponse.json(
+        { success: false, error: 'Guest name is required' },
+        { status: 400 },
+      );
+    }
+
+    // Validate that either email or phone is provided
+    if ((!email || !email.trim()) && (!phone || !phone.trim())) {
+      return NextResponse.json(
+        { success: false, error: 'Either email or phone number is required' },
+        { status: 400 },
+      );
+    }
+
     // Validate that the event exists
     const event = await prisma.event.findUnique({
       where: { id: eventId },
@@ -187,6 +203,24 @@ export async function PUT(request) {
         { success: false, error: 'Guest ID is required' },
         { status: 400 },
       );
+    }
+
+    // Validate required fields if provided
+    if (name !== undefined && (!name || !name.trim())) {
+      return NextResponse.json(
+        { success: false, error: 'Guest name cannot be empty' },
+        { status: 400 },
+      );
+    }
+
+    // Validate that either email or phone is provided if both are being updated
+    if (email !== undefined && phone !== undefined) {
+      if ((!email || !email.trim()) && (!phone || !phone.trim())) {
+        return NextResponse.json(
+          { success: false, error: 'Either email or phone number is required' },
+          { status: 400 },
+        );
+      }
     }
 
     // Check if guest exists

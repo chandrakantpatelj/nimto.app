@@ -42,20 +42,32 @@ function Step3() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [validationError, setValidationError] = useState('');
 
   const handleAddGuest = () => {
-    if (
-      newGuest.name.trim() &&
-      (newGuest.email.trim() || newGuest.phone.trim())
-    ) {
-      addGuest({
-        name: newGuest.name,
-        email: newGuest.email.trim() || null,
-        phone: newGuest.phone.trim() || null,
-        status: 'PENDING',
-      });
-      setNewGuest({ name: '', email: '', phone: '' });
+    // Clear previous validation error
+    setValidationError('');
+
+    // Validate name
+    if (!newGuest.name.trim()) {
+      setValidationError('Guest name is required');
+      return;
     }
+
+    // Validate that either email or phone is provided
+    if (!newGuest.email.trim() && !newGuest.phone.trim()) {
+      setValidationError('Either email or phone number is required');
+      return;
+    }
+
+    // Add guest if validation passes
+    addGuest({
+      name: newGuest.name,
+      email: newGuest.email.trim() || null,
+      phone: newGuest.phone.trim() || null,
+      status: 'PENDING',
+    });
+    setNewGuest({ name: '', email: '', phone: '' });
   };
 
   const handleRemoveGuest = (id) => {
@@ -64,6 +76,14 @@ function Step3() {
 
   const handleClearAll = () => {
     clearGuests();
+  };
+
+  const handleInputChange = (field, value) => {
+    setNewGuest({ ...newGuest, [field]: value });
+    // Clear validation error when user starts typing
+    if (validationError) {
+      setValidationError('');
+    }
   };
 
   const filteredGuests = (eventData?.guests || []).filter(
@@ -100,9 +120,7 @@ function Step3() {
                       type="text"
                       placeholder="e.g., Jane Doe"
                       value={newGuest.name}
-                      onChange={(e) =>
-                        setNewGuest({ ...newGuest, name: e.target.value })
-                      }
+                      onChange={(e) => handleInputChange('name', e.target.value)}
                     />
                   </div>
                   <div className="flex-1">
@@ -117,9 +135,7 @@ function Step3() {
                       type="email"
                       placeholder="jane.doe@example.com"
                       value={newGuest.email}
-                      onChange={(e) =>
-                        setNewGuest({ ...newGuest, email: e.target.value })
-                      }
+                      onChange={(e) => handleInputChange('email', e.target.value)}
                     />
                   </div>
                   <div className="flex-1">
@@ -134,9 +150,7 @@ function Step3() {
                       type="tel"
                       placeholder="+1234567890"
                       value={newGuest.phone}
-                      onChange={(e) =>
-                        setNewGuest({ ...newGuest, phone: e.target.value })
-                      }
+                      onChange={(e) => handleInputChange('phone', e.target.value)}
                     />
                   </div>
                   <div className="flex items-end lg:items-end">
@@ -150,6 +164,30 @@ function Step3() {
                     </Button>
                   </div>
                 </div>
+                
+                {/* Validation Error Message */}
+                {validationError && (
+                  <div className="mt-3 p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800/50 rounded-lg">
+                    <div className="flex items-start gap-2">
+                      <div className="w-4 h-4 bg-red-100 dark:bg-red-900/50 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
+                        <svg
+                          className="w-2.5 h-2.5 text-red-600 dark:text-red-400"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </div>
+                      <p className="text-sm text-red-800 dark:text-red-200">
+                        {validationError}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Invited Guests Section */}
