@@ -168,6 +168,22 @@ export async function PUT(request) {
     let newlyCreatedGuestIds = [];
     if (guests && Array.isArray(guests)) {
       try {
+        // Validate guest data first
+        for (const guest of guests) {
+          if (!guest.name || !guest.name.trim()) {
+            return NextResponse.json(
+              { success: false, error: 'Guest name is required' },
+              { status: 400 },
+            );
+          }
+          if ((!guest.email || !guest.email.trim()) && (!guest.phone || !guest.phone.trim())) {
+            return NextResponse.json(
+              { success: false, error: 'Either email or phone number is required for guests' },
+              { status: 400 },
+            );
+          }
+        }
+
         // Process each guest - update existing or create new
         for (const guest of guests) {
           if (
