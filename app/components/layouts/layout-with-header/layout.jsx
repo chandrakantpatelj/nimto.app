@@ -24,18 +24,14 @@ function LayoutWithHeader({ children }) {
             clearTimeout(timer);
         };
     }, []);
-
-    const pathname = usePathname();
-    // Only show footer if pathname does NOT include 'events/design'
-    const showFooter = !pathname.includes('events/design');
-
+    
     return (
         <>
             <div className="custom-wrapper ps-0 flex grow flex-col min-h-screen">
                 <main className="grow" role="content">
                     {children}
                 </main>
-                {showFooter && <CommonFooter />}
+               <CommonFooter />
             </div>
         </>
     );
