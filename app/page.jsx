@@ -406,12 +406,6 @@ export default function HomePage() {
                     </p>
                     <div className="flex justify-center gap-4">
                       <Button
-                        onClick={clearSearch}
-                        variant="outline"
-                      >
-                        Clear Search
-                      </Button>
-                      <Button
                         variant="primary"
                         asChild
                       >
