@@ -49,9 +49,21 @@ export async function GET(request) {
     }
 
     if (search) {
+      // Split search query into individual words for better matching
+      const searchWords = search.split(' ').map(word => word.trim()).filter(word => word.length > 0);
+      
       where.OR = [
+        // Exact phrase search
         { name: { contains: search, mode: 'insensitive' } },
         { category: { contains: search, mode: 'insensitive' } },
+        { badge: { contains: search, mode: 'insensitive' } },
+        // Individual word search for better results
+        ...searchWords.map(word => ({ name: { contains: word, mode: 'insensitive' } })),
+        ...searchWords.map(word => ({ category: { contains: word, mode: 'insensitive' } })),
+        ...searchWords.map(word => ({ badge: { contains: word, mode: 'insensitive' } })),
+        // Keywords array search - check if any keyword contains the search term
+        { keywords: { hasSome: searchWords } },
+        // Also check if any keyword contains the full search phrase
         { keywords: { has: search } },
       ];
     }
