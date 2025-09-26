@@ -60,7 +60,7 @@ export function AuthModal({ isOpen, onClose, mode = 'signin' }) {
       passwordConfirmation: '',
       rememberMe: false,
       accept: false,
-      isHost: false,
+      isHost: true,
     },
   });
 
