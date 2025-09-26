@@ -127,7 +127,7 @@ export default function Page() {
     <Form {...form}>
       <form onSubmit={handleSubmit} className="block w-full space-y-5">
         {/* Header */}
-        <div className="space-y-1.5 pb-3">
+        <div>
           <h1 className="text-2xl font-semibold tracking-tight text-center">
             Sign in to Nimto
           </h1>
@@ -163,7 +163,7 @@ export default function Page() {
         )}
 
         {/* Social Login */}
-        <div className="flex flex-col gap-3.5">
+        <div className="flex flex-col gap-1.5">
           <Button
             variant="outline"
             type="button"
@@ -175,7 +175,7 @@ export default function Page() {
         </div>
 
         {/* Divider */}
-        <div className="relative py-1.5">
+        <div className="relative">
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t" />
           </div>
@@ -199,7 +199,7 @@ export default function Page() {
           control={form.control}
           name="email"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="gap-0">
               <FormLabel>Email</FormLabel>
               <FormControl>
                 <Input placeholder="Your email" {...field} />
@@ -214,7 +214,7 @@ export default function Page() {
           control={form.control}
           name="password"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="gap-0">
               <div className="flex justify-between items-center gap-2.5">
                 <FormLabel>Password</FormLabel>
                 <Link
