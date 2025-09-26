@@ -55,7 +55,7 @@ export default function Page() {
       password: '',
       passwordConfirmation: '',
       accept: false,
-      isHost: false,
+      isHost: true,
     },
   });
 
