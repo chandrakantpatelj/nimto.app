@@ -6,100 +6,101 @@ const rolesData = require('./data/roles');
 const usersData = require('./data/users');
 const permissionsData = require('./data/permissions');
 
-// Initialize Prisma client with proper error handling
-let prisma;
-try {
-  prisma = new PrismaClient();
-} catch (error) {
-  console.error('Failed to initialize Prisma client:', error);
-  process.exit(1);
-}
+const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Running database seeding...');
+  console.log('🌱 Running database seeding...');
 
-  // Delete demo users and owner role if they exist
-  // First, delete related records to avoid foreign key constraints
+  // -----------------------------
+  // 1️⃣ Delete demo users if exist
+  // -----------------------------
   const demoUsers = await prisma.user.findMany({
     where: { email: { in: ['demo@kt.com', 'owner@kt.com'] } },
-    select: { id: true }
+    select: { id: true },
   });
 
   if (demoUsers.length > 0) {
-    const userIds = demoUsers.map(user => user.id);
-    
-    // Delete system logs first
+    const userIds = demoUsers.map(u => u.id);
+
+    // Delete related system logs
     await prisma.systemLog.deleteMany({
-      where: { userId: { in: userIds } }
+      where: { userId: { in: userIds } },
     });
-    
+
     // Delete users
     await prisma.user.deleteMany({
-      where: { email: { in: ['demo@kt.com', 'owner@kt.com'] } }
+      where: { id: { in: userIds } },
     });
-    
-    console.log('✅ Deleted demo users and related records');
+
+    console.log('✅ Deleted demo users and related logs');
   }
 
-  // Delete owner role
+  // -----------------------------
+  // 2️⃣ Delete owner role if exists
+  // -----------------------------
   const deletedRole = await prisma.userRole.deleteMany({
-    where: { slug: 'owner' }
+    where: { slug: 'owner' },
   });
-  
+
   if (deletedRole.count > 0) {
     console.log('✅ Deleted owner role');
   }
 
-  // Seed Roles
-  for (const role of rolesData) {
-    await prisma.userRole.upsert({
-      where: { slug: role.slug },
-      update: {},
-      create: {
-        slug: role.slug,
-        name: role.name,
-        description: role.description,
-        isDefault: role.isDefault || false,
-        isProtected: role.isProtected || false,
-        createdAt: new Date(),
-        createdByUserId: null,
-      },
-    });
-  }
-  console.log('Roles seeded.');
+  // -----------------------------
+  // 3️⃣ Seed Roles
+  // -----------------------------
+  await Promise.all(
+    rolesData.map(role =>
+      prisma.userRole.upsert({
+        where: { slug: role.slug },
+        update: {},
+        create: {
+          slug: role.slug,
+          name: role.name,
+          description: role.description,
+          isDefault: role.isDefault || false,
+          isProtected: role.isProtected || false,
+          createdAt: new Date(),
+          createdByUserId: null,
+        },
+      })
+    )
+  );
+  console.log('✅ Roles seeded');
 
-  // Seed Permissions
-  for (const permission of permissionsData) {
-    await prisma.userPermission.upsert({
-      where: { slug: permission.slug },
-      update: {},
-      create: {
-        slug: permission.slug,
-        name: permission.name,
-        description: permission.description,
-        createdAt: new Date(),
-        createdByUserId: null,
-      },
-    });
-  }
-  console.log('Permissions seeded.');
+  // -----------------------------
+  // 4️⃣ Seed Permissions
+  // -----------------------------
+  await Promise.all(
+    permissionsData.map(permission =>
+      prisma.userPermission.upsert({
+        where: { slug: permission.slug },
+        update: {},
+        create: {
+          slug: permission.slug,
+          name: permission.name,
+          description: permission.description,
+          createdAt: new Date(),
+          createdByUserId: null,
+        },
+      })
+    )
+  );
+  console.log('✅ Permissions seeded');
 
-  // Seed Role Permissions
+  // -----------------------------
+  // 5️⃣ Seed Role-Permissions
+  // -----------------------------
   const seededRoles = await prisma.userRole.findMany();
   const seededPermissions = await prisma.userPermission.findMany();
 
-  const userRolePermissionPromises = seededRoles.flatMap((role) => {
-    // Generate a random number between 3 and 12 (inclusive)
-    const numberOfPermissions =
-      Math.floor(Math.random() * (12 - 3 + 1)) + 3;
-
-    // Randomly shuffle the permissions array and select the required number
+  const rolePermissionPromises = seededRoles.flatMap(role => {
+    const numberOfPermissions = Math.floor(Math.random() * (12 - 3 + 1)) + 3;
     const randomizedPermissions = seededPermissions
       .sort(() => Math.random() - 0.5)
       .slice(0, numberOfPermissions);
 
-    // Create promises for each selected permission
-    return randomizedPermissions.map((permission) =>
+    return randomizedPermissions.map(permission =>
       prisma.userRolePermission.upsert({
         where: {
           roleId_permissionId: {
@@ -113,25 +114,28 @@ async function main() {
           permissionId: permission.id,
           assignedAt: new Date(),
         },
-      }),
+      })
     );
   });
 
-  await Promise.all(userRolePermissionPromises);
-  console.log('UserRolePermissions seeded.');
+  await Promise.all(rolePermissionPromises);
+  console.log('✅ UserRolePermissions seeded');
 
-  // Seed Users
+  // -----------------------------
+  // 6️⃣ Seed Users
+  // -----------------------------
   for (const user of usersData) {
     const role = await prisma.userRole.findFirst({
       where: { slug: user.roleSlug },
     });
-    
-    // Skip users with non-existent roles or use a default role
+
     if (!role) {
-      console.log(`Skipping user ${user.email} - role '${user.roleSlug}' not found`);
+      console.log(`⚠️ Skipping user ${user.email} - role '${user.roleSlug}' not found`);
       continue;
     }
-    
+
+    const hashedPassword = await bcrypt.hash(user.password, 10);
+
     await prisma.user.upsert({
       where: { email: user.email },
       update: {},
@@ -147,54 +151,27 @@ async function main() {
       },
     });
   }
-  console.log('Users seeded.');
+  console.log('✅ Users seeded');
 
-  // Seed System Logs
+  // -----------------------------
+  // 7️⃣ Seed System Logs
+  // -----------------------------
   const users = await prisma.user.findMany({
-    where: {
-      role: {
-        isDefault: false, // Exclude default roles
-      },
-    },
-    include: {
-      role: true, // Include role details if needed
-    },
+    where: { role: { isDefault: false } },
   });
 
-  const meaningfulVerbs = [
-    'created',
-    'updated',
-    'deleted',
-    'requested',
-    'reset',
-    'terminated',
-    'fetched',
-    'reviewed',
-  ];
+  const meaningfulVerbs = ['created', 'updated', 'deleted', 'requested', 'reset', 'terminated', 'fetched', 'reviewed'];
 
   const systemLogPromises = Array.from({ length: 20 }).map(() => {
-    const entity = faker.helpers.arrayElement([
-      { type: 'user', id: faker.helpers.arrayElement(users).id },
-    ]);
-
-    const event = faker.helpers.arrayElement([
-      'CREATE',
-      'UPDATE',
-      'DELETE',
-      'FETCH',
-    ]);
-
-    // Map meaningful verbs based on the event type
+    const entity = { type: 'user', id: faker.helpers.arrayElement(users).id };
+    const event = faker.helpers.arrayElement(['CREATE', 'UPDATE', 'DELETE', 'FETCH']);
     const verbMap = {
       CREATE: ['created', 'added', 'initialized', 'generated'],
       UPDATE: ['updated', 'modified', 'changed', 'edited'],
       DELETE: ['deleted', 'removed', 'cleared', 'erased'],
       FETCH: ['fetched', 'retrieved', 'requested', 'accessed'],
     };
-
-    const descriptionVerb = faker.helpers.arrayElement(
-      verbMap[event] || meaningfulVerbs, // Fallback to the generic meaningfulVerbs
-    );
+    const descriptionVerb = faker.helpers.arrayElement(verbMap[event] || meaningfulVerbs);
 
     return prisma.systemLog.create({
       data: {
@@ -210,22 +187,24 @@ async function main() {
   });
 
   await Promise.all(systemLogPromises);
-  console.log('System logs seeded.');
+  console.log('✅ System logs seeded');
 
-  // Seed Settings
-  await prisma.systemSetting.create({
-    data: {
-      name: 'Metronic',
-    },
+  // -----------------------------
+  // 8️⃣ Seed Settings (safe upsert)
+  // -----------------------------
+  await prisma.systemSetting.upsert({
+    where: { name: 'Metronic' },
+    update: {},
+    create: { name: 'Metronic' },
   });
-  console.log('Settings seeded.');
+  console.log('✅ Settings seeded');
 
-  console.log('Database seeding completed!');
+  console.log('🎉 Database seeding completed successfully!');
 }
 
 main()
-  .catch((e) => {
-    console.error('Error during seeding:', e);
+  .catch(e => {
+    console.error('❌ Error during seeding:', e);
     process.exit(1);
   })
   .finally(async () => {

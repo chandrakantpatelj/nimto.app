@@ -140,9 +140,9 @@ export function EnhancedTemplatesDisplay({ selectedCategory = null, searchQuery 
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
         {templates.map((template) => (
-          <div key={template.id} className="group relative rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 bg-white dark:bg-gray-800">
+          <div key={template.id} className="group relative rounded-lg sm:rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 bg-white dark:bg-gray-800">
             {/* Template Background Image */}
             <div className="relative aspect-[3/4] overflow-hidden">
               {template.templateThumbnailUrl || template.s3ImageUrl ? (
@@ -166,57 +166,58 @@ export function EnhancedTemplatesDisplay({ selectedCategory = null, searchQuery 
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
 
               {/* Status Badge */}
-              <div className="absolute top-3 left-3">
-                <Badge className="bg-white/90 dark:bg-gray-800/90 text-gray-700 dark:text-gray-300 text-xs font-medium px-2 py-1 shadow-sm">
+              <div className="absolute top-2 left-2 sm:top-3 sm:left-3">
+                <Badge className="bg-white/90 dark:bg-gray-800/90 text-gray-700 dark:text-gray-300 text-xs font-medium px-1.5 py-0.5 sm:px-2 sm:py-1 shadow-sm">
                   {template.isPremium ? 'PREMIUM' : 'TEMPLATE'}
                 </Badge>
               </div>
 
               {/* Premium Badge */}
               {template.isPremium && (
-                <div className="absolute top-3 right-3">
-                  <Badge className="bg-yellow-500 text-white text-xs font-medium px-2 py-1 shadow-sm">
+                <div className="absolute top-2 right-2 sm:top-3 sm:right-3">
+                  <Badge className="bg-yellow-500 text-white text-xs font-medium px-1.5 py-0.5 sm:px-2 sm:py-1 shadow-sm">
                     ${template.price || 20}
                   </Badge>
                 </div>
               )}
 
               {/* Content Overlay */}
-              <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                <h3 className="font-bold text-lg mb-2 line-clamp-2">
+              <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-4 text-white">
+                <h3 className="font-bold text-sm sm:text-lg mb-1 sm:mb-2 line-clamp-2">
                   {template.name}
                 </h3>
                 
                 {/* Template Meta Info */}
-                <div className="space-y-1 text-sm opacity-90">
+                <div className="space-y-0.5 sm:space-y-1 text-xs sm:text-sm opacity-90">
                   <div className="flex items-center">
-                    <Calendar className="h-3 w-3 mr-1.5" />
-                    <span>{template.category || 'Event Template'}</span>
+                    <Calendar className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1 sm:mr-1.5" />
+                    <span className="truncate">{template.category || 'Event Template'}</span>
                   </div>
                   
                   <div className="flex items-center">
-                    <svg className="h-3 w-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1 sm:mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
                     </svg>
-                    <span>Ready to use</span>
+                    <span className="truncate">Ready to use</span>
                   </div>
 
                   <div className="flex items-center">
-                    <svg className="h-3 w-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1 sm:mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
-                    <span>by {template.isSystemTemplate ? 'Nimto' : 'Community'}</span>
+                    <span className="truncate">by {template.isSystemTemplate ? 'Nimto' : 'Community'}</span>
                   </div>
                 </div>
               </div>
 
               {/* Hover Action Buttons */}
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-1 sm:gap-2">
                   <Button
                     onClick={() => handleTemplateSelect(template, 'home')}
                     asChild
-                    className="bg-white text-gray-900 hover:bg-gray-100 font-medium"
+                    size="sm"
+                    className="bg-white text-gray-900 hover:bg-gray-100 font-medium text-xs sm:text-sm"
                   >
                     <Link href={`/events/design/${template.id}`}>
                       Use Template
@@ -225,11 +226,11 @@ export function EnhancedTemplatesDisplay({ selectedCategory = null, searchQuery 
                   <Button
                     variant="outline"
                     size="sm"
-                    className="bg-white/90 text-gray-900 hover:bg-white border-white/50"
+                    className="bg-white/90 text-gray-900 hover:bg-white border-white/50 text-xs sm:text-sm"
                     asChild
                   >
                     <Link href={`/templates/${template.id}`}>
-                      <Eye className="h-4 w-4 mr-1" />
+                      <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                       Preview
                     </Link>
                   </Button>
