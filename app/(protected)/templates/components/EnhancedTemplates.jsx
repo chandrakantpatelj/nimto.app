@@ -268,11 +268,11 @@ const EnhancedTemplates = ({
             </h2>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 md:gap-5 px-4 sm:px-0">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4 lg:gap-5 px-2 sm:px-4 md:px-0">
             {allTemplates.map((template) => (
               <Card
                 key={template.id}
-                className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 border-0 shadow-md bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl overflow-hidden"
+                className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 border-0 shadow-sm sm:shadow-md bg-white dark:bg-slate-800 rounded-md sm:rounded-lg lg:rounded-xl overflow-hidden"
                 onClick={() => handleTemplateSelect(template)}
               >
                 <CardContent className="p-0">
@@ -308,58 +308,58 @@ const EnhancedTemplates = ({
                     )}
 
                     {/* Badges */}
-                    <div className="absolute top-1 left-1 flex flex-col gap-1">
+                    <div className="absolute top-0.5 left-0.5 sm:top-1 sm:left-1 flex flex-col gap-0.5 sm:gap-1">
                       {template.badge && (
                         <Badge
                           variant={getBadgeVariant(template.badge)}
-                          className="text-xs font-medium px-2 py-1 bg-white/90 dark:bg-slate-800/90 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-slate-600 shadow-sm"
+                          className="text-xs font-medium px-1.5 py-0.5 sm:px-2 sm:py-1 bg-white/90 dark:bg-slate-800/90 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-slate-600 shadow-sm"
                         >
                           {getBadgeIcon(template.badge)}
-                          {template.badge}
+                          <span className="hidden sm:inline">{template.badge}</span>
                         </Badge>
                       )}
                       {template.isTrending && (
                         <Badge
                           variant="default"
-                          className="text-xs font-medium px-2 py-1 bg-orange-500 text-white shadow-sm"
+                          className="text-xs font-medium px-1.5 py-0.5 sm:px-2 sm:py-1 bg-orange-500 text-white shadow-sm"
                         >
-                          <Zap className="h-2 w-2 mr-1" />
-                          Trending
+                          <Zap className="h-2 w-2 mr-0.5 sm:mr-1" />
+                          <span className="hidden sm:inline">Trending</span>
                         </Badge>
                       )}
                       {template.isFeatured && (
                         <Badge
                           variant="outline"
-                          className="text-xs font-medium px-2 py-1 bg-white/90 dark:bg-slate-800/90 text-gray-900 dark:text-gray-100 border border-yellow-300 dark:border-yellow-600 shadow-sm"
+                          className="text-xs font-medium px-1.5 py-0.5 sm:px-2 sm:py-1 bg-white/90 dark:bg-slate-800/90 text-gray-900 dark:text-gray-100 border border-yellow-300 dark:border-yellow-600 shadow-sm"
                         >
-                          <Star className="h-2 w-2 mr-1" />
-                          Featured
+                          <Star className="h-2 w-2 mr-0.5 sm:mr-1" />
+                          <span className="hidden sm:inline">Featured</span>
                         </Badge>
                       )}
                       {template.isNew && (
                         <Badge
                           variant="secondary"
-                          className="text-xs font-medium px-2 py-1 bg-green-500 text-white shadow-sm"
+                          className="text-xs font-medium px-1.5 py-0.5 sm:px-2 sm:py-1 bg-green-500 text-white shadow-sm"
                         >
-                          <Sparkles className="h-2 w-2 mr-1" />
-                          New
+                          <Sparkles className="h-2 w-2 mr-0.5 sm:mr-1" />
+                          <span className="hidden sm:inline">New</span>
                         </Badge>
                       )}
                     </div>
 
                     {/* Price Badge */}
-                    <div className="absolute top-1 right-1">
+                    <div className="absolute top-0.5 right-0.5 sm:top-1 sm:right-1">
                       {template.isPremium ? (
                         <Badge
                           variant="destructive"
-                          className="text-xs font-medium px-2 py-1 bg-red-500 text-white shadow-sm"
+                          className="text-xs font-medium px-1.5 py-0.5 sm:px-2 sm:py-1 bg-red-500 text-white shadow-sm"
                         >
                           ${template.price}
                         </Badge>
                       ) : (
                         <Badge
                           variant="secondary"
-                          className="text-xs font-medium px-2 py-1 bg-green-500 text-white shadow-sm"
+                          className="text-xs font-medium px-1.5 py-0.5 sm:px-2 sm:py-1 bg-green-500 text-white shadow-sm"
                         >
                           Free
                         </Badge>
@@ -368,32 +368,34 @@ const EnhancedTemplates = ({
 
                     {/* Orientation Badge */}
                     {template.orientation && (
-                      <div className="absolute bottom-1 right-1">
+                      <div className="absolute bottom-0.5 right-0.5 sm:bottom-1 sm:right-1">
                         <Badge
-                          className={`text-xs px-2 py-1 ${getOrientationColor(template.orientation)} border border-gray-300 dark:border-slate-500 shadow-lg font-semibold`}
+                          className={`text-xs px-1.5 py-0.5 sm:px-2 sm:py-1 ${getOrientationColor(template.orientation)} border border-gray-300 dark:border-slate-500 shadow-lg font-semibold`}
                         >
-                          {template.orientation.toUpperCase()}
+                          <span className="hidden sm:inline">{template.orientation.toUpperCase()}</span>
+                          <span className="sm:hidden">{template.orientation.charAt(0).toUpperCase()}</span>
                         </Badge>
                       </div>
                     )}
 
                     {/* Popularity Indicator */}
                     {template.popularity > 0 && (
-                      <div className="absolute bottom-1 left-1">
-                        <div className="flex items-center bg-black/80 dark:bg-slate-900/90 text-white px-2 py-1 rounded text-xs shadow-sm border border-gray-600 dark:border-slate-500">
-                          <Star className="h-2 w-2 mr-1 fill-yellow-400 text-yellow-400" />
-                          {Math.round(template.popularity * 100)}%
+                      <div className="absolute bottom-0.5 left-0.5 sm:bottom-1 sm:left-1">
+                        <div className="flex items-center bg-black/80 dark:bg-slate-900/90 text-white px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-xs shadow-sm border border-gray-600 dark:border-slate-500">
+                          <Star className="h-2 w-2 mr-0.5 sm:mr-1 fill-yellow-400 text-yellow-400" />
+                          <span className="hidden sm:inline">{Math.round(template.popularity * 100)}%</span>
+                          <span className="sm:hidden">{Math.round(template.popularity * 100)}</span>
                         </div>
                       </div>
                     )}
                   </div>
 
                   {/* Template Info */}
-                  <div className="p-2 sm:p-3">
-                    <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-1 line-clamp-1 text-xs sm:text-sm">
+                  <div className="p-1.5 sm:p-2 md:p-3">
+                    <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-0.5 sm:mb-1 line-clamp-1 text-xs sm:text-sm">
                       {template.name}
                     </h3>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-2 font-medium">
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-1 sm:mb-2 font-medium">
                       {template.category}
                     </p>
 
