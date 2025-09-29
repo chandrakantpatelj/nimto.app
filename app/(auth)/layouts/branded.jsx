@@ -16,13 +16,19 @@ export function BrandedLayout({ children }) {
           }
         `}
       </style>
-      <div className="grid lg:grid-cols-1 grow min-h-screen flex flex-col">
-        <div className="flex justify-center items-center p-8 lg:p-10 order-2 lg:order-1 flex-1">
-          <Card className="w-full max-w-[400px]">
-            <CardContent className="p-6">{children}</CardContent>
-          </Card>
+      <div className="flex flex-col items-center justify-center grow bg-center bg-no-repeat page-bg">
+        <div className="m-5">
+          <Link href="/">
+            <img
+              src={toAbsoluteUrl('/media/app/nimto-main-logo.svg')}
+              className="h-[35px] max-w-none"
+              alt=""
+            />
+          </Link>
         </div>
-        {/* <CommonFooter /> */}
+        <Card className="w-full max-w-[400px]">
+          <CardContent className="p-6">{children}</CardContent>
+        </Card>
       </div>
     </>
   );
