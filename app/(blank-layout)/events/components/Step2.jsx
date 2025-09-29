@@ -1,38 +1,81 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useEventActions, useEvents } from '@/store/hooks';
-import { GoogleMap } from '@react-google-maps/api';
 import { format } from 'date-fns';
 import { CalendarDays, Info, MapPin, User } from 'lucide-react';
-import { DEFAULT_MAP_CENTER, MAP_CONFIG } from '@/lib/constants';
+import { DEFAULT_MAP_CENTER } from '@/lib/constants';
 import { cn } from '@/lib/utils';
-import { useGoogleMaps } from '@/hooks/use-google-maps';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SeparateDateTimeFields } from '@/components/ui/separate-datetime-fields';
 import { Textarea } from '@/components/ui/textarea';
-import { LocationDrawer } from '@/components/location';
+import LocationDrawer from '@/components/location/location-drawer';
+import { SimpleAutocomplete } from '@/components/location/simple-autocomplete';
+import { SimpleGoogleMap } from '@/components/location/simple-google-map';
 
 function Step2({ thumbnailData, session }) {
   const { selectedEvent: eventData } = useEvents();
   const { updateSelectedEvent: updateEventData } = useEventActions();
-  const isGoogleMapsLoaded = useGoogleMaps();
+  const [isGeocoding, setIsGeocoding] = useState(false);
 
-  // Simple map center logic - use default if not set
+  // Geocode address when component loads if we have address but no mapCenter
+  useEffect(() => {
+    const geocodeAddress = async () => {
+      if (eventData?.locationAddress && !eventData?.mapCenter && !isGeocoding) {
+        setIsGeocoding(true);
+        try {
+          if (window.google && window.google.maps) {
+            const geocoder = new window.google.maps.Geocoder();
+            geocoder.geocode(
+              { address: eventData.locationAddress },
+              (results, status) => {
+                if (status === 'OK' && results[0]) {
+                  const location = results[0].geometry.location;
+                  const mapCenter = {
+                    lat: location.lat(),
+                    lng: location.lng(),
+                  };
+                  updateEventData({ mapCenter });
+                }
+                setIsGeocoding(false);
+              },
+            );
+          } else {
+            setIsGeocoding(false);
+          }
+        } catch (error) {
+          console.warn('Error geocoding address:', error);
+          setIsGeocoding(false);
+        }
+      }
+    };
+
+    geocodeAddress();
+  }, [
+    eventData?.locationAddress,
+    eventData?.mapCenter,
+    isGeocoding,
+    updateEventData,
+  ]);
+
+  // Map center logic - use saved mapCenter or geocode the address
   const getMapCenter = () => {
-    return eventData?.mapCenter || DEFAULT_MAP_CENTER;
-  };
+    // If we have a saved mapCenter, use it
+    if (eventData?.mapCenter) {
+      return eventData.mapCenter;
+    }
 
-  // Additional safety check for Map constructor
-  const isMapConstructorReady = () => {
-    return (
-      isGoogleMapsLoaded &&
-      typeof window !== 'undefined' &&
-      window.google?.maps?.Map &&
-      typeof window.google.maps.Map === 'function'
-    );
+    // If we have a locationAddress but no mapCenter, we need to geocode it
+    if (eventData?.locationAddress && !eventData?.mapCenter) {
+      // For now, return default center - in a real app, you'd geocode the address
+      // This is a limitation - we should geocode the address to get proper coordinates
+      return DEFAULT_MAP_CENTER;
+    }
+
+    // Fallback to default
+    return DEFAULT_MAP_CENTER;
   };
   // Function to format time for display (12-hour format with AM/PM)
   const formatTimeForDisplay = (time24) => {
@@ -257,26 +300,11 @@ function Step2({ thumbnailData, session }) {
                       {/* Map Preview in Event Details */}
                       {eventData.showMap && eventData.locationAddress && (
                         <div className="mt-3 h-48 w-full rounded-lg overflow-hidden border border-gray-300">
-                          {isMapConstructorReady() ? (
-                            <GoogleMap
-                              mapContainerStyle={MAP_CONFIG.containerStyle}
-                              center={getMapCenter()}
-                              zoom={MAP_CONFIG.defaultZoom}
-                              options={MAP_CONFIG.options}
-                            >
-                              {/* You can add markers here if needed */}
-                            </GoogleMap>
-                          ) : (
-                            <div className="flex items-center justify-center h-full bg-gray-100 text-gray-500">
-                              <div className="text-center">
-                                <MapPin className="h-8 w-8 mx-auto mb-2" />
-                                <p className="text-sm">Map loading...</p>
-                                <p className="text-xs text-gray-400">
-                                  {eventData.locationAddress}
-                                </p>
-                              </div>
-                            </div>
-                          )}
+                          <SimpleGoogleMap
+                            center={getMapCenter()}
+                            zoom={15}
+                            className="h-full w-full"
+                          />
                         </div>
                       )}
                     </div>
@@ -381,30 +409,23 @@ function Step2({ thumbnailData, session }) {
                 htmlFor="location"
                 className="text-sm font-semibold text-foreground mb-3 block"
               >
-                Location *
+                Location <span className="text-red-500">*</span>
               </Label>
               <LocationDrawer
                 locationAddress={eventData.locationAddress || ''}
                 locationUnit={eventData.locationUnit || ''}
-                onChange={({
-                  locationAddress,
-                  locationUnit,
-                  showMap,
-                  mapCenter,
-                }) => {
+                onChange={(locationData) => {
                   updateEventData({
-                    locationAddress,
-                    locationUnit,
-                    showMap: showMap ?? eventData.showMap ?? true,
-                    mapCenter: mapCenter || getMapCenter(),
+                    locationAddress: locationData.address,
+                    locationUnit: locationData.unit,
+                    showMap: locationData.showMap,
+                    mapCenter: locationData.mapCenter,
                   });
-                  // Scroll to show event details card after location change
                   setTimeout(() => scrollToEventDetails(), 100);
                 }}
                 placeholder="Add event location"
                 className="w-full"
-                showBorder={true}
-                initialShowMap={eventData.showMap ?? true}
+                initialShowMap={eventData.showMap || false}
                 initialMapCenter={getMapCenter()}
               />
             </div>
