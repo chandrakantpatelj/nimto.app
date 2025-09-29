@@ -355,7 +355,7 @@ export async function POST(request) {
                 <p><strong>Event Details:</strong></p>
                 <p><strong>Date:</strong> ${eventDate.toLocaleDateString()}</p>
                 <p><strong>Time:</strong> ${eventDate.toLocaleTimeString()}</p>
-                <p><strong>Location:</strong> ${location || 'TBD'}</p>
+                <p><strong>Location:</strong> ${locationAddress || 'TBD'}</p>
                 ${description ? `<p><strong>Description:</strong> ${description}</p>` : ''}
                 <p>Please click the button below to view the full invitation and respond.</p>
               `,
