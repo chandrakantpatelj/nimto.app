@@ -28,7 +28,9 @@ export async function PUT(request) {
       title,
       description,
       startDateTime,
-      location,
+      locationAddress,
+      locationUnit,
+      showMap,
       templateId,
       jsonContent,
       newImageData,
@@ -41,6 +43,31 @@ export async function PUT(request) {
     if (!id) {
       return NextResponse.json(
         { success: false, error: 'Event ID is required' },
+        { status: 400 },
+      );
+    }
+
+    // Validate required fields if provided
+    if (title !== undefined && (!title || !title.trim())) {
+      return NextResponse.json(
+        { success: false, error: 'Event title is required' },
+        { status: 400 },
+      );
+    }
+
+    if (startDateTime !== undefined && !startDateTime) {
+      return NextResponse.json(
+        { success: false, error: 'Start date is required' },
+        { status: 400 },
+      );
+    }
+
+    if (
+      locationAddress !== undefined &&
+      (!locationAddress || !locationAddress.trim())
+    ) {
+      return NextResponse.json(
+        { success: false, error: 'Location address is required' },
         { status: 400 },
       );
     }
@@ -176,9 +203,15 @@ export async function PUT(request) {
               { status: 400 },
             );
           }
-          if ((!guest.email || !guest.email.trim()) && (!guest.phone || !guest.phone.trim())) {
+          if (
+            (!guest.email || !guest.email.trim()) &&
+            (!guest.phone || !guest.phone.trim())
+          ) {
             return NextResponse.json(
-              { success: false, error: 'Either email or phone number is required for guests' },
+              {
+                success: false,
+                error: 'Either email or phone number is required for guests',
+              },
               { status: 400 },
             );
           }
@@ -229,7 +262,9 @@ export async function PUT(request) {
         ...(title && { title }),
         ...(description !== undefined && { description }),
         ...(eventDate && { startDateTime: eventDate }),
-        ...(location !== undefined && { location }),
+        ...(locationAddress !== undefined && { locationAddress }),
+        ...(locationUnit !== undefined && { locationUnit }),
+        ...(showMap !== undefined && { showMap }), // Temporarily disabled until DB migration is confirmed
         ...(templateId !== undefined && { templateId }),
         ...(jsonContent !== undefined && { jsonContent }),
         ...(finalImagePath && { imagePath: finalImagePath }),

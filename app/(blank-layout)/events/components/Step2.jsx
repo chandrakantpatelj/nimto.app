@@ -2,19 +2,39 @@
 
 import React from 'react';
 import { useEventActions, useEvents } from '@/store/hooks';
+import { GoogleMap } from '@react-google-maps/api';
 import { format } from 'date-fns';
 import { CalendarDays, Info, MapPin, User } from 'lucide-react';
+import { DEFAULT_MAP_CENTER, MAP_CONFIG } from '@/lib/constants';
 import { cn } from '@/lib/utils';
+import { useGoogleMaps } from '@/hooks/use-google-maps';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SeparateDateTimeFields } from '@/components/ui/separate-datetime-fields';
 import { Textarea } from '@/components/ui/textarea';
+import { LocationDrawer } from '@/components/location';
 
 function Step2({ thumbnailData, session }) {
   const { selectedEvent: eventData } = useEvents();
   const { updateSelectedEvent: updateEventData } = useEventActions();
+  const isGoogleMapsLoaded = useGoogleMaps();
+  console.log(eventData);
 
+  // Simple map center logic - use default if not set
+  const getMapCenter = () => {
+    return eventData?.mapCenter || DEFAULT_MAP_CENTER;
+  };
+
+  // Additional safety check for Map constructor
+  const isMapConstructorReady = () => {
+    return (
+      isGoogleMapsLoaded &&
+      typeof window !== 'undefined' &&
+      window.google?.maps?.Map &&
+      typeof window.google.maps.Map === 'function'
+    );
+  };
   // Function to format time for display (12-hour format with AM/PM)
   const formatTimeForDisplay = (time24) => {
     if (!time24) return '';
@@ -230,8 +250,36 @@ function Step2({ thumbnailData, session }) {
                         Location
                       </p>
                       <p className="text-base text-foreground font-medium">
-                        {eventData.location || 'Add a location'}
+                        {eventData.locationAddress
+                          ? `${eventData.locationAddress}${eventData.locationUnit ? `, ${eventData.locationUnit}` : ''}`
+                          : 'Add a location'}
                       </p>
+
+                      {/* Map Preview in Event Details */}
+                      {eventData.showMap && eventData.locationAddress && (
+                        <div className="mt-3 h-48 w-full rounded-lg overflow-hidden border border-gray-300">
+                          {isMapConstructorReady() ? (
+                            <GoogleMap
+                              mapContainerStyle={MAP_CONFIG.containerStyle}
+                              center={getMapCenter()}
+                              zoom={MAP_CONFIG.defaultZoom}
+                              options={MAP_CONFIG.options}
+                            >
+                              {/* You can add markers here if needed */}
+                            </GoogleMap>
+                          ) : (
+                            <div className="flex items-center justify-center h-full bg-gray-100 text-gray-500">
+                              <div className="text-center">
+                                <MapPin className="h-8 w-8 mx-auto mb-2" />
+                                <p className="text-sm">Map loading...</p>
+                                <p className="text-xs text-gray-400">
+                                  {eventData.locationAddress}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -334,23 +382,32 @@ function Step2({ thumbnailData, session }) {
                 htmlFor="location"
                 className="text-sm font-semibold text-foreground mb-3 block"
               >
-                Location
+                Location *
               </Label>
-              <div className="relative">
-                <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <Input
-                  id="location"
-                  type="text"
-                  placeholder="Add event location"
-                  value={eventData.location || ''}
-                  onChange={(e) => {
-                    updateEventData({ location: e.target.value });
-                    // Scroll to show event details card after location change
-                    setTimeout(() => scrollToEventDetails(), 100);
-                  }}
-                  className="w-full h-12 pl-12 pr-4 text-base border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg"
-                />
-              </div>
+              <LocationDrawer
+                locationAddress={eventData.locationAddress || ''}
+                locationUnit={eventData.locationUnit || ''}
+                onChange={({
+                  locationAddress,
+                  locationUnit,
+                  showMap,
+                  mapCenter,
+                }) => {
+                  updateEventData({
+                    locationAddress,
+                    locationUnit,
+                    showMap: showMap ?? eventData.showMap ?? true,
+                    mapCenter: mapCenter || getMapCenter(),
+                  });
+                  // Scroll to show event details card after location change
+                  setTimeout(() => scrollToEventDetails(), 100);
+                }}
+                placeholder="Add event location"
+                className="w-full"
+                showBorder={true}
+                initialShowMap={eventData.showMap ?? true}
+                initialMapCenter={getMapCenter()}
+              />
             </div>
 
             {/* Host Note */}

@@ -173,6 +173,13 @@ export const deleteEvent = createAsyncThunk(
         throw new Error('Failed to delete event');
       }
 
+      // Parse the response to check for success
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to delete event');
+      }
+
       return eventId;
     } catch (error) {
       return rejectWithValue(error.message);
@@ -257,6 +264,30 @@ const eventsSlice = createSlice({
         state.error = null;
       })
       .addCase(createEvent.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      })
+
+      // Fetch events
+      .addCase(fetchEvents.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchEvents.fulfilled, (state, action) => {
+        state.isLoading = false;
+        const events = action.payload;
+
+        // Update events array and eventsById
+        state.events = events;
+        const eventsById = {};
+        events.forEach((event) => {
+          eventsById[event.id] = event;
+        });
+        state.eventsById = eventsById;
+
+        state.error = null;
+      })
+      .addCase(fetchEvents.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
       })

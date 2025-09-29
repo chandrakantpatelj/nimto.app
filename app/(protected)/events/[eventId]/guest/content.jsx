@@ -49,10 +49,13 @@ export function ManageGuestContent({ event }) {
                 <Clock className="w-4 h-4" />
                 <span>{formatTime(event.startDateTime)}</span>
               </div>
-              {event.location && (
+              {(event.locationAddress || event.locationUnit) && (
                 <div className="flex items-center gap-2 text-gray-600">
                   <MapPin className="w-4 h-4" />
-                  <span>{event.location}</span>
+                  <span>
+                    {event.locationAddress}
+                    {event.locationUnit ? `, ${event.locationUnit}` : ''}
+                  </span>
                 </div>
               )}
             </div>
