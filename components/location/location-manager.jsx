@@ -87,7 +87,6 @@ export default function LocationManager({
   }, []);
 
   const onScriptLoad = useCallback(() => {
-    isGoogleMapsLoaded = true;
     setIsLoaded(true);
     setHasError(false);
   }, []);

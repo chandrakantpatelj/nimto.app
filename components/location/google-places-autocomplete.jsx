@@ -63,7 +63,6 @@ export default function GooglePlacesAutocomplete({
   }, []);
 
   const onScriptLoad = useCallback(() => {
-    isGoogleMapsLoaded = true;
     setIsLoaded(true);
     setHasError(false);
   }, []);

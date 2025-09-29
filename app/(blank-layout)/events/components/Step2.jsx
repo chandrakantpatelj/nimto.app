@@ -19,7 +19,6 @@ function Step2({ thumbnailData, session }) {
   const { selectedEvent: eventData } = useEvents();
   const { updateSelectedEvent: updateEventData } = useEventActions();
   const isGoogleMapsLoaded = useGoogleMaps();
-  console.log(eventData);
 
   // Simple map center logic - use default if not set
   const getMapCenter = () => {
