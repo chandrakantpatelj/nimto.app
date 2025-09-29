@@ -283,11 +283,14 @@ export default function InvitedEventsPage() {
                           </div>
                         )}
 
-                        {event.location && (
+                        {(event.locationAddress || event.locationUnit) && (
                           <div className="flex items-center gap-2 text-white text-sm drop-shadow-sm">
                             <MapPin className="h-4 w-4" />
                             <span className="font-medium truncate">
-                              {event.location}
+                              {event.locationAddress}
+                              {event.locationUnit
+                                ? `, ${event.locationUnit}`
+                                : ''}
                             </span>
                           </div>
                         )}

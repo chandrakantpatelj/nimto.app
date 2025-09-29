@@ -64,7 +64,8 @@ const Events = () => {
     return (
       event.title?.toLowerCase().includes(query) ||
       event.description?.toLowerCase().includes(query) ||
-      event.location?.toLowerCase().includes(query)
+      event.locationAddress?.toLowerCase().includes(query) ||
+      event.locationUnit?.toLowerCase().includes(query)
     );
   });
 
@@ -176,6 +177,8 @@ const Events = () => {
                   event.title,
                   event.id,
                 );
+                // Set the event data in Redux before navigating
+                setSelectedEvent(event);
                 router.push(`/events/${event.id}`);
               }}
               className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-lg border-0 backdrop-blur-sm cursor-pointer"
@@ -223,11 +226,12 @@ const Events = () => {
                   )}
                 </div>
 
-                {event.location && (
+                {(event.locationAddress || event.locationUnit) && (
                   <div className="flex items-center gap-2 text-white/90 text-sm">
                     <MapPin className="w-4 h-4" />
                     <span className="font-medium line-clamp-1">
-                      {event.location}
+                      {event.locationAddress}
+                      {event.locationUnit ? `, ${event.locationUnit}` : ''}
                     </span>
                   </div>
                 )}

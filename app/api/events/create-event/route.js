@@ -71,7 +71,9 @@ export async function POST(request) {
       title,
       description,
       startDateTime,
-      location,
+      locationAddress,
+      locationUnit,
+      showMap,
       templateId,
       jsonContent,
       templateImagePath, // Original template imagePath to copy
@@ -190,7 +192,9 @@ export async function POST(request) {
         title,
         description,
         startDateTime: eventDate,
-        location,
+        locationAddress,
+        locationUnit,
+        showMap: showMap !== undefined ? showMap : true,
         templateId,
         jsonContent,
         imagePath: templateImagePath, // Initially use template imagePath
@@ -292,7 +296,10 @@ export async function POST(request) {
         }
         if (!guest.contact || !guest.contact.trim()) {
           return NextResponse.json(
-            { success: false, error: 'Guest contact information (email or phone) is required' },
+            {
+              success: false,
+              error: 'Guest contact information (email or phone) is required',
+            },
             { status: 400 },
           );
         }

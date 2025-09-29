@@ -3,6 +3,7 @@
 import React from 'react';
 import { Mail, Users, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import AdvancedProcessingLoader from '@/components/common/advanced-processing-loader';
 
 function InvitationConfirmationPopup({
   isOpen,
@@ -13,6 +14,22 @@ function InvitationConfirmationPopup({
   loading = false,
 }) {
   if (!isOpen) return null;
+
+  // Show advanced loader when loading
+  if (loading) {
+    return (
+      <AdvancedProcessingLoader
+        isVisible={true}
+        title="Creating Event"
+        description="Please wait while we process your event..."
+        tasks={[
+          { icon: '✨', text: 'Processing event data...' },
+          { icon: '📧', text: 'Sending invitations...' },
+          { icon: '💾', text: 'Saving to database...' },
+        ]}
+      />
+    );
+  }
 
   return (
     <div className="fixed inset-0 backdrop-blur-sm bg-background/20 flex items-center justify-center z-50">
@@ -32,7 +49,7 @@ function InvitationConfirmationPopup({
               </p>
             </div>
           </div>
-            <Button
+          <Button
             variant="ghost"
             size="sm"
             onClick={onClose}
@@ -81,31 +98,12 @@ function InvitationConfirmationPopup({
 
         {/* Footer */}
         <div className="flex gap-3 p-6 border-t border-border">
-          <Button
-            variant="outline"
-            onClick={onCancel}
-            disabled={loading}
-            className="flex-1"
-          >
+          <Button variant="outline" onClick={onCancel} className="flex-1">
             No, Create Event Only
           </Button>
-          <Button
-            variant="primary"
-            onClick={onConfirm}
-            disabled={loading}
-            className="flex-1"
-          >
-            {loading ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Creating...
-              </>
-            ) : (
-              <>
-                <Mail className="w-4 h-4 mr-2" />
-                Yes, Send Invitations
-              </>
-            )}
+          <Button variant="primary" onClick={onConfirm} className="flex-1">
+            <Mail className="w-4 h-4 mr-2" />
+            Yes, Send Invitations
           </Button>
         </div>
       </div>

@@ -3,6 +3,7 @@
 import React from 'react';
 import { Mail, Save, Users, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import AdvancedProcessingLoader from '@/components/common/advanced-processing-loader';
 
 function InvitationPopup({
   isOpen,
@@ -19,12 +20,16 @@ function InvitationPopup({
   // Show only loader when loading
   if (isLoading) {
     return (
-      <div className="fixed inset-0 backdrop-blur-sm bg-background/20 flex items-center justify-center z-50">
-        <div className="bg-card rounded-lg shadow-md p-6 flex flex-col items-center border border-border">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-3"></div>
-          <p className="text-sm text-muted-foreground">Processing...</p>
-        </div>
-      </div>
+      <AdvancedProcessingLoader
+        isVisible={true}
+        title="Processing Invitations"
+        description="Please wait while we process your invitations..."
+        tasks={[
+          { icon: '📧', text: 'Sending invitations...' },
+          { icon: '📊', text: 'Updating guest list...' },
+          { icon: '💾', text: 'Saving changes...' },
+        ]}
+      />
     );
   }
 

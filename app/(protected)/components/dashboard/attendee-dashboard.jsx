@@ -100,11 +100,12 @@ export function AttendeeDashboard() {
             isFutureDate(guest.event.startDateTime),
         )
         .map((guest) => guest.event)
+        .slice()
         .sort((a, b) => new Date(a.startDateTime) - new Date(b.startDateTime))
         .slice(0, 5);
 
       // Get recent invitations (last 10)
-      const recentInvitations = guests
+      const recentInvitations = [...guests]
         .sort((a, b) => {
           try {
             return new Date(b.invitedAt) - new Date(a.invitedAt);
@@ -270,10 +271,15 @@ export function AttendeeDashboard() {
                         <CalendarDays className="h-3 w-3 sm:h-4 sm:w-4" />
                         {formatEventDate(event.startDateTime)}
                       </div>
-                      {event.location && (
+                      {(event.locationAddress || event.locationUnit) && (
                         <div className="flex items-center gap-1">
                           <MapPin className="h-3 w-3 sm:h-4 sm:w-4" />
-                          <span className="truncate">{event.location}</span>
+                          <span className="truncate">
+                            {event.locationAddress}
+                            {event.locationUnit
+                              ? `, ${event.locationUnit}`
+                              : ''}
+                          </span>
                         </div>
                       )}
                       {event.startDateTime && (
@@ -349,11 +355,15 @@ export function AttendeeDashboard() {
                           {formatEventDate(invitation.event.startDateTime)}
                         </div>
                       )}
-                      {invitation.event?.location && (
+                      {(invitation.event?.locationAddress ||
+                        invitation.event?.locationUnit) && (
                         <div className="flex items-center gap-1">
                           <MapPin className="h-3 w-3 sm:h-4 sm:w-4" />
                           <span className="truncate">
-                            {invitation.event.location}
+                            {invitation.event.locationAddress}
+                            {invitation.event.locationUnit
+                              ? `, ${invitation.event.locationUnit}`
+                              : ''}
                           </span>
                         </div>
                       )}

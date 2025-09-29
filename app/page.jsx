@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
+  Calendar,
   CheckCircle,
   ClipboardList,
   FileText,
@@ -13,18 +14,16 @@ import {
   Smartphone,
   Upload,
   Users,
-  Calendar,
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { apiFetch } from '@/lib/api';
 import { useRoleBasedAccess } from '@/hooks/use-role-based-access';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { CommonFooter } from '@/components/common/footer';
 import { DynamicCategories } from '@/app/components/dynamic-categories';
 import { HomeTemplatesPreview } from '@/app/components/home-templates-preview';
 import { Header } from '@/app/components/layouts/demo1/components/header';
-import { CommonFooter } from '@/components/common/footer';
-import { Badge } from '@/components/ui/badge';
-
 
 export default function HomePage() {
   const { data: session, status } = useSession();
@@ -150,7 +149,10 @@ export default function HomePage() {
 
       {/* Search Templates Section - Always visible at top */}
       {(!isAuthenticated || !roles.isAttendee) && (
-        <section id="search-section" className="w-full sm:py-16 md:py-20  dark:bg-gray-900 bg-gray-50 dark:bg-gray-800">
+        <section
+          id="search-section"
+          className="w-full sm:py-16 md:py-20  dark:bg-gray-900 bg-gray-50 dark:bg-gray-800"
+        >
           <div className="max-w-4xl mx-auto px-6 text-center lg:pt-10 pt-20">
             {/* Search Bar */}
             <div className="relative max-w-2xl mx-auto mb-4 sm:mb-6 md:mb-8">
@@ -203,18 +205,24 @@ export default function HomePage() {
                 ) : searchResults.length > 0 ? (
                   <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-3 gap-3 sm:gap-4 md:gap-5 lg:gap-6 xl:gap-8">
                     {searchResults.map((template) => (
-                      <div key={template.id} className="group relative rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300">
+                      <div
+                        key={template.id}
+                        className="group relative rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300"
+                      >
                         {/* Template Background Image */}
                         <div className="relative aspect-[3/4] overflow-hidden">
-                          {template.templateThumbnailUrl || template.s3ImageUrl ? (
+                          {template.templateThumbnailUrl ||
+                          template.s3ImageUrl ? (
                             <img
-                              src={template.templateThumbnailUrl || template.s3ImageUrl}
+                              src={
+                                template.templateThumbnailUrl ||
+                                template.s3ImageUrl
+                              }
                               alt={template.name}
                               className="w-full h-full object-cover"
                             />
                           ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20">
-                            </div>
+                            <div className="w-full h-full bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20"></div>
                           )}
 
                           {/* Dark Overlay */}
@@ -237,21 +245,48 @@ export default function HomePage() {
                             <div className="space-y-0.5 sm:space-y-1 text-xs sm:text-sm opacity-90">
                               <div className="flex items-center">
                                 <Calendar className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1 sm:mr-1.5" />
-                                <span className="truncate">{template.category || 'Event Designs'}</span>
+                                <span className="truncate">
+                                  {template.category || 'Event Designs'}
+                                </span>
                               </div>
 
                               <div className="flex items-center">
-                                <svg className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1 sm:mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+                                <svg
+                                  className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1 sm:mr-1.5"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"
+                                  />
                                 </svg>
                                 <span className="truncate">Ready to use</span>
                               </div>
 
                               <div className="flex items-center">
-                                <svg className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1 sm:mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                <svg
+                                  className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1 sm:mr-1.5"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                  />
                                 </svg>
-                                <span className="truncate">by {template.isSystemTemplate ? 'Nimto' : 'Community'}</span>
+                                <span className="truncate">
+                                  by{' '}
+                                  {template.isSystemTemplate
+                                    ? 'Nimto'
+                                    : 'Community'}
+                                </span>
                               </div>
                             </div>
                           </div>
@@ -260,7 +295,9 @@ export default function HomePage() {
                           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                             <div className="flex flex-col gap-1 sm:gap-2">
                               <Button
-                                onClick={() => handleTemplateSelect(template, 'home')}
+                                onClick={() =>
+                                  handleTemplateSelect(template, 'home')
+                                }
                                 asChild
                                 size="sm"
                                 className="bg-white text-gray-900 hover:bg-gray-100 font-medium text-xs sm:text-sm"
@@ -292,10 +329,7 @@ export default function HomePage() {
                       Try adjusting your search terms or browse our categories
                     </p>
                     <div className="flex justify-center gap-4">
-                      <Button
-                        variant="primary"
-                        asChild
-                      >
+                      <Button variant="primary" asChild>
                         <a href="/templates">Browse All Designs</a>
                       </Button>
                     </div>
@@ -307,11 +341,10 @@ export default function HomePage() {
         </section>
       )}
 
-
-      
       {/* Featured Templates Section - Hidden when category or search is active */}
       {(!isAuthenticated || !roles.isAttendee) &&
-        !searchQuery && !selectedCategory && (
+        !searchQuery &&
+        !selectedCategory && (
           <section className="w-full py-20 bg-white dark:bg-gray-900">
             <div className="mx-auto px-6">
               <HomeTemplatesPreview />
@@ -346,10 +379,10 @@ export default function HomePage() {
         </section>
       )}
 
-
       {/* Category Filter Results Section */}
       {(!isAuthenticated || !roles.isAttendee) &&
-        selectedCategory && !searchQuery && (
+        selectedCategory &&
+        !searchQuery && (
           <section className="w-full py-10 sm:py-16 md:py-20 bg-white dark:bg-gray-900">
             <div className="max-w-7xl mx-auto px-6">
               <div className="text-center mb-12 sm:mb-16">
@@ -391,7 +424,7 @@ export default function HomePage() {
                       {/* Template Background Image */}
                       <div className="relative aspect-[3/4] overflow-hidden">
                         {template.templateThumbnailUrl ||
-                          template.s3ImageUrl ? (
+                        template.s3ImageUrl ? (
                           <img
                             src={
                               template.templateThumbnailUrl ||
@@ -461,10 +494,7 @@ export default function HomePage() {
                     >
                       Back to Categories
                     </Button>
-                    <Button
-                      variant="primary"
-                      asChild
-                    >
+                    <Button variant="primary" asChild>
                       <Link href="/templates">Browse All Designs</Link>
                     </Button>
                   </div>
@@ -532,8 +562,7 @@ export default function HomePage() {
                 Beautiful Designs
               </h3>
               <p className="text-gray-600 dark:text-gray-300">
-                Hundreds of professionally designed designs for every
-                occasion.
+                Hundreds of professionally designed designs for every occasion.
               </p>
             </div>
           </div>
@@ -572,12 +601,13 @@ export default function HomePage() {
                         </div>
                         {userGuest && (
                           <span
-                            className={`px-3 py-1 rounded-full text-xs font-medium ${userGuest.status === 'CONFIRMED'
-                              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                              : userGuest.status === 'PENDING'
-                                ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
-                                : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
-                              }`}
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${
+                              userGuest.status === 'CONFIRMED'
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                                : userGuest.status === 'PENDING'
+                                  ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+                                  : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
+                            }`}
                           >
                             {userGuest.status}
                           </span>
@@ -598,9 +628,10 @@ export default function HomePage() {
                           )}
                         </p>
                       )}
-                      {event.location && (
+                      {(event.locationAddress || event.locationUnit) && (
                         <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-1">
-                          📍 {event.location}
+                          📍 {event.locationAddress}
+                          {event.locationUnit ? `, ${event.locationUnit}` : ''}
                         </p>
                       )}
                       <Button

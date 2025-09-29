@@ -213,7 +213,9 @@ model Event {
   description          String?
   startDateTime        DateTime    // Required start date and time
   endDateTime          DateTime?   // Optional end date and time
-  location             String?
+  locationAddress      String?
+  locationUnit         String?
+  showMap              Boolean     @default(true)
   templateId           String?
   jsonContent          String?
   imagePath            String?

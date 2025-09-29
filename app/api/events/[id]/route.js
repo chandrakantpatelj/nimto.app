@@ -80,12 +80,11 @@ export async function DELETE(request, { params }) {
 
     // Check role-based access
     const accessCheck = await checkEventManagementAccess('delete events');
-    if (!accessCheck.allowed) {
-      return NextResponse.json(
-        { success: false, error: accessCheck.message },
-        { status: accessCheck.status },
-      );
+    if (accessCheck.error) {
+      return accessCheck.error;
     }
+
+    const { session } = accessCheck;
 
     // Get the event with its guests for cleanup
     const event = await prisma.event.findUnique({

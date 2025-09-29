@@ -352,10 +352,13 @@ const Events = () => {
                       </div>
                     )}
 
-                    {event.location && (
+                    {(event.locationAddress || event.locationUnit) && (
                       <div className="flex items-center text-sm text-gray-600">
                         <MapPin className="w-4 h-4 mr-2 flex-shrink-0" />
-                        <span className="line-clamp-1">{event.location}</span>
+                        <span className="line-clamp-1">
+                          {event.locationAddress}
+                          {event.locationUnit ? `, ${event.locationUnit}` : ''}
+                        </span>
                       </div>
                     )}
 

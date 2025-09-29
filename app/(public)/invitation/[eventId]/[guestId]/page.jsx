@@ -44,7 +44,7 @@ export default function PublicEventInvitationPage() {
         const errorInfo = {
           message: errorData.message || 'Guest invitation not found or invalid',
           errorType: errorData.errorType || 'UNKNOWN_ERROR',
-          originalError: errorData.error || 'Unknown error'
+          originalError: errorData.error || 'Unknown error',
         };
         throw errorInfo;
       }
@@ -53,7 +53,9 @@ export default function PublicEventInvitationPage() {
       const guestRecord = guestData.data;
 
       if (!guestRecord || guestRecord.eventId !== eventId) {
-        const error = new Error('The invitation link appears to be corrupted or invalid. Please check the link and try again.');
+        const error = new Error(
+          'The invitation link appears to be corrupted or invalid. Please check the link and try again.',
+        );
         error.errorType = 'INVALID_LINK';
         error.originalError = 'Invalid invitation link';
         throw error;
@@ -75,7 +77,7 @@ export default function PublicEventInvitationPage() {
         error: err,
         timestamp: new Date().toISOString(),
         userAgent: navigator.userAgent,
-        url: window.location.href
+        url: window.location.href,
       });
       setError(err);
     } finally {
@@ -166,52 +168,54 @@ export default function PublicEventInvitationPage() {
           return [
             'Contact the event organizer for more information',
             'Check if the event has been rescheduled',
-            'Look for alternative events on our platform'
+            'Look for alternative events on our platform',
           ];
         case 'EVENT_COMPLETED':
           return [
             'This event has already taken place',
             'Check with the organizer for future events',
             'Browse other upcoming events on our platform',
-            'Thank you for your interest in the event!'
+            'Thank you for your interest in the event!',
           ];
         case 'EVENT_REMOVED':
           return [
             'The host/organizer may have deleted this event',
             'Contact the organizer directly for updates',
             'The event may have been removed from the platform',
-            'Browse other available events'
+            'Browse other available events',
           ];
         case 'EVENT_NOT_FOUND':
           return [
             'The event may have been deleted by the host',
             'Check with the person who sent you this invitation',
             'Verify the invitation link is correct',
-            'The host account may have been removed'
+            'The host account may have been removed',
           ];
         case 'INVALID_INVITATION':
           return [
             'Double-check the invitation link',
             'Contact the event organizer for a new invitation',
-            'Make sure you\'re using the correct link'
+            "Make sure you're using the correct link",
           ];
         case 'INVALID_LINK':
           return [
             'Copy and paste the link again',
             'Check for any missing characters',
-            'Ask the organizer to resend the invitation'
+            'Ask the organizer to resend the invitation',
           ];
         default:
           return [
             'Try refreshing the page',
             'Check your internet connection',
-            'Contact support if the problem persists'
+            'Contact support if the problem persists',
           ];
       }
     };
 
     const errorType = error.errorType || 'UNKNOWN_ERROR';
-    const errorMessage = error.message || (typeof error === 'string' ? error : 'An unexpected error occurred');
+    const errorMessage =
+      error.message ||
+      (typeof error === 'string' ? error : 'An unexpected error occurred');
     const suggestions = getErrorSuggestions(errorType);
 
     return (
@@ -220,9 +224,7 @@ export default function PublicEventInvitationPage() {
           <Card className="border-0 shadow-2xl bg-white dark:bg-gray-800">
             <CardContent className="p-8 text-center">
               {/* Error Icon */}
-              <div className="text-6xl mb-6">
-                {getErrorIcon(errorType)}
-              </div>
+              <div className="text-6xl mb-6">{getErrorIcon(errorType)}</div>
 
               {/* Error Title */}
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
@@ -241,8 +243,13 @@ export default function PublicEventInvitationPage() {
                 </h3>
                 <ul className="text-left space-y-2">
                   {suggestions.map((suggestion, index) => (
-                    <li key={`suggestion-${index}-${suggestion.slice(0, 20)}`} className="flex items-start gap-3 text-blue-800 dark:text-blue-200">
-                      <span className="text-blue-500 dark:text-blue-400 mt-1">•</span>
+                    <li
+                      key={`suggestion-${index}-${suggestion.slice(0, 20)}`}
+                      className="flex items-start gap-3 text-blue-800 dark:text-blue-200"
+                    >
+                      <span className="text-blue-500 dark:text-blue-400 mt-1">
+                        •
+                      </span>
                       <span>{suggestion}</span>
                     </li>
                   ))}
@@ -268,7 +275,8 @@ export default function PublicEventInvitationPage() {
               {/* Contact Information */}
               <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-600">
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Need help? Contact our support team or reach out to the event organizer.
+                  Need help? Contact our support team or reach out to the event
+                  organizer.
                 </p>
               </div>
             </CardContent>
@@ -285,9 +293,7 @@ export default function PublicEventInvitationPage() {
           <Card className="border-0 shadow-2xl bg-white dark:bg-gray-800">
             <CardContent className="p-8 text-center">
               {/* Error Icon */}
-              <div className="text-6xl mb-6">
-                🔍
-              </div>
+              <div className="text-6xl mb-6">🔍</div>
 
               {/* Error Title */}
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
@@ -297,7 +303,9 @@ export default function PublicEventInvitationPage() {
               {/* Error Message */}
               <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
                 The invitation you're looking for doesn't exist or is no longer
-                valid. This could happen if the event has been completed, cancelled, removed by the host, or the invitation link is incorrect.
+                valid. This could happen if the event has been completed,
+                cancelled, removed by the host, or the invitation link is
+                incorrect.
               </p>
 
               {/* Suggestions */}
@@ -307,20 +315,36 @@ export default function PublicEventInvitationPage() {
                 </h3>
                 <ul className="text-left space-y-2">
                   <li className="flex items-start gap-3 text-blue-800 dark:text-blue-200">
-                    <span className="text-blue-500 dark:text-blue-400 mt-1">•</span>
-                    <span>Check with the person who sent you this invitation</span>
+                    <span className="text-blue-500 dark:text-blue-400 mt-1">
+                      •
+                    </span>
+                    <span>
+                      Check with the person who sent you this invitation
+                    </span>
                   </li>
                   <li className="flex items-start gap-3 text-blue-800 dark:text-blue-200">
-                    <span className="text-blue-500 dark:text-blue-400 mt-1">•</span>
-                    <span>Verify the invitation link is complete and correct</span>
+                    <span className="text-blue-500 dark:text-blue-400 mt-1">
+                      •
+                    </span>
+                    <span>
+                      Verify the invitation link is complete and correct
+                    </span>
                   </li>
                   <li className="flex items-start gap-3 text-blue-800 dark:text-blue-200">
-                    <span className="text-blue-500 dark:text-blue-400 mt-1">•</span>
-                    <span>Contact the event organizer for a new invitation</span>
+                    <span className="text-blue-500 dark:text-blue-400 mt-1">
+                      •
+                    </span>
+                    <span>
+                      Contact the event organizer for a new invitation
+                    </span>
                   </li>
                   <li className="flex items-start gap-3 text-blue-800 dark:text-blue-200">
-                    <span className="text-blue-500 dark:text-blue-400 mt-1">•</span>
-                    <span>The host may have deleted the event or their account</span>
+                    <span className="text-blue-500 dark:text-blue-400 mt-1">
+                      •
+                    </span>
+                    <span>
+                      The host may have deleted the event or their account
+                    </span>
                   </li>
                 </ul>
               </div>
@@ -344,7 +368,8 @@ export default function PublicEventInvitationPage() {
               {/* Contact Information */}
               <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-600">
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Need help? Contact our support team or reach out to the event organizer.
+                  Need help? Contact our support team or reach out to the event
+                  organizer.
                 </p>
               </div>
             </CardContent>
@@ -417,14 +442,15 @@ export default function PublicEventInvitationPage() {
                 {userGuest && (
                   <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20">
                     <div
-                      className={`w-2 h-2 rounded-full ${userGuest.status === 'CONFIRMED'
+                      className={`w-2 h-2 rounded-full ${
+                        userGuest.status === 'CONFIRMED'
                           ? 'bg-green-400'
                           : userGuest.status === 'PENDING'
                             ? 'bg-yellow-400'
                             : userGuest.status === 'DECLINED'
                               ? 'bg-red-400'
                               : 'bg-gray-400'
-                        }`}
+                      }`}
                     ></div>
                     <span className="text-white text-sm font-medium capitalize">
                       {userGuest.status || 'Pending'}
@@ -446,10 +472,9 @@ export default function PublicEventInvitationPage() {
       <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
         {/* Portrait Layout Grid - Image Left, Details Right */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
- 
           {/* Left Column - Event Image */}
           <div className="order-1 lg:order-1">
-            <div className="relative lg:sticky lg:top-6">                            
+            <div className="relative lg:sticky lg:top-6">
               <div className="border-2  rounded-lg bg-white dark:bg-gray-800 shadow-lg">
                 {event.s3ImageUrl ? (
                   <div className="relative w-full aspect-[3/4] bg-gray-50 dark:bg-gray-900 flex items-center justify-center rounded-lg overflow-hidden">
@@ -461,7 +486,9 @@ export default function PublicEventInvitationPage() {
                   </div>
                 ) : (
                   /* Fallback when no image */
-                  <div className={`relative w-full aspect-[3/4] ${getFallbackGradientClasses(category)} flex items-center justify-center rounded-lg`}>
+                  <div
+                    className={`relative w-full aspect-[3/4] ${getFallbackGradientClasses(category)} flex items-center justify-center rounded-lg`}
+                  >
                     <div className="text-center text-white p-6">
                       <div className="mb-4 text-5xl sm:text-6xl drop-shadow-lg">
                         {categoryTheme.icon}
@@ -475,7 +502,6 @@ export default function PublicEventInvitationPage() {
 
           {/* Right Column - Event Details & RSVP */}
           <div className="order-2 lg:order-2 space-y-6">
-
             {/* Event Details Card */}
             <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-blue-50/30 dark:from-gray-800 dark:to-slate-800/50 dark:border-gray-700">
               <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-t-lg">
@@ -518,7 +544,7 @@ export default function PublicEventInvitationPage() {
                       </div>
                     )}
 
-                    {event.location && (
+                    {(event.locationAddress || event.locationUnit) && (
                       <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 rounded-lg border border-red-100 dark:border-red-800 shadow-sm hover:shadow-md transition-all duration-300">
                         <div className="p-3 bg-gradient-to-br from-red-500 to-red-600 rounded-lg shadow-lg">
                           <MapPin className="h-5 w-5 text-white" />
@@ -528,7 +554,10 @@ export default function PublicEventInvitationPage() {
                             Location
                           </span>
                           <p className="text-red-700 dark:text-red-200 font-medium">
-                            {event.location}
+                            {event.locationAddress}
+                            {event.locationUnit
+                              ? `, ${event.locationUnit}`
+                              : ''}
                           </p>
                         </div>
                       </div>
@@ -580,14 +609,15 @@ export default function PublicEventInvitationPage() {
                     </span>
                     <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-3 py-1.5">
                       <div
-                        className={`w-2 h-2 rounded-full ${userGuest.status === 'CONFIRMED'
+                        className={`w-2 h-2 rounded-full ${
+                          userGuest.status === 'CONFIRMED'
                             ? 'bg-green-400'
                             : userGuest.status === 'PENDING'
                               ? 'bg-yellow-400'
                               : userGuest.status === 'DECLINED'
                                 ? 'bg-red-400'
                                 : 'bg-gray-400'
-                          }`}
+                        }`}
                       ></div>
                       <span className="text-white text-xs font-medium capitalize">
                         {userGuest.status || 'Pending'}
