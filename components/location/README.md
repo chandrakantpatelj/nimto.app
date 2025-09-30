@@ -1,55 +1,73 @@
 # Location Components
 
-This directory contains Google Places API integration components for location search and autocomplete functionality.
+This directory contains Google Places API integration components for location search and map functionality.
 
 ## Components
 
-### GooglePlacesAutocomplete
+### LocationDrawer
 
-A simple Google Places autocomplete component for location search.
+A comprehensive location selection component with autocomplete and map preview.
+
+**Features:**
+
+- Google Places autocomplete
+- Interactive map preview
+- Address and unit input
+- Show/hide map toggle
+
+**Usage:**
+
+```jsx
+import LocationDrawer from '@/components/location/location-drawer';
+
+<LocationDrawer
+  locationAddress={address}
+  locationUnit={unit}
+  onChange={(locationData) => {
+    console.log(locationData);
+  }}
+  placeholder="Enter a location"
+/>;
+```
+
+### GoogleMap
+
+A Google Maps component for displaying locations with full interaction support.
+
+**Props:**
+
+- `center` (object): Map center coordinates {lat, lng}
+- `className` (string): Additional CSS classes
+
+**Usage:**
+
+```jsx
+import { GoogleMap } from '@/components/location/google-map';
+
+<GoogleMap center={{ lat: 19.076, lng: 72.8777 }} className="h-64 w-full" />;
+```
+
+### PlacesAutocomplete
+
+A Google Places autocomplete component for location search.
 
 **Props:**
 
 - `value` (string): Current location value
 - `onChange` (function): Callback when location changes
-- `placeholder` (string): Input placeholder text
-- `className` (string): Additional CSS classes
-- `disabled` (boolean): Whether input is disabled
-
-**Usage:**
-
-```jsx
-import { GooglePlacesAutocomplete } from '@/components/location';
-
-<GooglePlacesAutocomplete
-  value={location}
-  onChange={setLocation}
-  placeholder="Enter a location"
-/>;
-```
-
-### AdvancedGooglePlacesAutocomplete
-
-An enhanced version with additional features like map preview and place details.
-
-**Props:**
-
-- All props from `GooglePlacesAutocomplete`
 - `onPlaceSelect` (function): Callback with detailed place data
-- `showMap` (boolean): Show map preview of selected location
-- `mapCenter` (object): Default map center coordinates
+- `placeholder` (string): Input placeholder text
 
 **Usage:**
 
 ```jsx
-import { AdvancedGooglePlacesAutocomplete } from '@/components/location';
+import { PlacesAutocompleteWrapper } from '@/components/location/places-autocomplete';
 
-<AdvancedGooglePlacesAutocomplete
+<PlacesAutocompleteWrapper
   value={location}
   onChange={setLocation}
   onPlaceSelect={(place) => console.log(place)}
-  showMap={true}
-  placeholder="Enter a location"
+  placeholder="Search for a location..."
 />;
 ```
 

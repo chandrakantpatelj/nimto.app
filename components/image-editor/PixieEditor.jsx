@@ -1,5 +1,6 @@
 'use client';
 
+import { toAbsoluteUrl } from '@/lib/helpers';
 import {
   forwardRef,
   useEffect,
@@ -378,6 +379,27 @@ const PixieEditor = forwardRef(
             nav: {
               replaceDefault: true,
               items: NAV_ITEMS,
+          
+            },
+            menubar: {
+              replaceDefaultItems: true,
+              items: [
+                {
+                  type: 'image',
+                  src: toAbsoluteUrl('/media/app/nimto-main-logo.svg'),
+                  align: 'left',
+                },
+                {
+                  type: 'undoWidget',
+                  align: 'right',
+                },
+                {
+                  type: 'zoomWidget',
+                  align: 'center',
+                  desktopOnly: true,
+                },
+                
+              ],
             },
             openImageDialog: { show: false },
           },
