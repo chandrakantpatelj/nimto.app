@@ -82,6 +82,14 @@ export async function POST(request) {
       status,
       guests = [],
       sendInvitations = false,
+      // Event features
+      privateGuestList = false,
+      allowPlusOnes = false,
+      allowMaybeRSVP = true,
+      allowFamilyHeadcount = false,
+      limitEventCapacity = false,
+      maxEventCapacity = 0,
+      maxPlusOnes = 0,
     } = body;
 
     // Validate required fields
@@ -202,6 +210,14 @@ export async function POST(request) {
           status && typeof status === 'string' ? status.toUpperCase() : 'DRAFT',
         createdByUserId: session.user.id, // This is correct - it's setting from session
         isTrashed: false,
+        // Event features
+        privateGuestList,
+        allowPlusOnes,
+        allowMaybeRSVP,
+        allowFamilyHeadcount,
+        limitEventCapacity,
+        maxEventCapacity,
+        maxPlusOnes,
       },
       include: {
         User: {

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useEventActions, useEvents } from '@/store/hooks';
-import { Search, Settings, UserPlus, X } from 'lucide-react';
+import { Search, Settings, UserPlus, X, Lock, Users, Calendar, Baby, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import GuestSettingsDrawer from './GuestSettingsDrawer';
@@ -98,7 +98,10 @@ function Step3() {
   return (
     <div className="flex flex-1 overflow-hidden bg-background">
       <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left Column - Guest Management */}
+            <div className="lg:col-span-2">
           {/* Main Card */}
           <div className="bg-card rounded-xl shadow-sm border border-border p-4 sm:p-6">
             <div className="space-y-6 sm:space-y-8">
@@ -377,6 +380,160 @@ function Step3() {
                     </p>
                   </div>
                 )}
+              </div>
+            </div>
+          </div>
+            </div>
+
+            {/* Right Column - Event Features */}
+            <div className="lg:col-span-1">
+              <div className="bg-card rounded-xl shadow-sm border border-border p-4 sm:p-6">
+                <h2 className="text-lg sm:text-xl font-bold text-foreground dark:text-white mb-6">
+                Guest Settings
+                </h2>
+                
+                <div className="space-y-4">
+                  {/* Private Guest List */}
+                  <div className="flex items-start space-x-3 p-3 bg-muted/30 rounded-lg border border-border">
+                    <div className="p-2 bg-blue-50 dark:bg-blue-950/50 rounded-lg mt-0.5">
+                      <Lock className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <h3 className="text-sm font-medium text-foreground">
+                            Private Guest List
+                          </h3>
+                          <p className="text-xs mt-1 text-muted-foreground">
+                            Only you can see the full guest list.
+                          </p>
+                        </div>
+                        <div className={`w-10 h-5 rounded-full transition-colors ${
+                          eventData?.privateGuestList ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'
+                        }`}>
+                          <div className={`w-4 h-4 bg-white rounded-full shadow transform transition-transform ${
+                            eventData?.privateGuestList ? 'translate-x-5' : 'translate-x-0.5'
+                          } mt-0.5`} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Allow Plus Ones */}
+                  <div className="flex items-start space-x-3 p-3 bg-muted/30 rounded-lg border border-border">
+                    <div className="p-2 bg-green-50 dark:bg-green-950/50 rounded-lg mt-0.5">
+                      <Users className="w-4 h-4 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <h3 className="text-sm font-medium text-foreground">
+                            Allow 'Plus Ones'
+                          </h3>
+                          <p className="text-xs mt-1 text-muted-foreground">
+                            Let guests specify how many people they're bringing.
+                          </p>
+                        </div>
+                        <div className={`w-10 h-5 rounded-full transition-colors ${
+                          eventData?.allowPlusOnes ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'
+                        }`}>
+                          <div className={`w-4 h-4 bg-white rounded-full shadow transform transition-transform ${
+                            eventData?.allowPlusOnes ? 'translate-x-5' : 'translate-x-0.5'
+                          } mt-0.5`} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Allow Maybe RSVP */}
+                  <div className="flex items-start space-x-3 p-3 bg-muted/30 rounded-lg border border-border">
+                    <div className="p-2 bg-purple-50 dark:bg-purple-950/50 rounded-lg mt-0.5">
+                      <Calendar className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <h3 className="text-sm font-medium text-foreground">
+                            Allow 'Maybe' RSVP
+                          </h3>
+                          <p className="text-xs mt-1 text-muted-foreground">
+                            Let guests RSVP 'Maybe' if they aren't ready to commit.
+                          </p>
+                        </div>
+                        <div className={`w-10 h-5 rounded-full transition-colors ${
+                          eventData?.allowMaybeRSVP ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'
+                        }`}>
+                          <div className={`w-4 h-4 bg-white rounded-full shadow transform transition-transform ${
+                            eventData?.allowMaybeRSVP ? 'translate-x-5' : 'translate-x-0.5'
+                          } mt-0.5`} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Family Headcount */}
+                  <div className="flex items-start space-x-3 p-3 bg-muted/30 rounded-lg border border-border">
+                    <div className="p-2 bg-purple-50 dark:bg-purple-950/50 rounded-lg mt-0.5">
+                      <Baby className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <h3 className="text-sm font-medium text-foreground">
+                            Family Headcount
+                          </h3>
+                          <p className="text-xs mt-1 text-muted-foreground">
+                            Prompt for adults and kids attending.
+                          </p>
+                        </div>
+                        <div className={`w-10 h-5 rounded-full transition-colors ${
+                          eventData?.allowFamilyHeadcount ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'
+                        }`}>
+                          <div className={`w-4 h-4 bg-white rounded-full shadow transform transition-transform ${
+                            eventData?.allowFamilyHeadcount ? 'translate-x-5' : 'translate-x-0.5'
+                          } mt-0.5`} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Limit Event Capacity */}
+                  <div className="flex items-start space-x-3 p-3 bg-muted/30 rounded-lg border border-border">
+                    <div className="p-2 bg-orange-50 dark:bg-orange-950/50 rounded-lg mt-0.5">
+                      <Shield className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <h3 className="text-sm font-medium text-foreground">
+                            Limit Event Capacity
+                          </h3>
+                          <p className="text-xs mt-1 text-muted-foreground">
+                            Set a max number of guests who can RSVP 'Yes'.
+                          </p>
+                        </div>
+                        <div className={`w-10 h-5 rounded-full transition-colors ${
+                          eventData?.limitEventCapacity ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'
+                        }`}>
+                          <div className={`w-4 h-4 bg-white rounded-full shadow transform transition-transform ${
+                            eventData?.limitEventCapacity ? 'translate-x-5' : 'translate-x-0.5'
+                          } mt-0.5`} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6 pt-4 border-t border-border">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsDrawerOpen(true)}
+                    className="w-full"
+                  >
+                    <Settings className="w-4 h-4 mr-2" />
+                    Configure Settings
+                  </Button>
+                </div>
               </div>
             </div>
           </div>

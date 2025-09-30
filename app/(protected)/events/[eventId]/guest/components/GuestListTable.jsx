@@ -39,7 +39,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { ConfirmationDialog } from './confirmation-dialog';
 import { EditGuestModal } from './edit-guest-modal';
 
-const GuestListTable = ({ event, searchQuery, onGuestsUpdate }) => {
+const GuestListTable = ({ event, searchQuery, onGuestsUpdate, selectedGuests, onSelectedGuestsChange }) => {
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 10,
@@ -62,6 +62,15 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate }) => {
       fetchGuests();
     }
   }, [event?.id]);
+
+  // Sync rowSelection with selectedGuests
+  useEffect(() => {
+    const newRowSelection = {};
+    selectedGuests.forEach(guestId => {
+      newRowSelection[guestId] = true;
+    });
+    setRowSelection(newRowSelection);
+  }, [selectedGuests]);
 
   const fetchGuests = async () => {
     try {
@@ -158,26 +167,26 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate }) => {
   const getStatusIcon = (status) => {
     switch (status) {
       case 'CONFIRMED':
-        return <CheckCircle className="size-4 text-green-600" />;
+        return <CheckCircle className="size-4 text-green-600 dark:text-green-400" />;
       case 'DECLINED':
-        return <XCircle className="size-4 text-red-600" />;
+        return <XCircle className="size-4 text-red-600 dark:text-red-400" />;
       case 'MAYBE':
-        return <HelpCircle className="size-4 text-yellow-600" />;
+        return <HelpCircle className="size-4 text-yellow-600 dark:text-yellow-400" />;
       default:
-        return <Clock className="size-4 text-gray-600" />;
+        return <Clock className="size-4 text-gray-600 dark:text-gray-400" />;
     }
   };
 
   const getStatusColor = (status) => {
     switch (status) {
       case 'CONFIRMED':
-        return 'bg-green-100 text-green-800 border-green-200';
+        return 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200 border-green-200 dark:border-green-700';
       case 'DECLINED':
-        return 'bg-red-100 text-red-800 border-red-200';
+        return 'bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200 border-red-200 dark:border-red-700';
       case 'MAYBE':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+        return 'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200 border-yellow-200 dark:border-yellow-700';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-600';
     }
   };
 
@@ -204,14 +213,14 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate }) => {
 
       cell: ({ row }) => (
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 dark:from-blue-600 dark:to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
             {row.original.name?.charAt(0)?.toUpperCase() || '?'}
           </div>
           <div className="flex flex-col">
-            <span className="font-medium text-gray-900">
+            <span className="font-medium text-gray-900 dark:text-white">
               {row.original.name}
             </span>
-            <span className="text-sm text-gray-500">{row.original.email}</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">{row.original.email}</span>
           </div>
         </div>
       ),
@@ -258,10 +267,10 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate }) => {
         return (
           <div className="flex items-center gap-2">
             <div
-              className={`w-2 h-2 rounded-full ${isSent ? 'bg-green-500' : 'bg-gray-400'}`}
+              className={`w-2 h-2 rounded-full ${isSent ? 'bg-green-500 dark:bg-green-400' : 'bg-gray-400 dark:bg-gray-500'}`}
             ></div>
             <span
-              className={`font-medium ${isSent ? 'text-green-700' : 'text-gray-600'}`}
+              className={`font-medium ${isSent ? 'text-green-700 dark:text-green-300' : 'text-gray-600 dark:text-gray-400'}`}
             >
               {isSent ? 'Sent' : 'Not Sent'}
             </span>
@@ -285,13 +294,13 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate }) => {
       cell: ({ row }) => (
         <div className="max-w-xs">
           {row.original.response ? (
-            <div className="bg-gray-50 rounded-lg p-2">
-              <p className="text-sm text-gray-700 line-clamp-2">
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-2">
+              <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
                 {row.original.response}
               </p>
             </div>
           ) : (
-            <span className="text-gray-400 italic">No response</span>
+            <span className="text-gray-400 dark:text-gray-500 italic">No response</span>
           )}
         </div>
       ),
@@ -306,7 +315,7 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate }) => {
       id: 'actions',
       accessorFn: (row) => row.id,
       header: () => (
-        <span className="text-sm font-medium text-gray-700">Actions</span>
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Actions</span>
       ),
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
@@ -315,7 +324,7 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate }) => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0 hover:bg-gray-100"
+                className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
@@ -332,7 +341,7 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate }) => {
                 onClick={() =>
                   handleDeleteGuest(row.original.id, row.original.name)
                 }
-                className="cursor-pointer text-red-600 focus:text-red-600"
+                className="cursor-pointer text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400"
               >
                 <Trash2 className="mr-2 h-4 w-4" />
                 Delete
@@ -364,7 +373,16 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate }) => {
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
     enableRowSelection: true,
-    onRowSelectionChange: setRowSelection,
+    onRowSelectionChange: (updaterOrValue) => {
+      const newSelection = typeof updaterOrValue === 'function' 
+        ? updaterOrValue(rowSelection) 
+        : updaterOrValue;
+      setRowSelection(newSelection);
+      
+      // Convert row selection to array of selected guest IDs
+      const selectedIds = Object.keys(newSelection).filter(key => newSelection[key]);
+      onSelectedGuestsChange(selectedIds);
+    },
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -373,10 +391,10 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate }) => {
 
   if (loading) {
     return (
-      <Card className="p-6">
+      <Card className="p-6 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
         <div className="flex flex-col items-center justify-center h-48 space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600"></div>
-          <p className="text-gray-600 text-lg">Loading guests...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 dark:border-blue-800 border-t-blue-600 dark:border-t-blue-400"></div>
+          <p className="text-gray-600 dark:text-gray-300 text-lg">Loading guests...</p>
         </div>
       </Card>
     );
@@ -384,13 +402,13 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate }) => {
 
   return (
     <>
-      <Card className="p-6 bg-gradient-to-r from-gray-50 to-slate-50 border-gray-200">
+      <Card className="p-6 bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-800 dark:to-slate-800 border-gray-200 dark:border-gray-700">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
                 <svg
-                  className="w-4 h-4 text-gray-600"
+                  className="w-4 h-4 text-gray-600 dark:text-gray-400"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -403,14 +421,14 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate }) => {
                   />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                 Guest List
               </h3>
             </div>
             <div className="flex items-center gap-2">
               <Badge
                 variant="outline"
-                className="bg-blue-50 text-blue-700 border-blue-200"
+                className="bg-blue-50 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700"
               >
                 {filteredData.length}{' '}
                 {filteredData.length === 1 ? 'Guest' : 'Guests'}
@@ -428,7 +446,7 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate }) => {
               cellBorder: false,
             }}
           >
-            <Card className="border-0 shadow-sm">
+            <Card className="border-0 shadow-sm bg-white dark:bg-gray-800">
               <CardTable>
                 <ScrollArea>
                   <DataGridTable />
