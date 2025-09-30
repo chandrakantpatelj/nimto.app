@@ -12,7 +12,7 @@ export function CommonFooter() {
   }, []);
 
   return (
-    <footer className="footer border-t bg-blue-50 mt-auto">
+    <footer className="footer border-t bg-background/50 backdrop-blur-sm mt-auto">
       <Container>
         {/* Main Footer Content */}
         <div className="py-8 md:py-12">
