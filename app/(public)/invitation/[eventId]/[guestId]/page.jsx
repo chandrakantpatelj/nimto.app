@@ -430,11 +430,11 @@ export default function PublicEventInvitationPage() {
               {/* Title - Center on larger screens, left-aligned on mobile */}
               <div className="text-center sm:flex-1">
                 <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
-                  You're Invited! {categoryTheme.icon}
+                  You're Invited!
                 </h1>
-                <p className="text-blue-100 text-sm sm:text-base font-medium mt-1">
+                {/* <p className="text-blue-100 text-sm sm:text-base font-medium mt-1">
                   ✨ {categoryTheme.name} Event Invitation
-                </p>
+                </p> */}
               </div>
 
               {/* Status Badge - Hidden on mobile, shown in guest card instead */}

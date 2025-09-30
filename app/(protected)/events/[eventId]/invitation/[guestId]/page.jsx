@@ -170,7 +170,7 @@ export default function EventInvitationPage() {
             {/* Center - Title */}
             <div className="flex-1 text-center px-4">
               <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
-                You're Invited! 🎉
+                You're Invited1! 🎉
               </h1>
               <p className="text-blue-100 text-xs sm:text-sm font-medium mt-1">
                 ✨ Special Event Invitation

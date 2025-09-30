@@ -160,6 +160,14 @@ export async function POST(request) {
       jsonContent,
       imagePath,
       status,
+      // Event features
+      privateGuestList = false,
+      allowPlusOnes = false,
+      allowMaybeRSVP = true,
+      allowFamilyHeadcount = false,
+      limitEventCapacity = false,
+      maxEventCapacity = 0,
+      maxPlusOnes = 0,
     } = body;
 
     // Validate required fields
@@ -199,6 +207,14 @@ export async function POST(request) {
         status: status || 'DRAFT',
         createdByUserId: session.user.id, // Automatically set from session
         isTrashed: false,
+        // Event features
+        privateGuestList,
+        allowPlusOnes,
+        allowMaybeRSVP,
+        allowFamilyHeadcount,
+        limitEventCapacity,
+        maxEventCapacity,
+        maxPlusOnes,
       },
       include: {
         creator: {

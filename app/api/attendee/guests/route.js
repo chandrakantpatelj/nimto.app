@@ -156,11 +156,25 @@ export async function PUT(request) {
       );
     }
 
-    // Find the guest record
+    // Find the guest record with event details
     const guest = await prisma.guest.findFirst({
       where: {
         email: userEmail,
         eventId: eventId,
+      },
+      include: {
+        event: {
+          select: {
+            id: true,
+            title: true,
+            allowPlusOnes: true,
+            maxPlusOnes: true,
+            allowMaybeRSVP: true,
+            allowFamilyHeadcount: true,
+            limitEventCapacity: true,
+            maxEventCapacity: true,
+          },
+        },
       },
     });
 
@@ -169,6 +183,68 @@ export async function PUT(request) {
         { success: false, error: 'Guest record not found' },
         { status: 404 },
       );
+    }
+
+    // Validate against event settings
+    const event = guest.event;
+
+    // Validate Maybe RSVP
+    if (newStatus === 'MAYBE' && !event.allowMaybeRSVP) {
+      return NextResponse.json(
+        { success: false, error: 'Maybe RSVP is not allowed for this event' },
+        { status: 400 },
+      );
+    }
+
+    // Validate Plus Ones
+    if (plusOnes !== undefined) {
+      if (!event.allowPlusOnes && plusOnes > 0) {
+        return NextResponse.json(
+          { success: false, error: 'Plus ones are not allowed for this event' },
+          { status: 400 },
+        );
+      }
+      if (event.allowPlusOnes && plusOnes > (event.maxPlusOnes || 0)) {
+        return NextResponse.json(
+          { success: false, error: `Plus ones cannot exceed ${event.maxPlusOnes}` },
+          { status: 400 },
+        );
+      }
+    }
+
+    // Validate Family Headcount
+    if (adults !== undefined || children !== undefined) {
+      if (!event.allowFamilyHeadcount && (adults > 1 || children > 0)) {
+        return NextResponse.json(
+          { success: false, error: 'Family headcount is not allowed for this event' },
+          { status: 400 },
+        );
+      }
+      if (event.allowFamilyHeadcount) {
+        if (adults !== undefined && adults < 1) {
+          return NextResponse.json(
+            { success: false, error: 'At least 1 adult is required' },
+            { status: 400 },
+          );
+        }
+        if (children !== undefined && children < 0) {
+          return NextResponse.json(
+            { success: false, error: 'Children count cannot be negative' },
+            { status: 400 },
+          );
+        }
+      }
+    }
+
+    // Validate Event Capacity
+    if (event.limitEventCapacity && event.maxEventCapacity) {
+      const totalAttendees = (adults || guest.adults) + (children || guest.children) + (plusOnes || guest.plusOnes);
+      if (totalAttendees > event.maxEventCapacity) {
+        return NextResponse.json(
+          { success: false, error: `Total attendees (${totalAttendees}) cannot exceed event capacity (${event.maxEventCapacity})` },
+          { status: 400 },
+        );
+      }
     }
 
     // Convert response to proper enum value
