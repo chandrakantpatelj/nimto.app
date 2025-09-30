@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
-import { Autocomplete, GoogleMap, LoadScript } from '@react-google-maps/api';
+import React, { useState } from 'react';
 import { Edit3, Map, MapPin, Save, Trash2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -9,11 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-
-const libraries = ['places'];
-
-// Global script loading state to prevent duplicate loads
-let isGoogleMapsLoaded = false;
+import { SimpleAutocomplete } from './simple-autocomplete';
+import { SimpleGoogleMap } from './simple-google-map';
 
 export default function LocationManager({
   value = '',
@@ -21,488 +17,222 @@ export default function LocationManager({
   placeholder = 'Enter a location',
   className = '',
   disabled = false,
+  showBorder = true,
+  initialShowMap = true,
+  initialMapCenter = { lat: 19.076, lng: 72.8777 },
   ...props
 }) {
-  const [autocomplete, setAutocomplete] = useState(null);
-  const [isLoaded, setIsLoaded] = useState(isGoogleMapsLoaded);
-  const [hasError, setHasError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [locationDetails, setLocationDetails] = useState({
     address: value,
     unit: '',
-    showMap: true,
+    showMap: initialShowMap,
   });
-  const [selectedPlace, setSelectedPlace] = useState(null);
+  const [mapCenter, setMapCenter] = useState(initialMapCenter);
 
-  // Check if mobile
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
+  const handlePlaceSelect = (place) => {
+    if (place && place.geometry && place.geometry.location) {
+      const newAddress = place.formatted_address || place.name || '';
+      const newMapCenter = {
+        lat: place.geometry.location.lat(),
+        lng: place.geometry.location.lng(),
+      };
 
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+      setLocationDetails((prev) => ({
+        ...prev,
+        address: newAddress,
+      }));
+      setMapCenter(newMapCenter);
 
-  // Check if Google Maps is already loaded on mount
-  useEffect(() => {
-    if (isGoogleMapsLoaded) {
-      setIsLoaded(true);
-    }
-  }, []);
-
-  // Triggered when user selects a place
-  const onPlaceChanged = useCallback(() => {
-    if (autocomplete !== null) {
-      const place = autocomplete.getPlace();
-
-      if (place && place.formatted_address) {
-        const placeData = {
-          formatted_address: place.formatted_address,
-          name: place.name,
-          place_id: place.place_id,
-          geometry: place.geometry,
-          address_components: place.address_components,
-          types: place.types,
-          url: place.url,
-          vicinity: place.vicinity,
-        };
-
-        setSelectedPlace(placeData);
-        setLocationDetails((prev) => ({
-          ...prev,
-          address: place.formatted_address,
-        }));
-        onChange(place.formatted_address);
+      if (onChange) {
+        onChange(newAddress);
       }
     }
-  }, [autocomplete, onChange]);
-
-  const onLoad = useCallback((ac) => {
-    setAutocomplete(ac);
-    setIsLoaded(true);
-  }, []);
-
-  const onScriptLoad = useCallback(() => {
-    setIsLoaded(true);
-    setHasError(false);
-  }, []);
-
-  const onScriptError = useCallback((error) => {
-    console.error('Google Maps API Error:', error);
-    setHasError(true);
-    setErrorMessage(
-      'Failed to load Google Maps. Please check your API key configuration.',
-    );
-  }, []);
-
-  const handleInputChange = (e) => {
-    const newValue = e.target.value;
-    setLocationDetails((prev) => ({
-      ...prev,
-      address: newValue,
-    }));
-    onChange(newValue);
   };
 
-  const handleUnitChange = (e) => {
+  const handleAddressChange = (address) => {
     setLocationDetails((prev) => ({
       ...prev,
-      unit: e.target.value,
+      address,
+    }));
+
+    if (onChange) {
+      onChange(address);
+    }
+  };
+
+  const handleUnitChange = (unit) => {
+    setLocationDetails((prev) => ({
+      ...prev,
+      unit,
     }));
   };
 
-  const handleShowMapChange = (checked) => {
+  const handleShowMapToggle = (showMap) => {
     setLocationDetails((prev) => ({
       ...prev,
-      showMap: checked,
+      showMap,
     }));
   };
 
   const handleSave = () => {
-    // Save the location details
-    const fullLocation = locationDetails.unit
-      ? `${locationDetails.address}, ${locationDetails.unit}`
-      : locationDetails.address;
-
-    onChange(fullLocation);
-    setIsExpanded(false);
+    setIsDrawerOpen(false);
   };
 
   const handleClear = () => {
     setLocationDetails({
       address: '',
       unit: '',
-      showMap: true,
+      showMap: initialShowMap,
     });
-    setSelectedPlace(null);
-    onChange('');
-    setIsExpanded(false);
+    setMapCenter(initialMapCenter);
+
+    if (onChange) {
+      onChange('');
+    }
   };
-
-  const handleToggleExpanded = () => {
-    setIsExpanded(!isExpanded);
-  };
-
-  // Fallback to regular input if no API key
-  if (!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY) {
-    return (
-      <div className={cn('relative', className)}>
-        <div className="relative">
-          <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
-          <input
-            type="text"
-            placeholder={placeholder}
-            value={value}
-            onChange={handleInputChange}
-            disabled={disabled}
-            className="w-full h-12 pl-12 pr-4 text-base border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
-            {...props}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  // If Google Maps is already loaded, render the autocomplete directly
-  if (isGoogleMapsLoaded) {
-    return (
-      <div className={cn('space-y-4', className)}>
-        {/* Location Input Field */}
-        <div className="relative">
-          <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
-          <Autocomplete
-            onLoad={onLoad}
-            onPlaceChanged={onPlaceChanged}
-            options={{
-              types: ['establishment', 'geocode'],
-              fields: [
-                'formatted_address',
-                'name',
-                'place_id',
-                'geometry',
-                'address_components',
-                'types',
-                'url',
-                'vicinity',
-              ],
-            }}
-          >
-            <input
-              type="text"
-              placeholder={placeholder}
-              value={locationDetails.address}
-              onChange={handleInputChange}
-              disabled={disabled}
-              className="w-full h-12 pl-12 pr-12 text-base border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
-              {...props}
-            />
-          </Autocomplete>
-          <button
-            type="button"
-            onClick={handleToggleExpanded}
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-          >
-            <Edit3 className="h-4 w-4 text-gray-400" />
-          </button>
-        </div>
-
-        {/* Expanded Location Details */}
-        {isExpanded && (
-          <div
-            className={cn(
-              'border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800',
-              isMobile ? 'fixed inset-4 z-50 overflow-y-auto' : 'relative',
-            )}
-          >
-            {isMobile && (
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">Location</h3>
-                <button
-                  onClick={() => setIsExpanded(false)}
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-            )}
-
-            <div className="space-y-4">
-              {/* Address Field */}
-              <div>
-                <Label className="text-sm font-medium mb-2 block">
-                  Address
-                </Label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    value={locationDetails.address}
-                    onChange={handleInputChange}
-                    placeholder="Enter address"
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-
-              {/* Unit Field */}
-              <div>
-                <Label className="text-sm font-medium mb-2 block">
-                  APT / UNIT
-                </Label>
-                <div className="relative">
-                  <Input
-                    value={locationDetails.unit}
-                    onChange={handleUnitChange}
-                    placeholder="Enter unit number"
-                    className="pr-10"
-                  />
-                  {locationDetails.unit && (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setLocationDetails((prev) => ({ ...prev, unit: '' }))
-                      }
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-                    >
-                      <X className="h-4 w-4 text-gray-400" />
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Show Map Toggle */}
-              <div className="flex items-center justify-between">
-                <Label className="text-sm font-medium">SHOW MAP</Label>
-                <Switch
-                  checked={locationDetails.showMap}
-                  onCheckedChange={handleShowMapChange}
-                />
-              </div>
-
-              {/* Map Preview */}
-              {locationDetails.showMap &&
-                selectedPlace &&
-                selectedPlace.geometry && (
-                  <div className="h-48 w-full rounded-lg overflow-hidden border border-gray-300">
-                    <GoogleMap
-                      mapContainerStyle={{ width: '100%', height: '100%' }}
-                      center={selectedPlace.geometry.location}
-                      zoom={15}
-                      options={{
-                        disableDefaultUI: true,
-                        zoomControl: true,
-                      }}
-                    >
-                      {/* You can add markers here if needed */}
-                    </GoogleMap>
-                  </div>
-                )}
-
-              {/* Action Buttons */}
-              <div className="flex gap-3 pt-4">
-                <Button
-                  onClick={handleSave}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  Save
-                </Button>
-                <Button
-                  onClick={handleClear}
-                  variant="outline"
-                  className="flex-1 text-red-600 border-red-600 hover:bg-red-50"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Clear location
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Mobile Overlay */}
-        {isMobile && isExpanded && (
-          <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-40"
-            onClick={() => setIsExpanded(false)}
-          />
-        )}
-      </div>
-    );
-  }
 
   return (
-    <LoadScript
-      googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
-      libraries={libraries}
-      onLoad={onScriptLoad}
-      onError={onScriptError}
-      preventGoogleFontsLoading={true}
-    >
-      <div className={cn('space-y-4', className)}>
-        {/* Location Input Field */}
+    <div className={cn('relative', className)} {...props}>
+      {/* Main Input Field */}
+      <div
+        className={cn(
+          'relative cursor-pointer',
+          showBorder && 'border border-gray-300 rounded-lg',
+          disabled && 'opacity-50 cursor-not-allowed',
+        )}
+        onClick={() => !disabled && setIsDrawerOpen(true)}
+      >
         <div className="relative">
-          <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
-          <Autocomplete
-            onLoad={onLoad}
-            onPlaceChanged={onPlaceChanged}
-            options={{
-              types: ['establishment', 'geocode'],
-              fields: [
-                'formatted_address',
-                'name',
-                'place_id',
-                'geometry',
-                'address_components',
-                'types',
-                'url',
-                'vicinity',
-              ],
-            }}
-          >
-            <input
-              type="text"
-              placeholder={placeholder}
-              value={locationDetails.address}
-              onChange={handleInputChange}
-              disabled={disabled}
-              className="w-full h-12 pl-12 pr-12 text-base border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
-              {...props}
-            />
-          </Autocomplete>
-          <button
-            type="button"
-            onClick={handleToggleExpanded}
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-          >
-            <Edit3 className="h-4 w-4 text-gray-400" />
-          </button>
+          <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            value={value}
+            placeholder={placeholder}
+            readOnly
+            disabled={disabled}
+            className="pl-10 h-12 text-base cursor-pointer"
+          />
+          <Edit3 className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
         </div>
+      </div>
 
-        {/* Expanded Location Details */}
-        {isExpanded && (
-          <div
-            className={cn(
-              'border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800',
-              isMobile ? 'fixed inset-4 z-50 overflow-y-auto' : 'relative',
-            )}
-          >
-            {isMobile && (
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">Location</h3>
-                <button
-                  onClick={() => setIsExpanded(false)}
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+      {/* Drawer Overlay */}
+      {isDrawerOpen && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center space-x-2">
+                <Map className="h-5 w-5 text-blue-600" />
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  Location Manager
+                </h2>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsDrawerOpen(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-6">
+              {/* Address Input */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor="address"
+                  className="text-sm font-medium text-gray-700 dark:text-gray-300"
                 >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-            )}
-
-            <div className="space-y-4">
-              {/* Address Field */}
-              <div>
-                <Label className="text-sm font-medium mb-2 block">
-                  Address
+                  Address *
                 </Label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    value={locationDetails.address}
-                    onChange={handleInputChange}
-                    placeholder="Enter address"
-                    className="pl-10"
-                  />
-                </div>
+                <SimpleAutocomplete
+                  value={locationDetails.address || ''}
+                  onChange={handleAddressChange}
+                  onPlaceSelect={handlePlaceSelect}
+                  placeholder="Enter a location"
+                  className="w-full"
+                />
               </div>
 
-              {/* Unit Field */}
-              <div>
-                <Label className="text-sm font-medium mb-2 block">
-                  APT / UNIT
+              {/* Unit Input */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor="unit"
+                  className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                  Unit/Apartment (Optional)
                 </Label>
-                <div className="relative">
-                  <Input
-                    value={locationDetails.unit}
-                    onChange={handleUnitChange}
-                    placeholder="Enter unit number"
-                    className="pr-10"
-                  />
-                  {locationDetails.unit && (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setLocationDetails((prev) => ({ ...prev, unit: '' }))
-                      }
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-                    >
-                      <X className="h-4 w-4 text-gray-400" />
-                    </button>
-                  )}
-                </div>
+                <Input
+                  id="unit"
+                  value={locationDetails.unit || ''}
+                  onChange={(e) => handleUnitChange(e.target.value)}
+                  placeholder="e.g., Apt 2B, Suite 100"
+                  className="h-12 text-base"
+                />
               </div>
 
               {/* Show Map Toggle */}
               <div className="flex items-center justify-between">
-                <Label className="text-sm font-medium">SHOW MAP</Label>
+                <div className="space-y-1">
+                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Show Map
+                  </Label>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Display a map preview for this location
+                  </p>
+                </div>
                 <Switch
                   checked={locationDetails.showMap}
-                  onCheckedChange={handleShowMapChange}
+                  onCheckedChange={handleShowMapToggle}
                 />
               </div>
 
               {/* Map Preview */}
-              {locationDetails.showMap &&
-                selectedPlace &&
-                selectedPlace.geometry && (
-                  <div className="h-48 w-full rounded-lg overflow-hidden border border-gray-300">
-                    <GoogleMap
-                      mapContainerStyle={{ width: '100%', height: '100%' }}
-                      center={selectedPlace.geometry.location}
+              {locationDetails.showMap && locationDetails.address && (
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Map Preview
+                  </Label>
+                  <div className="h-64 w-full rounded-lg overflow-hidden border border-gray-300">
+                    <SimpleGoogleMap
+                      center={mapCenter}
                       zoom={15}
-                      options={{
-                        disableDefaultUI: true,
-                        zoomControl: true,
-                      }}
-                    >
-                      {/* You can add markers here if needed */}
-                    </GoogleMap>
+                      className="h-full w-full"
+                    />
                   </div>
-                )}
+                </div>
+              )}
+            </div>
 
-              {/* Action Buttons */}
-              <div className="flex gap-3 pt-4">
+            {/* Footer */}
+            <div className="flex items-center justify-between p-6 border-t border-gray-200 dark:border-gray-700">
+              <Button
+                variant="outline"
+                onClick={handleClear}
+                className="text-red-600 border-red-300 hover:bg-red-50"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Clear
+              </Button>
+              <div className="flex space-x-3">
                 <Button
-                  onClick={handleSave}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                  variant="outline"
+                  onClick={() => setIsDrawerOpen(false)}
                 >
+                  Cancel
+                </Button>
+                <Button onClick={handleSave}>
                   <Save className="h-4 w-4 mr-2" />
                   Save
-                </Button>
-                <Button
-                  onClick={handleClear}
-                  variant="outline"
-                  className="flex-1 text-red-600 border-red-600 hover:bg-red-50"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Clear location
                 </Button>
               </div>
             </div>
           </div>
-        )}
-
-        {/* Mobile Overlay */}
-        {isMobile && isExpanded && (
-          <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-40"
-            onClick={() => setIsExpanded(false)}
-          />
-        )}
-      </div>
-    </LoadScript>
+        </div>
+      )}
+    </div>
   );
 }

@@ -91,6 +91,15 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
       }
     }
 
+    // Validate event capacity if limited
+    if (event?.limitEventCapacity && event?.maxEventCapacity) {
+      const totalAttendees = formData.adults + formData.children + formData.plusOnes;
+      if (totalAttendees > event.maxEventCapacity) {
+        setSubmitError(`Total attendees (${totalAttendees}) cannot exceed event capacity (${event.maxEventCapacity})`);
+        return false;
+      }
+    }
+
     return true;
   };
 
@@ -296,7 +305,7 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
     ];
 
     // Add Maybe option if allowed by event settings
-    if (event?.allowMaybeRsvp) {
+    if (event?.allowMaybeRSVP) {
       options.push({
         value: 'MAYBE',
         label: 'Maybe',
@@ -309,15 +318,15 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
   };
 
   return (
-    <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-green-50/30 dark:from-gray-800 dark:to-slate-800/50 dark:border-gray-700">
-      <CardHeader className="bg-gradient-to-r from-green-400 to-teal-400 text-white rounded-t-lg pb-6">
+    <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-blue-50/30 dark:from-gray-800 dark:to-slate-800/50 dark:border-gray-700">
+      <CardHeader className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-t-lg pb-6">
         <CardTitle className="text-xl font-bold flex items-center gap-3 mb-3 pt-3">
           <div className="p-2 bg-white/20 rounded-lg">
             <MessageSquare className="h-5 w-5" />
           </div>
           {isUpdatingResponse ? 'Update RSVP Response' : 'RSVP Response'}
         </CardTitle>
-        <p className="text-green-100 text-base font-medium">
+        <p className="text-blue-100 text-base font-medium">
           {isUpdatingResponse 
             ? 'Update your response below if your plans have changed.'
             : 'Please fill out the form below to respond to this invitation.'

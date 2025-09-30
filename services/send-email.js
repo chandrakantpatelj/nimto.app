@@ -80,7 +80,17 @@ export async function sendEmail({ to, subject, text, html, content = {} }) {
     await transporter.sendMail(mailOptions);
     console.log(`Email sent to ${to}`);
   } catch (error) {
-    console.error(`Error sending email: ${error}`);
-    throw error;
+    console.error(`Error sending email to ${to}:`, error);
+    
+    // Provide more specific error messages
+    if (error.code === 'EAUTH') {
+      throw new Error('Email authentication failed. Please check SMTP credentials.');
+    } else if (error.code === 'ECONNECTION') {
+      throw new Error('Failed to connect to email server. Please check SMTP settings.');
+    } else if (error.code === 'ETIMEDOUT') {
+      throw new Error('Email server connection timed out.');
+    } else {
+      throw new Error(`Email sending failed: ${error.message}`);
+    }
   }
 }

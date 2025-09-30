@@ -86,6 +86,21 @@ export async function POST(request, { params }) {
       try {
         const invitationUrl = `${baseUrl}/invitation/${eventId}/${guest.id}`;
 
+        // Check if email configuration is available
+        const hasEmailConfig = process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS;
+        
+        if (!hasEmailConfig) {
+          console.warn('Email configuration missing. Skipping email sending.');
+          results.push({
+            guestId: guest.id,
+            guestName: guest.name,
+            contact: guest.email || guest.phone,
+            success: false,
+            error: 'Email service not configured',
+          });
+          continue;
+        }
+
         const emailSent = await sendEventInvitation({
           guest: {
             name: guest.name,
@@ -153,7 +168,11 @@ export async function POST(request, { params }) {
   } catch (error) {
     console.error('Error sending invitations:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to send invitations' },
+      { 
+        success: false, 
+        error: 'Failed to send invitations',
+        details: error.message 
+      },
       { status: 500 },
     );
   }

@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
-  Calendar,
   CheckCircle,
   ClipboardList,
   FileText,
@@ -14,16 +13,18 @@ import {
   Smartphone,
   Upload,
   Users,
+  Calendar,
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { apiFetch } from '@/lib/api';
 import { useRoleBasedAccess } from '@/hooks/use-role-based-access';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { CommonFooter } from '@/components/common/footer';
 import { DynamicCategories } from '@/app/components/dynamic-categories';
 import { HomeTemplatesPreview } from '@/app/components/home-templates-preview';
 import { Header } from '@/app/components/layouts/demo1/components/header';
+import { CommonFooter } from '@/components/common/footer';
+import { Badge } from '@/components/ui/badge';
+
 
 export default function HomePage() {
   const { data: session, status } = useSession();
@@ -59,7 +60,7 @@ export default function HomePage() {
         setSearchResults(result.data || []);
       }
     } catch (error) {
-      console.error('Error searching designs:', error);
+      console.error('Error searching templates:', error);
     } finally {
       setIsSearching(false);
     }
@@ -149,11 +150,15 @@ export default function HomePage() {
 
       {/* Search Templates Section - Always visible at top */}
       {(!isAuthenticated || !roles.isAttendee) && (
-        <section
-          id="search-section"
-          className="w-full sm:py-16 md:py-20  dark:bg-gray-900 bg-gray-50 dark:bg-gray-800"
-        >
+        <section id="search-section" className="w-full sm:py-16 md:py-20  bg-white dark:bg-gray-900">
           <div className="max-w-4xl mx-auto px-6 text-center lg:pt-10 pt-20">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">
+              Find Your Perfect Template
+            </h2>
+            <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300 mb-8 sm:mb-12">
+              Search through hundreds of professionally designed templates  
+            </p>
+
             {/* Search Bar */}
             <div className="relative max-w-2xl mx-auto mb-4 sm:mb-6 md:mb-8">
               <div className="relative">
@@ -161,7 +166,7 @@ export default function HomePage() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search designs"
+                  placeholder="Search templates by occasion, style, or keyword..."
                   className="w-full px-4 sm:px-6 py-3 sm:py-4 pl-12 sm:pl-14 pr-4 text-base sm:text-lg border border-gray-300 dark:border-gray-600 rounded-lg sm:rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
                 <div className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2">
@@ -174,6 +179,112 @@ export default function HomePage() {
                 )} */}
               </div>
             </div>
+
+            {/* Popular Searches - Only show when no search is active */}
+            {!searchQuery && !selectedCategory && (
+              <div className="mb-6 sm:mb-8">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4">
+                  Popular Searches
+                </h3>
+                <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
+                  {[
+                    'Birthday Party',
+                    'Wedding Invitation',
+                    'Baby Shower',
+                    'Holiday Party',
+                    'Corporate Event',
+                    'Graduation',
+                    'Anniversary',
+                    'Housewarming',
+                  ].map((term) => (
+                    <button
+                      key={term}
+                      onClick={() => handlePopularSearch(term)}
+                      className="px-3 sm:px-4 py-1.5 sm:py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm sm:text-base"
+                    >
+                      {term}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Quick Actions - Only show when no search is active */}
+            {!searchQuery && !selectedCategory && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="p-6 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                  <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <svg
+                      className="w-6 h-6 text-blue-600 dark:text-blue-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                    Save Favorites
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Save templates you love for later
+                  </p>
+                </div>
+
+                <div className="p-6 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                  <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <svg
+                      className="w-6 h-6 text-green-600 dark:text-green-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                    Filter & Sort
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Find exactly what you're looking for
+                  </p>
+                </div>
+
+                <div className="p-6 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                  <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <svg
+                      className="w-6 h-6 text-purple-600 dark:text-purple-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 10V3L4 14h7v7l9-11h-7z"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                    Quick Preview
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    See templates in action instantly
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Search Results - Display within the same section */}
             {(searchQuery || searchResults.length > 0 || isSearching) && (
@@ -199,30 +310,24 @@ export default function HomePage() {
                   <div className="flex justify-center items-center py-12">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
                     <span className="ml-4 text-gray-600 dark:text-gray-300">
-                      Searching designs...
+                      Searching templates...
                     </span>
                   </div>
                 ) : searchResults.length > 0 ? (
                   <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-3 gap-3 sm:gap-4 md:gap-5 lg:gap-6 xl:gap-8">
                     {searchResults.map((template) => (
-                      <div
-                        key={template.id}
-                        className="group relative rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300"
-                      >
+                      <div key={template.id} className="group relative rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300">
                         {/* Template Background Image */}
                         <div className="relative aspect-[3/4] overflow-hidden">
-                          {template.templateThumbnailUrl ||
-                          template.s3ImageUrl ? (
+                          {template.templateThumbnailUrl || template.s3ImageUrl ? (
                             <img
-                              src={
-                                template.templateThumbnailUrl ||
-                                template.s3ImageUrl
-                              }
+                              src={template.templateThumbnailUrl || template.s3ImageUrl}
                               alt={template.name}
                               className="w-full h-full object-cover"
                             />
                           ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20"></div>
+                            <div className="w-full h-full bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20">
+                            </div>
                           )}
 
                           {/* Dark Overlay */}
@@ -231,7 +336,7 @@ export default function HomePage() {
                           {/* Status Badge */}
                           <div className="absolute top-3 left-3">
                             <Badge className="bg-white/90 dark:bg-gray-800/90 text-gray-700 dark:text-gray-300 text-xs font-medium px-2 py-1 shadow-sm">
-                              DESIGN
+                              TEMPLATE
                             </Badge>
                           </div>
 
@@ -245,48 +350,21 @@ export default function HomePage() {
                             <div className="space-y-0.5 sm:space-y-1 text-xs sm:text-sm opacity-90">
                               <div className="flex items-center">
                                 <Calendar className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1 sm:mr-1.5" />
-                                <span className="truncate">
-                                  {template.category || 'Event Designs'}
-                                </span>
+                                <span className="truncate">{template.category || 'Event Template'}</span>
                               </div>
 
                               <div className="flex items-center">
-                                <svg
-                                  className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1 sm:mr-1.5"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"
-                                  />
+                                <svg className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1 sm:mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
                                 </svg>
                                 <span className="truncate">Ready to use</span>
                               </div>
 
                               <div className="flex items-center">
-                                <svg
-                                  className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1 sm:mr-1.5"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                                  />
+                                <svg className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1 sm:mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                 </svg>
-                                <span className="truncate">
-                                  by{' '}
-                                  {template.isSystemTemplate
-                                    ? 'Nimto'
-                                    : 'Community'}
-                                </span>
+                                <span className="truncate">by {template.isSystemTemplate ? 'Nimto' : 'Community'}</span>
                               </div>
                             </div>
                           </div>
@@ -295,15 +373,13 @@ export default function HomePage() {
                           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                             <div className="flex flex-col gap-1 sm:gap-2">
                               <Button
-                                onClick={() =>
-                                  handleTemplateSelect(template, 'home')
-                                }
+                                onClick={() => handleTemplateSelect(template, 'home')}
                                 asChild
                                 size="sm"
                                 className="bg-white text-gray-900 hover:bg-gray-100 font-medium text-xs sm:text-sm"
                               >
                                 <Link href={`/events/design/${template.id}`}>
-                                  Use Design
+                                  Use Template
                                 </Link>
                               </Button>
                               {template.isPremium && (
@@ -323,14 +399,17 @@ export default function HomePage() {
                   <div className="text-center py-12">
                     <Search className="h-16 w-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
                     <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                      No desings found
+                      No templates found
                     </h3>
                     <p className="text-gray-600 dark:text-gray-300 mb-6">
                       Try adjusting your search terms or browse our categories
                     </p>
                     <div className="flex justify-center gap-4">
-                      <Button variant="primary" asChild>
-                        <a href="/templates">Browse All Designs</a>
+                      <Button
+                        variant="primary"
+                        asChild
+                      >
+                        <a href="/templates">Browse All Templates</a>
                       </Button>
                     </div>
                   </div>
@@ -341,12 +420,42 @@ export default function HomePage() {
         </section>
       )}
 
+
+      {/* Hero Banner */}
+      <section className="w-full bg-gradient-to-r from-blue-600 to-purple-600 py-20">
+        <div className="max-w-7xl mx-auto px-6  lg:py-20 md:py-16 py-10 text-center">
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6">
+            Make Every Event Memorable
+          </h1>
+          <p className="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto mb-8">
+            Create beautiful invitations, track RSVPs, and bring people together
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Button
+              size="lg"
+              variant="destructive"
+              asChild
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              <Link href="/signup">Get Started Free</Link>
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              asChild
+              className="bg-white text-purple-600 border-white hover:bg-gray-100"
+            >
+              <Link href="/templates">Browse Templates</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
       {/* Featured Templates Section - Hidden when category or search is active */}
       {(!isAuthenticated || !roles.isAttendee) &&
-        !searchQuery &&
-        !selectedCategory && (
+        !searchQuery && !selectedCategory && (
           <section className="w-full py-20 bg-white dark:bg-gray-900">
-            <div className="mx-auto px-6">
+            <div className="max-w-7xl mx-auto px-6">
               <HomeTemplatesPreview />
             </div>
           </section>
@@ -355,13 +464,13 @@ export default function HomePage() {
       {/* Invitation Categories Section */}
       {(!isAuthenticated || !roles.isAttendee) && (
         <section className="w-full py-20 bg-gray-50 dark:bg-gray-800">
-          <div className="mx-auto px-6">
+          <div className="max-w-7xl mx-auto px-6">
             <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
                 Browse Invitation Categories
               </h2>
               <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-                Find the perfect design for your special occasion
+                Find the perfect template for your special occasion
               </p>
             </div>
 
@@ -379,18 +488,18 @@ export default function HomePage() {
         </section>
       )}
 
+
       {/* Category Filter Results Section */}
       {(!isAuthenticated || !roles.isAttendee) &&
-        selectedCategory &&
-        !searchQuery && (
+        selectedCategory && !searchQuery && (
           <section className="w-full py-10 sm:py-16 md:py-20 bg-white dark:bg-gray-900">
             <div className="max-w-7xl mx-auto px-6">
               <div className="text-center mb-12 sm:mb-16">
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">
-                  {selectedCategory} Designs
+                  {selectedCategory} Templates
                 </h2>
                 <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300">
-                  Designs in the "{selectedCategory}" category
+                  Templates in the "{selectedCategory}" category
                 </p>
               </div>
 
@@ -424,7 +533,7 @@ export default function HomePage() {
                       {/* Template Background Image */}
                       <div className="relative aspect-[3/4] overflow-hidden">
                         {template.templateThumbnailUrl ||
-                        template.s3ImageUrl ? (
+                          template.s3ImageUrl ? (
                           <img
                             src={
                               template.templateThumbnailUrl ||
@@ -451,7 +560,7 @@ export default function HomePage() {
                             <div className="flex items-center">
                               <Calendar className="h-2.5 w-2.5 sm:h-3 sm:w-3 lg:h-4 lg:w-4 mr-1 sm:mr-1.5 lg:mr-2" />
                               <span className="truncate">
-                                {template.category || 'Event Design'}
+                                {template.category || 'Event Template'}
                               </span>
                             </div>
                           </div>
@@ -466,7 +575,7 @@ export default function HomePage() {
                               className="bg-white text-gray-900 hover:bg-gray-100 font-medium text-xs sm:text-sm lg:text-base lg:px-6 lg:py-3"
                             >
                               <Link href={`/events/design/${template.id}`}>
-                                Use Design
+                                Use Template
                               </Link>
                             </Button>
                           </div>
@@ -479,10 +588,10 @@ export default function HomePage() {
                 <div className="text-center py-12">
                   <Search className="h-16 w-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                    No design found in "{selectedCategory}"
+                    No templates found in "{selectedCategory}"
                   </h3>
                   <p className="text-gray-600 dark:text-gray-300 mb-6">
-                    Try selecting a different category or browse all designs
+                    Try selecting a different category or browse all templates
                   </p>
                   <div className="flex justify-center gap-4">
                     <Button
@@ -494,8 +603,11 @@ export default function HomePage() {
                     >
                       Back to Categories
                     </Button>
-                    <Button variant="primary" asChild>
-                      <Link href="/templates">Browse All Designs</Link>
+                    <Button
+                      variant="primary"
+                      asChild
+                    >
+                      <Link href="/templates">Browse All Templates</Link>
                     </Button>
                   </div>
                 </div>
@@ -503,6 +615,88 @@ export default function HomePage() {
             </div>
           </section>
         )}
+
+
+      {/* What would you like to create? Section */}
+      <section className="w-full py-20 bg-gray-50 dark:bg-gray-800">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+              What would you like to create?
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {/* Make an Invitation Card */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow p-6 text-center">
+              <div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/30 rounded-xl flex items-center justify-center mx-auto mb-6">
+                <FileText className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                Make an Invitation
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                Create stunning digital invitations for any occasion. Choose
+                from hundreds of templates.
+              </p>
+              <Button variant="primary" asChild className="w-full">
+                <Link href="/events">Start Creating</Link>
+              </Button>
+            </div>
+
+            {/* Upload Your Own Design Card */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow p-6 text-center">
+              <div className="w-24 h-24 bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900/30 dark:to-purple-800/30 rounded-xl flex items-center justify-center mx-auto mb-6">
+                <Upload className="w-12 h-12 text-purple-600 dark:text-purple-400" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                Upload Your Own Design
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                Add your personal touch with custom designs and photos for
+                unique invitations.
+              </p>
+              <Button variant="primary" asChild className="w-full">
+                <Link href="/events">Upload Design</Link>
+              </Button>
+            </div>
+
+            {/* Send Gift Cards Card */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow p-6 text-center">
+              <div className="w-24 h-24 bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900/30 dark:to-green-800/30 rounded-xl flex items-center justify-center mx-auto mb-6">
+                <Gift className="w-12 h-12 text-green-600 dark:text-green-400" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                Send Gift Cards
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                Shop digital gift cards from top retailers and send them
+                instantly to guests.
+              </p>
+              <Button variant="primary" asChild className="w-full">
+                <Link href="/store-client">Browse Cards</Link>
+              </Button>
+            </div>
+
+            {/* Create SignUp Sheet Card */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow p-6 text-center">
+              <div className="w-24 h-24 bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/30 dark:to-orange-800/30 rounded-xl flex items-center justify-center mx-auto mb-6">
+                <ClipboardList className="w-12 h-12 text-orange-600 dark:text-orange-400" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                Create SignUp Sheet
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                Organize volunteers and coordinate what guests should bring to
+                your event.
+              </p>
+              <Button variant="primary" asChild className="w-full">
+                <Link href="/events">Create Sheet</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Why Choose Our Platform? Section */}
       <section className="w-full py-20 bg-white dark:bg-gray-900">
@@ -559,10 +753,11 @@ export default function HomePage() {
                 <Palette className="w-8 h-8 text-green-600 dark:text-green-400" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                Beautiful Designs
+                Beautiful Templates
               </h3>
               <p className="text-gray-600 dark:text-gray-300">
-                Hundreds of professionally designed designs for every occasion.
+                Hundreds of professionally designed templates for every
+                occasion.
               </p>
             </div>
           </div>
@@ -601,13 +796,12 @@ export default function HomePage() {
                         </div>
                         {userGuest && (
                           <span
-                            className={`px-3 py-1 rounded-full text-xs font-medium ${
-                              userGuest.status === 'CONFIRMED'
-                                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                                : userGuest.status === 'PENDING'
-                                  ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
-                                  : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
-                            }`}
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${userGuest.status === 'CONFIRMED'
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                              : userGuest.status === 'PENDING'
+                                ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+                                : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
+                              }`}
                           >
                             {userGuest.status}
                           </span>
@@ -628,10 +822,9 @@ export default function HomePage() {
                           )}
                         </p>
                       )}
-                      {(event.locationAddress || event.locationUnit) && (
+                      {event.location && (
                         <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-1">
-                          📍 {event.locationAddress}
-                          {event.locationUnit ? `, ${event.locationUnit}` : ''}
+                          📍 {event.location}
                         </p>
                       )}
                       <Button

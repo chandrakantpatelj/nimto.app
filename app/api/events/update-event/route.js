@@ -38,6 +38,14 @@ export async function PUT(request) {
       status,
       guests = [],
       invitationType,
+      // Event features
+      privateGuestList,
+      allowPlusOnes,
+      allowMaybeRSVP,
+      allowFamilyHeadcount,
+      limitEventCapacity,
+      maxEventCapacity,
+      maxPlusOnes,
     } = body;
 
     if (!id) {
@@ -269,6 +277,14 @@ export async function PUT(request) {
         ...(jsonContent !== undefined && { jsonContent }),
         ...(finalImagePath && { imagePath: finalImagePath }),
         ...(status && { status: status.toUpperCase() }),
+        // Event features
+        ...(privateGuestList !== undefined && { privateGuestList }),
+        ...(allowPlusOnes !== undefined && { allowPlusOnes }),
+        ...(allowMaybeRSVP !== undefined && { allowMaybeRSVP }),
+        ...(allowFamilyHeadcount !== undefined && { allowFamilyHeadcount }),
+        ...(limitEventCapacity !== undefined && { limitEventCapacity }),
+        ...(maxEventCapacity !== undefined && { maxEventCapacity }),
+        ...(maxPlusOnes !== undefined && { maxPlusOnes }),
         updatedAt: new Date(),
       },
       include: {

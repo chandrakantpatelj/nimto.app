@@ -1,25 +1,69 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Baby, Calendar, Lock, Shield, Users, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Input } from '@/components/ui/input';
+import { useEventActions, useEvents } from '@/store/hooks';
 
 function GuestSettingsDrawer({ isOpen, onClose }) {
+  const { selectedEvent: eventData } = useEvents();
+  const { updateSelectedEvent } = useEventActions();
+  
   const [settings, setSettings] = useState({
     privateGuestList: false,
     allowPlusOnes: false,
     allowMaybeRSVP: true,
     familyHeadcount: false,
     limitEventCapacity: false,
+    maxEventCapacity: 0,
+    maxPlusOnes: 0,
   });
+
+  // Initialize settings from event data
+  useEffect(() => {
+    if (eventData) {
+      setSettings({
+        privateGuestList: eventData.privateGuestList || false,
+        allowPlusOnes: eventData.allowPlusOnes || false,
+        allowMaybeRSVP: eventData.allowMaybeRSVP !== undefined ? eventData.allowMaybeRSVP : true,
+        familyHeadcount: eventData.allowFamilyHeadcount || false,
+        limitEventCapacity: eventData.limitEventCapacity || false,
+        maxEventCapacity: eventData.maxEventCapacity,
+        maxPlusOnes: eventData.maxPlusOnes ,
+      });
+    }
+  }, [eventData]);
 
   const handleToggle = (setting) => {
     setSettings((prev) => ({
       ...prev,
       [setting]: !prev[setting],
     }));
+  };
+
+  const handleNumberChange = (setting, value) => {
+    const numValue = parseInt(value);
+    setSettings((prev) => ({
+      ...prev,
+      [setting]: numValue,
+    }));
+  };
+
+  const handleSave = () => {
+    // Update the event data with the new settings
+    updateSelectedEvent({
+      privateGuestList: settings.privateGuestList,
+      allowPlusOnes: settings.allowPlusOnes,
+      allowMaybeRSVP: settings.allowMaybeRSVP,
+      allowFamilyHeadcount: settings.familyHeadcount,
+      limitEventCapacity: settings.limitEventCapacity,
+      maxEventCapacity: settings.maxEventCapacity,
+      maxPlusOnes: settings.maxPlusOnes,
+    });
+    onClose();
   };
 
   if (!isOpen) return null;
@@ -91,6 +135,21 @@ function GuestSettingsDrawer({ isOpen, onClose }) {
                   <p className="text-xs mt-1 text-muted-foreground">
                     Let guests specify how many people they're bringing.
                   </p>
+                  {settings.allowPlusOnes && (
+                    <div className="mt-2">
+                      <Label className="text-xs text-muted-foreground">
+                        Max Plus Ones per Guest
+                      </Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        value={settings.maxPlusOnes}
+                        onChange={(e) => handleNumberChange('maxPlusOnes', e.target.value)}
+                        className="mt-1 w-20"
+                        placeholder="0"
+                      />
+                    </div>
+                  )}
                 </div>
                 <Switch
                   checked={settings.allowPlusOnes}
@@ -160,6 +219,21 @@ function GuestSettingsDrawer({ isOpen, onClose }) {
                   <p className="text-xs mt-1 text-muted-foreground">
                     Set a max number of guests who can RSVP 'Yes'.
                   </p>
+                  {settings.limitEventCapacity && (
+                    <div className="mt-2">
+                      <Label className="text-xs text-muted-foreground">
+                        Max Event Capacity
+                      </Label>
+                      <Input
+                        type="number"
+                        min="1"
+                        value={settings.maxEventCapacity}
+                        onChange={(e) => handleNumberChange('maxEventCapacity', e.target.value)}
+                        className="mt-1 w-24"
+                        placeholder="100"
+                      />
+                    </div>
+                  )}
                 </div>
                 <Switch
                   checked={settings.limitEventCapacity}
@@ -173,10 +247,10 @@ function GuestSettingsDrawer({ isOpen, onClose }) {
         {/* Footer */}
         <div className="absolute bottom-0 left-0 right-0 p-6 bg-card border-t border-border">
           <Button
-            onClick={onClose}
+            onClick={handleSave}
             className="w-full bg-primary text-white hover:bg-primary-700 transition-colors py-2.5"
           >
-            Done
+            Save Settings
           </Button>
         </div>
       </div>
