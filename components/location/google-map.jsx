@@ -5,7 +5,7 @@ import { APIProvider, Map, Marker } from '@vis.gl/react-google-maps';
 import { AlertTriangle, MapPin } from 'lucide-react';
 import { FallbackMap } from './fallback-map';
 
-export function SimpleGoogleMap({ center, zoom = 15, className = '' }) {
+export function GoogleMap({ center, className = '' }) {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
   const [isBlocked, setIsBlocked] = useState(false);
   const [error, setError] = useState(null);
@@ -49,12 +49,12 @@ export function SimpleGoogleMap({ center, zoom = 15, className = '' }) {
         <Map
           style={{ width: '100%', height: '100%' }}
           center={center}
-          zoom={zoom}
+          defaultZoom={15}
           gestureHandling="greedy"
-          disableDefaultUI={true}
+          disableDefaultUI={false}
           mapTypeControl={false}
           scaleControl={false}
-          streetViewControl={false}
+          streetViewControl={true}
           rotateControl={false}
           fullscreenControl={false}
           zoomControl={false}

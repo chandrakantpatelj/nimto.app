@@ -7,8 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { SimpleAutocomplete } from './simple-autocomplete';
-import { SimpleGoogleMap } from './simple-google-map';
+import { GoogleMap } from './google-map';
+import { PlacesAutocompleteWrapper } from './places-autocomplete';
 
 export default function LocationDrawer({
   locationAddress = '',
@@ -29,6 +29,7 @@ export default function LocationDrawer({
     showMap: initialShowMap,
   });
   const [mapCenter, setMapCenter] = useState(initialMapCenter);
+  const [isPlaceSelected, setIsPlaceSelected] = useState(false);
 
   // Create display value from address and unit
   const value = locationDetails.address
@@ -52,6 +53,9 @@ export default function LocationDrawer({
         lng: place.geometry.location.lng(),
       };
 
+      // Mark that a place was selected to prevent duplicate geocoding and address overwriting
+      setIsPlaceSelected(true);
+
       setLocationDetails((prev) => ({
         ...prev,
         address: newAddress,
@@ -67,23 +71,29 @@ export default function LocationDrawer({
           mapCenter: newMapCenter,
         });
       }
+
+      // Reset the flag after a longer delay to ensure the address doesn't get overwritten
+      setTimeout(() => setIsPlaceSelected(false), 2000);
     }
   };
 
   const handleAddressChange = (address) => {
-    setLocationDetails((prev) => ({
-      ...prev,
-      address,
-    }));
-
-    // Call the parent onChange with the new values
-    if (onChange) {
-      onChange({
+    // Don't update address if a place is currently being selected
+    if (!isPlaceSelected) {
+      setLocationDetails((prev) => ({
+        ...prev,
         address,
-        unit: locationDetails.unit,
-        showMap: locationDetails.showMap,
-        mapCenter,
-      });
+      }));
+
+      // Call the parent onChange with the new values immediately
+      if (onChange) {
+        onChange({
+          address,
+          unit: locationDetails.unit,
+          showMap: locationDetails.showMap,
+          mapCenter,
+        });
+      }
     }
   };
 
@@ -209,7 +219,7 @@ export default function LocationDrawer({
                     Event Address *
                   </Label>
                 </div>
-                <SimpleAutocomplete
+                <PlacesAutocompleteWrapper
                   value={locationDetails.address || ''}
                   onChange={handleAddressChange}
                   onPlaceSelect={handlePlaceSelect}
@@ -257,10 +267,9 @@ export default function LocationDrawer({
               {/* Map Preview */}
               {locationDetails.showMap && locationDetails.address && (
                 <div className="h-64 w-full rounded-lg overflow-hidden border border-gray-300 shadow-sm">
-                  <SimpleGoogleMap
+                  <GoogleMap
                     key={`${mapCenter.lat}-${mapCenter.lng}`}
                     center={mapCenter}
-                    zoom={15}
                     className="h-full w-full"
                   />
                 </div>
