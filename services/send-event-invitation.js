@@ -26,7 +26,7 @@ export async function sendEventInvitation({ guest, event, invitationUrl }) {
   });
 
   // Get host name
-  const hostName = User?.name || User?.email || 'the event host';
+  const hostName = User?.name || User?.email || 'The event host';
 
   const subject = `You're invited to ${title}!`;
 

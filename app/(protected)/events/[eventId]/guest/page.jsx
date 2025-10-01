@@ -37,7 +37,8 @@ function EventManagementPage() {
         throw new Error(`Failed to fetch event: ${response.status}`);
       }
 
-      const data = await response.json();
+        const data = await response.json();
+        console.log('Fetched event data:', data);
       setEvent(data.data);
     } catch (error) {
       console.error('Error fetching event:', error);

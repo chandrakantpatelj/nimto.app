@@ -176,6 +176,20 @@ export function ManageGuestContent({ event }) {
                 {event.guests?.filter((g) => g.status === 'CONFIRMED').length ||
                   0}
               </div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Kids</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                {event.guests?.filter((g) => g.status === 'CONFIRMED').reduce((sum, g) => sum + (g.children || 0), 0) ||
+                  0}
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Adults</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                {event.guests?.filter((g) => g.status === 'CONFIRMED').reduce((sum, g) => sum + (g.adults || 0), 0) ||
+                  0}
+              </div>
               <div className="text-sm text-gray-600 dark:text-gray-300">Confirmed</div>
             </div>
             <div className="text-center">
@@ -192,6 +206,13 @@ export function ManageGuestContent({ event }) {
                   0}
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-300">Declined</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                {event.guests?.filter((g) => g.status === 'MAYBE').length ||
+                  0}
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Maybe</div>
             </div>
           </div>
         </div>

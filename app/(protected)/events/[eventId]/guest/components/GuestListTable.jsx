@@ -346,6 +346,21 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate, selectedGuests, on
                 <Trash2 className="mr-2 h-4 w-4" />
                 Delete
               </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={async () => {
+                  const link = `${window.location.origin}/invitation/${event.id}/${row.original.id}`;
+                  try {
+                    await navigator.clipboard.writeText(link);
+                    toastSuccess('Invitation link copied!');
+                  } catch {
+                    toastError('Failed to copy link');
+                  }
+                }}
+                className="cursor-pointer"
+              >
+                <HelpCircle className="mr-2 h-4 w-4" />
+                Copy Invitation Link
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -452,6 +467,59 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate, selectedGuests, on
                   <DataGridTable />
                   <ScrollBar orientation="horizontal" />
                 </ScrollArea>
+                {/* Pagination Controls */}
+                <div className="flex items-center justify-between px-4 py-2 border-t bg-gray-50 dark:bg-gray-900">
+                  <div>
+                    Page {pagination.pageIndex + 1} of {table.getPageCount()}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => table.setPageIndex(0)}
+                      disabled={!table.getCanPreviousPage()}
+                    >
+                      First
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => table.previousPage()}
+                      disabled={!table.getCanPreviousPage()}
+                    >
+                      Previous
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => table.nextPage()}
+                      disabled={!table.getCanNextPage()}
+                    >
+                      Next
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                      disabled={!table.getCanNextPage()}
+                    >
+                      Last
+                    </Button>
+                  </div>
+                  <div>
+                    <select
+                      value={pagination.pageSize}
+                      onChange={e => setPagination({ ...pagination, pageSize: Number(e.target.value) })}
+                      className="border rounded px-2 py-1 bg-white dark:bg-gray-800"
+                    >
+                      {[10, 20, 50, 100].map(size => (
+                        <option key={size} value={size}>
+                          Show {size}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
               </CardTable>
             </Card>
           </DataGrid>
