@@ -151,7 +151,7 @@ export async function PUT(request) {
             !['PENDING', 'CONFIRMED', 'DECLINED', 'MAYBE'].includes(newStatus)
         ) {
             return NextResponse.json(
-                { success: false, error: 'Valid status is required' },
+                { success: false, error: 'Please select at least one RSVP response.' },
                 { status: 400 },
             );
         }

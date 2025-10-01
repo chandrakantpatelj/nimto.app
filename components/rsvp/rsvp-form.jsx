@@ -93,8 +93,8 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
       // family headcount should match maxPlusOnes limit
       if (event?.allowPlusOnes) {
         const totalFamilyCount = formData.adults + formData.children;
-        if (totalFamilyCount > (event?.maxPlusOnes || 0)) {
-          setSubmitError(`Family headcount (${totalFamilyCount}) cannot exceed the maximum allowed guests (${event.maxPlusOnes})`);
+        if (totalFamilyCount > (event?.maxPlusOnes + 1 || 0)) {
+          setSubmitError(`Family headcount (${totalFamilyCount}) cannot exceed the maximum allowed guests (${event.maxPlusOnes + 1})`);
           return false;
         }
       }
