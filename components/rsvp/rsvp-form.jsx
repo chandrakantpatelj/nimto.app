@@ -508,7 +508,7 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
           </div>
 
           {/* Plus Ones Section */}
-          {event?.allowPlusOnes && !event?.allowFamilyHeadcount && (
+          {event?.allowPlusOnes && (
             <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
               <div className="flex items-center gap-2 mb-3">
                 <UserPlus className="h-4 w-4 text-blue-600 dark:text-blue-400" />
