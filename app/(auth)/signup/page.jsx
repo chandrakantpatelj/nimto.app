@@ -137,16 +137,13 @@ export default function Page() {
     <Suspense>
       <Form {...form}>
         <form onSubmit={handleSubmit} className="block w-full space-y-5">
-          <div className="space-y-1.5 pb-3">
+          <div>
             <h1 className="text-2xl font-semibold tracking-tight text-center">
               Create an Account with Nimto
             </h1>
-            <p className="mt-2 text-sm text-slate-600 text-center">
-              Join us to start planning and attending amazing events!
-            </p>
           </div>
 
-          <div className="flex flex-col gap-3.5">
+          <div className="flex flex-col gap-2">
             <Button
               variant="outline"
               type="button"
@@ -156,7 +153,7 @@ export default function Page() {
             </Button>
           </div>
 
-          <div className="relative py-1.5">
+          <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t" />
             </div>
@@ -176,11 +173,11 @@ export default function Page() {
             </Alert>
           )}
 
-          <FormField
+          <FormField 
             control={form.control}
             name="name"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="gap-0">
                 <FormLabel>Name</FormLabel>
                 <FormControl>
                   <Input placeholder="Your Name" {...field} />
@@ -194,7 +191,7 @@ export default function Page() {
             control={form.control}
             name="email"
             render={({ field }) => (
-              <FormItem>
+              <FormItem  className="gap-0">
                 <FormLabel>Email</FormLabel>
                 <FormControl>
                   <Input placeholder="Your email" {...field} />
@@ -208,7 +205,7 @@ export default function Page() {
             control={form.control}
             name="password"
             render={({ field }) => (
-              <FormItem>
+              <FormItem  className="gap-0">
                 <FormLabel>Password</FormLabel>
                 <div className="relative">
                   <Input
@@ -244,7 +241,7 @@ export default function Page() {
             control={form.control}
             name="passwordConfirmation"
             render={({ field }) => (
-              <FormItem>
+              <FormItem  className="gap-0">
                 <FormLabel>Confirm Password</FormLabel>
                 <div className="relative">
                   <Input
@@ -281,7 +278,7 @@ export default function Page() {
               </FormItem>
             )}
           />
-
+          {/* REMOVE THIS BLOCK:
           <FormField
             control={form.control}
             name="isHost"
@@ -311,12 +308,13 @@ export default function Page() {
               </FormItem>
             )}
           />
+          */}
 
           <FormField
             control={form.control}
             name="accept"
             render={({ field }) => (
-              <FormItem>
+              <FormItem  className="gap-0">
                 <FormControl>
                   <div className="flex items-center gap-2.5">
                     <Checkbox

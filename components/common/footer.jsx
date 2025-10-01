@@ -12,7 +12,7 @@ export function CommonFooter() {
   }, []);
 
   return (
-    <footer className="footer border-t bg-background mt-auto">
+    <footer className="footer border-t bg-blue-50  dark:bg-gray-800 backdrop-blur-sm mt-auto">
       <Container>
         {/* Main Footer Content */}
         <div className="py-8 md:py-12">
@@ -115,7 +115,7 @@ export function CommonFooter() {
               <div className="flex flex-col sm:flex-row items-center gap-2 text-sm text-muted-foreground">
                 <span>{currentYear} &copy; Nimto. All rights reserved.</span>
                 <span className="hidden sm:inline">•</span>
-                <span>Made with ❤️ for event creators</span>
+                <span>Powered by <Link className="text-black dark:text-white" href="https://velstos.com" target="_blank">Velstos</Link></span>
               </div>
               
               {/* Social Links (Optional - can be added later) */}

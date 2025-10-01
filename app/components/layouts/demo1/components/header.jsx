@@ -1,41 +1,40 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
-import Image from "next/image";
 import { usePathname } from 'next/navigation';
+import {
+  BarChart3,
+  CalendarCheck,
+  ChevronDown,
+  FileText,
+  Home,
+  LayoutDashboard,
+  Mail,
+  Menu,
+  MessageSquare,
+  Moon,
+  Settings,
+  Shield,
+  Sun,
+  UserCircle,
+  UserCog,
+  X,
+} from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useTheme } from 'next-themes';
 import { toAbsoluteUrl } from '@/lib/helpers';
-
-import { useState, useEffect } from 'react';
-import {
-  FileText,
-  LayoutDashboard,
-  Moon,
-  Sun,
-  Home,
-  UserCircle,
-  UserCog,
-  Shield,
-  CalendarCheck,
-  Settings,
-  BarChart3,
-  MessageSquare,
-  Mail,
-  Menu,
-  X,
-  ChevronDown,
-} from 'lucide-react';
 import { useRoleBasedAccess } from '@/hooks/use-role-based-access';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { UserDropdownMenu } from '@/app/components/partials/topbar/user-dropdown-menu';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Switch } from '@/components/ui/switch';
+import { UserDropdownMenu } from '@/app/components/partials/topbar/user-dropdown-menu';
 
 export function Header() {
   const pathname = usePathname();
@@ -85,36 +84,99 @@ export function Header() {
     };
   }, [isMobileMenuOpen]);
 
-
   // Get main navigation items (always visible)
   const getMainNavItems = () => {
     const baseItems = [
       { title: 'Home', path: '/', icon: Home, key: 'home' },
-      { title: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, key: 'dashboard' },
+      {
+        title: 'Dashboard',
+        path: '/dashboard',
+        icon: LayoutDashboard,
+        key: 'dashboard',
+      },
     ];
 
-    if (roles.isSuperAdmin || roles.isApplicationAdmin || roles.isHost) {
+    if (roles.isSuperAdmin || roles.isApplicationAdmin) {
       return [
         ...baseItems,
-        { title: 'Events', path: '/events', icon: CalendarCheck, key: 'events' },
-        { title: 'Templates', path: '/templates', icon: FileText, key: 'templates' },
+        {
+          title: 'Events',
+          path: '/events',
+          icon: CalendarCheck,
+          key: 'events',
+        },
+        {
+          title: 'Templates',
+          path: '/templates',
+          icon: FileText,
+          key: 'templates',
+        },
+      ];
+    }
+
+    if (roles.isHost) {
+      return [
+        ...baseItems,
+        {
+          title: 'Events',
+          path: '/events',
+          icon: CalendarCheck,
+          key: 'events',
+        },
+        {
+          title: 'Templates',
+          path: '/templates',
+          icon: FileText,
+          key: 'templates',
+        },
+        {
+          title: 'Invited Events',
+          path: '/invited-events',
+          icon: Mail,
+          key: 'invited-events',
+        },
       ];
     }
 
     if (roles.isAttendee) {
       return [
         ...baseItems,
-        { title: 'Invited Events', path: '/invited-events', icon: Mail, key: 'invited-events' },
+        {
+          title: 'Invited Events',
+          path: '/invited-events',
+          icon: Mail,
+          key: 'invited-events',
+        },
       ];
     }
 
     // Default for non-authenticated users
     return [
-      { title: 'Create Invitation', path: '/events', icon: FileText, key: 'create-invitation' },
-      { title: 'Templates', path: '/templates', icon: FileText, key: 'templates' },
-      { title: 'Gift Cards', path: '/store-client', icon: FileText, key: 'gift-cards' },
-      { title: 'SignUp Sheets', path: '/events', icon: FileText, key: 'signup-sheets' },
-      { title: 'Ideas', path: '/templates', icon: FileText, key: 'ideas' },
+      {
+        title: 'Create Invitation',
+        path: '/events',
+        icon: CalendarCheck,
+        key: 'events',
+      },
+      {
+        title: 'Templates',
+        path: '/templates',
+        icon: FileText,
+        key: 'templates',
+      },
+      //{
+      //  title: 'Gift Cards',
+      //  path: '/store-client',
+      //  icon: FileText,
+      //  key: 'gift-cards',
+      //},
+      //{
+      //  title: 'SignUp Sheets',
+      //  path: '/events',
+      //  icon: FileText,
+      //  key: 'signup-sheets',
+      //},
+      //{ title: 'Ideas', path: '/templates', icon: FileText, key: 'ideas' },
     ];
   };
 
@@ -122,25 +184,70 @@ export function Header() {
   const getDropdownItems = () => {
     if (roles.isSuperAdmin || roles.isApplicationAdmin) {
       return [
-        { title: 'My Profile', path: '/my-profile', icon: UserCircle, key: 'my-profile' },
-        { title: 'Users', path: '/user-management/users', icon: UserCog, key: 'users' },
-        { title: 'Roles', path: '/user-management/roles', icon: Shield, key: 'roles' },
-        { title: 'App Settings', path: '/settings', icon: Settings, key: 'app-settings' },
-        { title: 'Reporting', path: '/reportings', icon: BarChart3, key: 'reporting' },
-        { title: 'Messaging', path: '/messaging', icon: MessageSquare, key: 'messaging' },
+        {
+          title: 'My Profile',
+          path: '/my-profile',
+          icon: UserCircle,
+          key: 'my-profile',
+        },
+        {
+          title: 'Users',
+          path: '/user-management/users',
+          icon: UserCog,
+          key: 'users',
+        },
+        {
+          title: 'Roles',
+          path: '/user-management/roles',
+          icon: Shield,
+          key: 'roles',
+        },
+        {
+          title: 'App Settings',
+          path: '/settings',
+          icon: Settings,
+          key: 'app-settings',
+        },
+        {
+          title: 'Reporting',
+          path: '/reportings',
+          icon: BarChart3,
+          key: 'reporting',
+        },
+        {
+          title: 'Messaging',
+          path: '/messaging',
+          icon: MessageSquare,
+          key: 'messaging',
+        },
       ];
     }
 
     if (roles.isHost) {
       return [
-        { title: 'My Profile', path: '/my-profile', icon: UserCircle, key: 'my-profile' },
-        { title: 'Messaging', path: '/messaging', icon: MessageSquare, key: 'messaging' },
+        {
+          title: 'My Profile',
+          path: '/my-profile',
+          icon: UserCircle,
+          key: 'my-profile',
+        },
+        {
+          title: 'Messaging',
+          path: '/messaging',
+          icon: MessageSquare,
+          key: 'messaging',
+        },
       ];
     }
 
     if (roles.isAttendee) {
       return [
-        { title: 'My Profile', path: '/my-profile', icon: UserCircle, key: 'my-profile' },
+        {
+          title: 'My Profile',
+          path: '/my-profile',
+          icon: UserCircle,
+          key: 'my-profile',
+        },
       ];
     }
 
@@ -160,16 +267,20 @@ export function Header() {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex items-center space-x-2 sm:space-x-3 p-1">
-              <Link href="/" className="flex items-center space-x-2 sm:space-x-3 group" onClick={closeMobileMenu}>
+              <Link
+                href="/"
+                className="flex items-center space-x-2 sm:space-x-3 group"
+                onClick={closeMobileMenu}
+              >
                 <img
                   src={toAbsoluteUrl('/media/app/nimto-main-logo.svg')}
-                  className="dark:hidden w-[175px]"
+                  className="dark:hidden w-[125px]"
                   alt=""
                 />
-      
+
                 <img
                   src={toAbsoluteUrl('/media/app/nimto-main-logo-dark.svg')}
-                  className="hidden dark:block w-[175px]"
+                  className="hidden dark:block w-[125px]"
                   alt=""
                 />
                 {/*<img
@@ -192,22 +303,27 @@ export function Header() {
               {/* Main Navigation Items */}
               {getMainNavItems().map((item) => {
                 const IconComponent = item.icon;
-                const isActive = pathname === item.path ||
+                const isActive =
+                  pathname === item.path ||
                   (item.path !== '/' && pathname.startsWith(item.path));
 
                 return (
                   <Link
                     key={item.key}
                     href={item.path}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 whitespace-nowrap group ${isActive
-                      ? 'bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 text-blue-600 dark:text-blue-400 font-semibold shadow-sm'
-                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-gray-100'
-                      }`}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 whitespace-nowrap group ${
+                      isActive
+                        ? 'bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 text-blue-600 dark:text-blue-400 font-semibold shadow-sm'
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-gray-100'
+                    }`}
                   >
-                    <IconComponent className={`h-4 w-4 transition-colors ${isActive
-                      ? 'text-blue-600 dark:text-blue-400'
-                      : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200'
-                      }`} />
+                    <IconComponent
+                      className={`h-4 w-4 transition-colors ${
+                        isActive
+                          ? 'text-blue-600 dark:text-blue-400'
+                          : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200'
+                      }`}
+                    />
                     <span className="text-sm font-medium">{item.title}</span>
                   </Link>
                 );
@@ -219,19 +335,29 @@ export function Header() {
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="ghost"
-                      className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 whitespace-nowrap group ${getDropdownItems().some(item =>
-                        pathname === item.path || (item.path !== '/' && pathname.startsWith(item.path))
-                      )
-                        ? 'bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 text-blue-600 dark:text-blue-400 font-semibold shadow-sm'
-                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-gray-100'
-                        }`}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 whitespace-nowrap group ${
+                        getDropdownItems().some(
+                          (item) =>
+                            pathname === item.path ||
+                            (item.path !== '/' &&
+                              pathname.startsWith(item.path)),
+                        )
+                          ? 'bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 text-blue-600 dark:text-blue-400 font-semibold shadow-sm'
+                          : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-gray-100'
+                      }`}
                     >
-                      <Settings className={`h-4 w-4 transition-colors ${getDropdownItems().some(item =>
-                        pathname === item.path || (item.path !== '/' && pathname.startsWith(item.path))
-                      )
-                        ? 'text-blue-600 dark:text-blue-400'
-                        : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200'
-                        }`} />
+                      <Settings
+                        className={`h-4 w-4 transition-colors ${
+                          getDropdownItems().some(
+                            (item) =>
+                              pathname === item.path ||
+                              (item.path !== '/' &&
+                                pathname.startsWith(item.path)),
+                          )
+                            ? 'text-blue-600 dark:text-blue-400'
+                            : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200'
+                        }`}
+                      />
                       <span className="text-sm font-medium">More</span>
                       <ChevronDown className="h-3 w-3 transition-colors text-gray-400" />
                     </Button>
@@ -239,17 +365,19 @@ export function Header() {
                   <DropdownMenuContent className="w-56" align="end">
                     {getDropdownItems().map((item) => {
                       const IconComponent = item.icon;
-                      const isActive = pathname === item.path ||
+                      const isActive =
+                        pathname === item.path ||
                         (item.path !== '/' && pathname.startsWith(item.path));
 
                       return (
                         <DropdownMenuItem key={item.key} asChild>
                           <Link
                             href={item.path}
-                            className={`flex items-center gap-2 w-full ${isActive
-                              ? 'text-blue-600 dark:text-blue-400 font-semibold'
-                              : 'text-gray-700 dark:text-gray-300'
-                              }`}
+                            className={`flex items-center gap-2 w-full ${
+                              isActive
+                                ? 'text-blue-600 dark:text-blue-400 font-semibold'
+                                : 'text-gray-700 dark:text-gray-300'
+                            }`}
                           >
                             <IconComponent className="h-4 w-4" />
                             <span>{item.title}</span>
@@ -286,7 +414,9 @@ export function Header() {
                     >
                       <img
                         className="w-full h-full rounded-full border border-gray-200 dark:border-gray-700"
-                        src={session?.user?.avatar || '/media/avatars/300-2.png'}
+                        src={
+                          session?.user?.avatar || '/media/avatars/300-2.png'
+                        }
                         alt="User avatar"
                       />
                     </Button>
@@ -331,12 +461,11 @@ export function Header() {
           {isMobileMenuOpen && (
             <div className="lg:hidden border-t border-gray-200/50 dark:border-gray-700/50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/80 supports-[backdrop-filter]:dark:bg-gray-900/80">
               <div className="px-2 pt-2 pb-3 space-y-1">
-
-
                 {/* Mobile Menu Items */}
                 {getAllMenuItems().map((item) => {
                   const IconComponent = item.icon;
-                  const isActive = pathname === item.path ||
+                  const isActive =
+                    pathname === item.path ||
                     (item.path !== '/' && pathname.startsWith(item.path));
 
                   return (
@@ -344,15 +473,19 @@ export function Header() {
                       key={item.key}
                       href={item.path}
                       onClick={closeMobileMenu}
-                      className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 group ${isActive
-                        ? 'bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 text-blue-600 dark:text-blue-400 font-semibold'
-                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-gray-100'
-                        }`}
+                      className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 group ${
+                        isActive
+                          ? 'bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 text-blue-600 dark:text-blue-400 font-semibold'
+                          : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-gray-100'
+                      }`}
                     >
-                      <IconComponent className={`h-5 w-5 transition-colors ${isActive
-                        ? 'text-blue-600 dark:text-blue-400'
-                        : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200'
-                        }`} />
+                      <IconComponent
+                        className={`h-5 w-5 transition-colors ${
+                          isActive
+                            ? 'text-blue-600 dark:text-blue-400'
+                            : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200'
+                        }`}
+                      />
                       <span className="text-sm font-medium">{item.title}</span>
                     </Link>
                   );

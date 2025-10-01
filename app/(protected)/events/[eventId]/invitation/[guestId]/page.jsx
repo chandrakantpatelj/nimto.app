@@ -170,7 +170,7 @@ export default function EventInvitationPage() {
             {/* Center - Title */}
             <div className="flex-1 text-center px-4">
               <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
-                You're Invited! 🎉
+                You're Invited!
               </h1>
               <p className="text-blue-100 text-xs sm:text-sm font-medium mt-1">
                 ✨ Special Event Invitation
@@ -270,7 +270,7 @@ export default function EventInvitationPage() {
                         </div>
                       </div>
                     )}
-                    {event.location && (
+                    {(event.locationAddress || event.locationUnit) && (
                       <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-red-50 to-pink-50 rounded-lg border border-red-100 shadow-sm hover:shadow-md transition-all duration-300 group">
                         <div className="p-2.5 bg-gradient-to-br from-red-500 to-red-600 rounded-lg shadow-lg group-hover:scale-110 transition-transform duration-200">
                           <MapPin className="h-4 w-4 text-white" />
@@ -280,7 +280,10 @@ export default function EventInvitationPage() {
                             Location
                           </span>
                           <p className="text-red-700 font-medium text-sm truncate">
-                            {event.location}
+                            {event.locationAddress}
+                            {event.locationUnit
+                              ? `, ${event.locationUnit}`
+                              : ''}
                           </p>
                         </div>
                       </div>

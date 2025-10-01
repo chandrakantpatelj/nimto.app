@@ -30,7 +30,9 @@ const SelectEvents = () => {
       title: '',
       description: '',
       startDateTime: null,
-      location: '',
+      locationAddress: '',
+      locationUnit: '',
+      showMap: true,
       status: 'draft',
       guests: [],
     });

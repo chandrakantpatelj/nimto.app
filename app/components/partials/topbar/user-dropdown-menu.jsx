@@ -57,7 +57,6 @@ export function UserDropdownMenu({ trigger }) {
     await logout({
       redirect: true,
       redirectUrl: '/',
-      reload: true,
       onSuccess: () => {
         console.log('Logout successful');
       },
@@ -119,7 +118,7 @@ export function UserDropdownMenu({ trigger }) {
         <DropdownMenuSeparator />
 
         {/* Menu Items */}
-        <DropdownMenuItem asChild>
+        {/* <DropdownMenuItem asChild>
           <Link
             href="/public-profile/profiles/default"
             className="flex items-center gap-2"
@@ -136,10 +135,10 @@ export function UserDropdownMenu({ trigger }) {
             <User />
             My Profile
           </Link>
-        </DropdownMenuItem>
+        </DropdownMenuItem> */}
 
         {/* My Account Submenu */}
-        <DropdownMenuSub>
+        {/* <DropdownMenuSub>
           <DropdownMenuSubTrigger className="flex items-center gap-2">
             <Settings />
             My Account
@@ -200,9 +199,9 @@ export function UserDropdownMenu({ trigger }) {
               </Link>
             </DropdownMenuItem>
           </DropdownMenuSubContent>
-        </DropdownMenuSub>
+        </DropdownMenuSub> */}
 
-        <DropdownMenuItem asChild>
+        {/* <DropdownMenuItem asChild>
           <Link
             href="https://devs.keenthemes.com"
             className="flex items-center gap-2"
@@ -210,10 +209,10 @@ export function UserDropdownMenu({ trigger }) {
             <FileText />
             Dev Forum
           </Link>
-        </DropdownMenuItem>
+        </DropdownMenuItem> */}
 
         {/* Language Submenu with Radio Group */}
-        <DropdownMenuSub>
+        {/* <DropdownMenuSub>
           <DropdownMenuSubTrigger className="flex items-center gap-2 [&_[data-slot=dropdown-menu-sub-trigger-indicator]]:hidden hover:[&_[data-slot=badge]]:border-input data-[state=open]:[&_[data-slot=badge]]:border-input">
             <Globe />
             <span className="flex items-center justify-between gap-2 grow relative">
@@ -258,12 +257,12 @@ export function UserDropdownMenu({ trigger }) {
               ))}
             </DropdownMenuRadioGroup>
           </DropdownMenuSubContent>
-        </DropdownMenuSub>
+        </DropdownMenuSub> */}
 
         <DropdownMenuSeparator />
 
         {/* Footer */}
-        <DropdownMenuItem
+        {/* <DropdownMenuItem
           className="flex items-center gap-2"
           onSelect={(event) => event.preventDefault()}
         >
@@ -276,7 +275,7 @@ export function UserDropdownMenu({ trigger }) {
               onCheckedChange={handleThemeToggle}
             />
           </div>
-        </DropdownMenuItem>
+        </DropdownMenuItem> */}
         <div className="p-2 mt-1">
           <Button
             variant="outline"

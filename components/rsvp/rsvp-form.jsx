@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import {
-  Baby,
   CheckCircle,
   HelpCircle,
   Lock,
@@ -73,8 +72,8 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
       return false;
     }
 
-    // Validate plus ones
-    if (event?.allowPlusOnes && formData.plusOnes > (event?.maxPlusOnes || 0)) {
+    // Validate plus ones (only when family headcount is not enabled)
+    if (event?.allowPlusOnes && !event?.allowFamilyHeadcount && formData.plusOnes > (event?.maxPlusOnes || 0)) {
       setSubmitError(`Plus ones cannot exceed ${event.maxPlusOnes}`);
       return false;
     }
@@ -87,6 +86,25 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
       }
       if (formData.children < 0) {
         setSubmitError('Children count cannot be negative');
+        return false;
+      }
+      
+      // When both Plus Ones and Family Headcount are enabled, 
+      // family headcount should match maxPlusOnes limit
+      if (event?.allowPlusOnes) {
+        const totalFamilyCount = formData.adults + formData.children;
+        if (totalFamilyCount > (event?.maxPlusOnes + 1 || 0)) {
+          setSubmitError(`Family headcount (${totalFamilyCount}) cannot exceed the maximum allowed guests (${event.maxPlusOnes + 1})`);
+          return false;
+        }
+      }
+    }
+
+    // Validate event capacity if limited
+    if (event?.limitEventCapacity && event?.maxEventCapacity) {
+      const totalAttendees = formData.adults + formData.children + formData.plusOnes;
+      if (totalAttendees > event.maxEventCapacity) {
+        setSubmitError(`Total attendees (${totalAttendees}) cannot exceed event capacity (${event.maxEventCapacity})`);
         return false;
       }
     }
@@ -244,7 +262,7 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
                   Guest Count
                 </h4>
                 <div className="text-sm text-blue-800 space-y-1">
-                  {userGuest.adults > 1 && (
+                  {userGuest.adults > 0 && (
                     <div>Adults: {userGuest.adults}</div>
                   )}
                   {userGuest.children > 0 && (
@@ -296,7 +314,7 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
     ];
 
     // Add Maybe option if allowed by event settings
-    if (event?.allowMaybeRsvp) {
+    if (event?.allowMaybeRSVP) {
       options.push({
         value: 'MAYBE',
         label: 'Maybe',
@@ -309,15 +327,15 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
   };
 
   return (
-    <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-green-50/30 dark:from-gray-800 dark:to-slate-800/50 dark:border-gray-700">
-      <CardHeader className="bg-gradient-to-r from-green-400 to-teal-400 text-white rounded-t-lg pb-6">
+    <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-blue-50/30 dark:from-gray-800 dark:to-slate-800/50 dark:border-gray-700">
+      <CardHeader className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-t-lg pb-6">
         <CardTitle className="text-xl font-bold flex items-center gap-3 mb-3 pt-3">
           <div className="p-2 bg-white/20 rounded-lg">
             <MessageSquare className="h-5 w-5" />
           </div>
           {isUpdatingResponse ? 'Update RSVP Response' : 'RSVP Response'}
         </CardTitle>
-        <p className="text-green-100 text-base font-medium">
+        <p className="text-blue-100 text-base font-medium">
           {isUpdatingResponse 
             ? 'Update your response below if your plans have changed.'
             : 'Please fill out the form below to respond to this invitation.'
@@ -558,6 +576,11 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
               </div>
               <p className="text-xs text-green-700 dark:text-green-300 mb-3">
                 Please specify the number of adults and children attending
+                {event?.allowPlusOnes && (
+                  <span className="block mt-1 font-medium">
+                    Maximum total family size: {event.maxPlusOnes + 1} people
+                  </span>
+                )}
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -590,6 +613,7 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
                       }
                       className="w-20 text-center dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
                       min="1"
+                      max={event?.allowPlusOnes ? event.maxPlusOnes + 1 - formData.children : undefined}
                     />
                     <Button
                       type="button"
@@ -598,6 +622,7 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
                       onClick={() =>
                         handleInputChange('adults', formData.adults + 1)
                       }
+                      disabled={event?.allowPlusOnes && (formData.adults + formData.children) >= event.maxPlusOnes + 1}
                     >
                       +
                     </Button>
@@ -633,6 +658,7 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
                       }
                       className="w-20 text-center dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
                       min="0"
+                      max={event?.allowPlusOnes ? event.maxPlusOnes + 1 - formData.adults : undefined}
                     />
                     <Button
                       type="button"
@@ -641,6 +667,7 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
                       onClick={() =>
                         handleInputChange('children', formData.children + 1)
                       }
+                      disabled={event?.allowPlusOnes && (formData.adults + formData.children) >= event.maxPlusOnes + 1}
                     >
                       +
                     </Button>

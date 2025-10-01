@@ -52,7 +52,9 @@ export function ApplicationAdminEventContent() {
       description: event.description,
       startDateTime: event.startDateTime,
       endDateTime: event.endDateTime,
-      location: event.location,
+      locationAddress: event.locationAddress,
+      locationUnit: event.locationUnit,
+      showMap: event.showMap !== null ? event.showMap : true,
       status: event.status,
       guests: event.guests,
     });
@@ -119,7 +121,10 @@ export function ApplicationAdminEventContent() {
     (event) =>
       event.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       event.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      event.location?.toLowerCase().includes(searchQuery.toLowerCase()),
+      event.locationAddress
+        ?.toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      event.locationUnit?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   if (loading) {
@@ -335,11 +340,14 @@ export function ApplicationAdminEventContent() {
                         )}
                       </div>
 
-                      {event.location && (
+                      {(event.locationAddress || event.locationUnit) && (
                         <div className="flex items-center gap-2 text-white/90 text-sm">
                           <MapPin className="w-4 h-4" />
                           <span className="font-medium line-clamp-1">
-                            {event.location}
+                            {event.locationAddress}
+                            {event.locationUnit
+                              ? `, ${event.locationUnit}`
+                              : ''}
                           </span>
                         </div>
                       )}

@@ -48,7 +48,9 @@ export function AttendeeEventContent() {
       description: event.description,
       startDateTime: event.startDateTime,
       endDateTime: event.endDateTime,
-      location: event.location,
+      locationAddress: event.locationAddress,
+      locationUnit: event.locationUnit,
+      showMap: event.showMap !== null ? event.showMap : true,
       status: event.status,
       guests: event.guests,
     });
@@ -249,14 +251,15 @@ export function AttendeeEventContent() {
                   </div>
                 )}
 
-                {event.location &&
-                  event.location.trim() &&
-                  event.location !== 'llll' && (
-                    <div className="flex items-center text-sm text-gray-600">
-                      <MapPin className="w-4 h-4 mr-2 flex-shrink-0" />
-                      <span className="line-clamp-1">{event.location}</span>
-                    </div>
-                  )}
+                {(event.locationAddress || event.locationUnit) && (
+                  <div className="flex items-center text-sm text-gray-600">
+                    <MapPin className="w-4 h-4 mr-2 flex-shrink-0" />
+                    <span className="line-clamp-1">
+                      {event.locationAddress}
+                      {event.locationUnit ? `, ${event.locationUnit}` : ''}
+                    </span>
+                  </div>
+                )}
 
                 <div className="flex items-center text-sm text-gray-600">
                   <Users className="w-4 h-4 mr-2 flex-shrink-0" />

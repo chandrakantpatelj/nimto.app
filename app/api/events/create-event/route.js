@@ -71,7 +71,9 @@ export async function POST(request) {
       title,
       description,
       startDateTime,
-      location,
+      locationAddress,
+      locationUnit,
+      showMap,
       templateId,
       jsonContent,
       templateImagePath, // Original template imagePath to copy
@@ -80,6 +82,14 @@ export async function POST(request) {
       status,
       guests = [],
       sendInvitations = false,
+      // Event features
+      privateGuestList = false,
+      allowPlusOnes = false,
+      allowMaybeRSVP = true,
+      allowFamilyHeadcount = false,
+      limitEventCapacity = false,
+      maxEventCapacity = 0,
+      maxPlusOnes = 0,
     } = body;
 
     // Validate required fields
@@ -190,7 +200,9 @@ export async function POST(request) {
         title,
         description,
         startDateTime: eventDate,
-        location,
+        locationAddress,
+        locationUnit,
+        showMap: showMap !== undefined ? showMap : true,
         templateId,
         jsonContent,
         imagePath: templateImagePath, // Initially use template imagePath
@@ -198,6 +210,14 @@ export async function POST(request) {
           status && typeof status === 'string' ? status.toUpperCase() : 'DRAFT',
         createdByUserId: session.user.id, // This is correct - it's setting from session
         isTrashed: false,
+        // Event features
+        privateGuestList,
+        allowPlusOnes,
+        allowMaybeRSVP,
+        allowFamilyHeadcount,
+        limitEventCapacity,
+        maxEventCapacity,
+        maxPlusOnes,
       },
       include: {
         User: {
@@ -292,7 +312,10 @@ export async function POST(request) {
         }
         if (!guest.contact || !guest.contact.trim()) {
           return NextResponse.json(
-            { success: false, error: 'Guest contact information (email or phone) is required' },
+            {
+              success: false,
+              error: 'Guest contact information (email or phone) is required',
+            },
             { status: 400 },
           );
         }
@@ -348,7 +371,7 @@ export async function POST(request) {
                 <p><strong>Event Details:</strong></p>
                 <p><strong>Date:</strong> ${eventDate.toLocaleDateString()}</p>
                 <p><strong>Time:</strong> ${eventDate.toLocaleTimeString()}</p>
-                <p><strong>Location:</strong> ${location || 'TBD'}</p>
+                <p><strong>Location:</strong> ${locationAddress || 'TBD'}</p>
                 ${description ? `<p><strong>Description:</strong> ${description}</p>` : ''}
                 <p>Please click the button below to view the full invitation and respond.</p>
               `,

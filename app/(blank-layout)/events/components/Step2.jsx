@@ -1,20 +1,95 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useEventActions, useEvents } from '@/store/hooks';
 import { format } from 'date-fns';
 import { CalendarDays, Info, MapPin, User } from 'lucide-react';
+import { DEFAULT_MAP_CENTER } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SeparateDateTimeFields } from '@/components/ui/separate-datetime-fields';
 import { Textarea } from '@/components/ui/textarea';
+import { GoogleMap } from '@/components/location/google-map';
+import LocationDrawer from '@/components/location/location-drawer';
 
 function Step2({ thumbnailData, session }) {
   const { selectedEvent: eventData } = useEvents();
   const { updateSelectedEvent: updateEventData } = useEventActions();
+  const [isGeocoding, setIsGeocoding] = useState(false);
 
+  // Geocode address when component loads or when address changes
+  useEffect(() => {
+    const geocodeAddress = async () => {
+      // Always geocode if we have an address and not currently geocoding
+      if (eventData?.locationAddress && !isGeocoding) {
+        setIsGeocoding(true);
+        try {
+          if (window.google && window.google.maps) {
+            const geocoder = new window.google.maps.Geocoder();
+            geocoder.geocode(
+              { address: eventData.locationAddress },
+              (results, status) => {
+                if (status === 'OK' && results[0]) {
+                  const location = results[0].geometry.location;
+                  const mapCenter = {
+                    lat: location.lat(),
+                    lng: location.lng(),
+                  };
+                  console.log(
+                    'Geocoding successful, new mapCenter:',
+                    mapCenter,
+                  );
+                  updateEventData({ mapCenter });
+                } else {
+                  console.warn('Geocoding failed:', status);
+                }
+                setIsGeocoding(false);
+              },
+            );
+          } else {
+            // Wait for Google Maps to load
+            const checkGoogleMaps = () => {
+              if (window.google && window.google.maps) {
+                geocodeAddress();
+              } else {
+                setTimeout(checkGoogleMaps, 100);
+              }
+            };
+            checkGoogleMaps();
+          }
+        } catch (error) {
+          console.warn('Error geocoding address:', error);
+          setIsGeocoding(false);
+        }
+      }
+    };
+
+    geocodeAddress();
+  }, [
+    eventData?.locationAddress,
+    eventData?.mapCenter,
+    isGeocoding,
+    updateEventData,
+  ]);
+
+  // Map center logic - use saved mapCenter or geocode the address
+  const getMapCenter = () => {
+    // If we have a saved mapCenter, use it
+    if (eventData?.mapCenter) {
+      return eventData.mapCenter;
+    }
+
+    // If we have a locationAddress but no mapCenter, return default for now
+    // The geocoding will happen in the useEffect and update the mapCenter
+    if (eventData?.locationAddress && !eventData?.mapCenter) {
+      return DEFAULT_MAP_CENTER;
+    }
+
+    // Fallback to default
+    return DEFAULT_MAP_CENTER;
+  };
   // Function to format time for display (12-hour format with AM/PM)
   const formatTimeForDisplay = (time24) => {
     if (!time24) return '';
@@ -230,8 +305,20 @@ function Step2({ thumbnailData, session }) {
                         Location
                       </p>
                       <p className="text-base text-foreground font-medium">
-                        {eventData.location || 'Add a location'}
+                        {eventData.locationAddress
+                          ? `${eventData.locationAddress}${eventData.locationUnit ? `, ${eventData.locationUnit}` : ''}`
+                          : 'Add a location'}
                       </p>
+
+                      {/* Map Preview in Event Details */}
+                      {eventData.showMap && eventData.locationAddress && (
+                        <div className="mt-3 h-48 w-full rounded-lg border border-gray-300">
+                          <GoogleMap
+                            center={getMapCenter()}
+                            className="h-full w-full rounded-lg"
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -334,23 +421,31 @@ function Step2({ thumbnailData, session }) {
                 htmlFor="location"
                 className="text-sm font-semibold text-foreground mb-3 block"
               >
-                Location
+                Location <span className="text-red-500">*</span>
               </Label>
-              <div className="relative">
-                <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <Input
-                  id="location"
-                  type="text"
-                  placeholder="Add event location"
-                  value={eventData.location || ''}
-                  onChange={(e) => {
-                    updateEventData({ location: e.target.value });
-                    // Scroll to show event details card after location change
-                    setTimeout(() => scrollToEventDetails(), 100);
-                  }}
-                  className="w-full h-12 pl-12 pr-4 text-base border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg"
-                />
-              </div>
+              <LocationDrawer
+                locationAddress={eventData.locationAddress || ''}
+                locationUnit={eventData.locationUnit || ''}
+                onChange={(locationData) => {
+                  // If the address changed, clear the mapCenter to trigger geocoding
+                  const shouldClearMapCenter =
+                    locationData.address !== eventData.locationAddress;
+
+                  updateEventData({
+                    locationAddress: locationData.address,
+                    locationUnit: locationData.unit,
+                    showMap: locationData.showMap,
+                    mapCenter: shouldClearMapCenter
+                      ? null
+                      : locationData.mapCenter,
+                  });
+                  setTimeout(() => scrollToEventDetails(), 100);
+                }}
+                placeholder="Add event location"
+                className="w-full"
+                initialShowMap={eventData.showMap || false}
+                initialMapCenter={getMapCenter()}
+              />
             </div>
 
             {/* Host Note */}
