@@ -155,8 +155,8 @@ export function Header() {
       {
         title: 'Create Invitation',
         path: '/events',
-        icon: FileText,
-        key: 'create-invitation',
+        icon: CalendarCheck,
+        key: 'events',
       },
       {
         title: 'Templates',
@@ -164,19 +164,19 @@ export function Header() {
         icon: FileText,
         key: 'templates',
       },
-      {
-        title: 'Gift Cards',
-        path: '/store-client',
-        icon: FileText,
-        key: 'gift-cards',
-      },
-      {
-        title: 'SignUp Sheets',
-        path: '/events',
-        icon: FileText,
-        key: 'signup-sheets',
-      },
-      { title: 'Ideas', path: '/templates', icon: FileText, key: 'ideas' },
+      //{
+      //  title: 'Gift Cards',
+      //  path: '/store-client',
+      //  icon: FileText,
+      //  key: 'gift-cards',
+      //},
+      //{
+      //  title: 'SignUp Sheets',
+      //  path: '/events',
+      //  icon: FileText,
+      //  key: 'signup-sheets',
+      //},
+      //{ title: 'Ideas', path: '/templates', icon: FileText, key: 'ideas' },
     ];
   };
 
@@ -274,13 +274,13 @@ export function Header() {
               >
                 <img
                   src={toAbsoluteUrl('/media/app/nimto-main-logo.svg')}
-                  className="dark:hidden w-[175px]"
+                  className="dark:hidden w-[125px]"
                   alt=""
                 />
 
                 <img
                   src={toAbsoluteUrl('/media/app/nimto-main-logo-dark.svg')}
-                  className="hidden dark:block w-[175px]"
+                  className="hidden dark:block w-[125px]"
                   alt=""
                 />
                 {/*<img
