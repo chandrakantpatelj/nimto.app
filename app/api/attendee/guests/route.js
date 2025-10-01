@@ -199,7 +199,10 @@ export async function PUT(request) {
         // Validate Plus Ones
         if (plusOnes !== undefined) {
             if (!event.allowPlusOnes && plusOnes > 0) {
-                guest.plusOnes = 0;
+                return NextResponse.json(
+                    { success: false, error: 'Plus ones are not allowed for this event' },
+                    { status: 400 },
+                );
             }
             if (event.allowPlusOnes && plusOnes > (event.maxPlusOnes || 0)) {
                 return NextResponse.json(
@@ -212,12 +215,10 @@ export async function PUT(request) {
         // Validate Family Headcount
         if (adults !== undefined || children !== undefined) {
             if (!event.allowFamilyHeadcount && (adults > 1 || children > 0)) {
-                //return NextResponse.json(
-                //  { success: false, error: 'Family headcount is not allowed for this event' },
-                //  { status: 400 },
-                //);
-                guest.adults = 1;
-                guest.children = 0;
+                return NextResponse.json(
+                    { success: false, error: 'Family headcount is not allowed for this event' },
+                    { status: 400 },
+                );
             }
             if (event.allowFamilyHeadcount) {
                 if (adults !== undefined && adults < 1) {
@@ -232,89 +233,89 @@ export async function PUT(request) {
                         { status: 400 },
                     );
                 }
-            }
-
-            // Plus ones validation for family headcount
-            if (
-                event.allowPlusOnes &&
-                (event.maxPlusOnes || 0) > 0 &&
-                (adults !== undefined || children !== undefined)
-            ) {
-                const totalAdults = adults !== undefined ? adults : guest.adults;
-                const totalChildren = children !== undefined ? children : guest.children;
-                if (totalAdults + totalChildren > event.maxPlusOnes) {
-                    return NextResponse.json(
-                        { success: false, error: `Total guests (adults + children) cannot exceed allowed plus ones (${event.maxPlusOnes})` },
-                        { status: 400 },
-                    );
-                }
-            }
-
-            // Validate Event Capacity
-            if (event.limitEventCapacity && event.maxEventCapacity) {
-                const totalAttendees = (adults || guest.adults) + (children || guest.children) + (plusOnes || guest.plusOnes);
-                if (totalAttendees > event.maxEventCapacity) {
-                    return NextResponse.json(
-                        { success: false, error: `Total attendees (${totalAttendees}) cannot exceed event capacity (${event.maxEventCapacity})` },
-                        { status: 400 },
-                    );
-                }
-            }
-
-            // Convert response to proper enum value
-            let guestResponse = null;
-            if (response) {
-                const normalizedResponse = response.toString().toLowerCase();
-                if (normalizedResponse === 'yes') {
-                    guestResponse = 'YES';
-                } else if (normalizedResponse === 'no') {
-                    guestResponse = 'NO';
-                } else if (normalizedResponse === 'maybe') {
-                    guestResponse = 'MAYBE';
-                } else if (
-                    ['YES', 'NO', 'MAYBE'].includes(response.toString().toUpperCase())
+                // Plus ones validation for family headcount
+                if (
+                    event.allowPlusOnes &&
+                    (event.maxPlusOnes || 0) > 0 &&
+                    (adults !== undefined || children !== undefined)
                 ) {
-                    // If it's already a valid enum value, keep it
-                    guestResponse = response.toString().toUpperCase();
+                    const totalAdults = adults !== undefined ? adults : guest.adults;
+                    const totalChildren = children !== undefined ? children : guest.children;
+                    if (totalAdults + totalChildren > event.maxPlusOnes) {
+                        return NextResponse.json(
+                            { success: false, error: `Total guests (adults + children) cannot exceed allowed plus ones (${event.maxPlusOnes})` },
+                            { status: 400 },
+                        );
+                    }
                 }
             }
+        }
 
-            // Update the guest record
-            const updatedGuest = await prisma.guest.update({
-                where: { id: guest.id },
-                data: {
-                    name: name || guest.name,
-                    phone: phone || guest.phone,
-                    status: newStatus,
-                    response: guestResponse,
-                    respondedAt: new Date(),
-                    plusOnes: plusOnes !== undefined ? plusOnes : guest.plusOnes,
-                    adults: adults !== undefined ? adults : guest.adults,
-                    children: children !== undefined ? children : guest.children,
-                },
-                include: {
-                    event: {
-                        select: {
-                            id: true,
-                            title: true,
-                            startDateTime: true,
-                            endDateTime: true,
-                            locationAddress: true,
-                            locationUnit: true,
-                        },
+        // Validate Event Capacity
+        if (event.limitEventCapacity && event.maxEventCapacity) {
+            const totalAttendees = (adults || guest.adults) + (children || guest.children) + (plusOnes || guest.plusOnes);
+            if (totalAttendees > event.maxEventCapacity) {
+                return NextResponse.json(
+                    { success: false, error: `Total attendees (${totalAttendees}) cannot exceed event capacity (${event.maxEventCapacity})` },
+                    { status: 400 },
+                );
+            }
+        }
+
+        // Convert response to proper enum value
+        let guestResponse = null;
+        if (response) {
+            const normalizedResponse = response.toString().toLowerCase();
+            if (normalizedResponse === 'yes') {
+                guestResponse = 'YES';
+            } else if (normalizedResponse === 'no') {
+                guestResponse = 'NO';
+            } else if (normalizedResponse === 'maybe') {
+                guestResponse = 'MAYBE';
+            } else if (
+                ['YES', 'NO', 'MAYBE'].includes(response.toString().toUpperCase())
+            ) {
+                // If it's already a valid enum value, keep it
+                guestResponse = response.toString().toUpperCase();
+            }
+        }
+
+        // Update the guest record
+        const updatedGuest = await prisma.guest.update({
+            where: { id: guest.id },
+            data: {
+                name: name || guest.name,
+                phone: phone || guest.phone,
+                status: newStatus,
+                response: guestResponse,
+                respondedAt: new Date(),
+                plusOnes: plusOnes !== undefined ? plusOnes : guest.plusOnes,
+                adults: adults !== undefined ? adults : guest.adults,
+                children: children !== undefined ? children : guest.children,
+            },
+            include: {
+                event: {
+                    select: {
+                        id: true,
+                        title: true,
+                        startDateTime: true,
+                        endDateTime: true,
+                        locationAddress: true,
+                        locationUnit: true,
                     },
                 },
-            });
+            },
+        });
 
-            return NextResponse.json({
-                success: true,
-                data: updatedGuest,
-            });
-        } catch (error) {
-            console.error('Error updating guest response:', error);
-            return NextResponse.json(
-                { success: false, error: 'Failed to update guest response' },
-                { status: 500 },
-            );
-        }
+        return NextResponse.json({
+            success: true,
+            data: updatedGuest,
+        });
+    } catch (error) {
+        console.error('Error updating guest response:', error);
+        return NextResponse.json(
+            { success: false, error: 'Failed to update guest response' },
+            { status: 500 },
+        );
     }
+}
