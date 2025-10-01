@@ -32,7 +32,7 @@ export async function sendEventInvitation({ guest, event, invitationUrl }) {
 
   const content = {
     title: `You're Invited!`,
-    subtitle: `${hostName} has invited you to attend ${title}`,
+      subtitle: `<strong>${hostName}</strong> has invited you to attend <strong>${title}</strong>`,
     eventDetails: {
       date: eventDate,
       time: eventTime,

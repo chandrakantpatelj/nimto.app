@@ -328,52 +328,13 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
 
   return (
     <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-blue-50/30 dark:from-gray-800 dark:to-slate-800/50 dark:border-gray-700">
-      <CardHeader className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-t-lg pb-6">
+      <CardHeader className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-t-lg">
         <CardTitle className="text-xl font-bold flex items-center gap-3 mb-3 pt-3">
           <div className="p-2 bg-white/20 rounded-lg">
             <MessageSquare className="h-5 w-5" />
           </div>
           {isUpdatingResponse ? 'Update RSVP Response' : 'RSVP Response'}
         </CardTitle>
-        <p className="text-blue-100 text-base font-medium">
-          {isUpdatingResponse 
-            ? 'Update your response below if your plans have changed.'
-            : 'Please fill out the form below to respond to this invitation.'
-          }
-        </p>
-
-        {/* Event Settings Info */}
-        {(event?.privateGuestList ||
-          event?.allowPlusOnes ||
-          event?.allowFamilyHeadcount ||
-          event?.limitEventCapacity) && (
-          <div className="flex flex-wrap gap-2 mt-4">
-            {event?.privateGuestList && (
-              <Badge className="text-xs bg-white/20 text-white border-white/30 hover:bg-white/30 transition-colors">
-                <Lock className="h-3 w-3 mr-1" />
-                Private Guest List
-              </Badge>
-            )}
-            {event?.allowPlusOnes && (
-              <Badge className="text-xs bg-white/20 text-white border-white/30 hover:bg-white/30 transition-colors">
-                <UserPlus className="h-3 w-3 mr-1" />
-                Plus Ones Allowed
-              </Badge>
-            )}
-            {event?.allowFamilyHeadcount && (
-              <Badge className="text-xs bg-white/20 text-white border-white/30 hover:bg-white/30 transition-colors">
-                <Users className="h-3 w-3 mr-1" />
-                Family Headcount
-              </Badge>
-            )}
-            {event?.limitEventCapacity && (
-              <Badge className="text-xs bg-white/20 text-white border-white/30 hover:bg-white/30 transition-colors">
-                <Shield className="h-3 w-3 mr-1" />
-                Capacity Limited
-              </Badge>
-            )}
-          </div>
-        )}
       </CardHeader>
       <CardContent className="dark:text-gray-100">
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -513,7 +474,7 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
               <div className="flex items-center gap-2 mb-3">
                 <UserPlus className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 <Label className="text-sm font-medium text-blue-900 dark:text-blue-300">
-                  Plus Ones
+                    Additional Guests
                 </Label>
               </div>
               <p className="text-xs text-blue-700 dark:text-blue-300 mb-3">
@@ -571,14 +532,14 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
               <div className="flex items-center gap-2 mb-3">
                 <Users className="h-4 w-4 text-green-600 dark:text-green-400" />
                 <Label className="text-sm font-medium text-green-900 dark:text-green-300">
-                  Family Headcount
+                    Guest Headcount
                 </Label>
               </div>
               <p className="text-xs text-green-700 dark:text-green-300 mb-3">
                 Please specify the number of adults and children attending
                 {event?.allowPlusOnes && (
                   <span className="block mt-1 font-medium">
-                    Maximum total family size: {event.maxPlusOnes + 1} people
+                    Maximum total group size: {event.maxPlusOnes + 1} people
                   </span>
                 )}
               </p>

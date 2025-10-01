@@ -172,9 +172,6 @@ export default function EventInvitationPage() {
               <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
                 You're Invited!
               </h1>
-              <p className="text-blue-100 text-xs sm:text-sm font-medium mt-1">
-                ✨ Special Event Invitation
-              </p>
             </div>
 
             {/* Right Side - Event Status Badge */}
@@ -212,25 +209,32 @@ export default function EventInvitationPage() {
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
           {/* Left Column - Event Image Only */}
-          <div>
-            {(event.eventThumbnailUrl || event.s3ImageUrl) && (
-              <Card className="border-0 shadow-xl overflow-hidden h-full">
-                <CardContent className="p-0">
-                  <div className="relative w-full h-full min-h-[500px] lg:min-h-[600px] overflow-hidden">
-                    <img
-                      src={event.eventThumbnailUrl || event.s3ImageUrl}
-                      alt={event.title}
-                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                    />
-                    {/* Enhanced overlay with gradient */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
-                    {/* Decorative border */}
-                    <div className="absolute inset-0 border-4 border-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-lg"></div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+          <div className="order-1 lg:order-1">
+            <div className="relative lg:sticky lg:top-6">
+                <div className="border-2  rounded-lg bg-white dark:bg-gray-800 shadow-lg">
+                    {event?.eventThumbnailUrl || event?.s3ImageUrl ? (
+                        <div className="relative w-full bg-gray-50 dark:bg-gray-900 flex items-center justify-center rounded-lg overflow-hidden">
+                            <img
+                                src={event?.eventThumbnailUrl || event?.s3ImageUrl}
+                                alt={event?.title}
+                                className="w-full h-full object-cover rounded-lg"
+                            />
+                        </div>
+                    ) : (
+                        /* Fallback when no image */
+                        <div
+                            className={`relative w-full aspect-[3/4] ${getFallbackGradientClasses(category)} flex items-center justify-center rounded-lg`}
+                        >
+                            <div className="text-center text-white p-6">
+                                <div className="mb-4 text-5xl sm:text-6xl drop-shadow-lg">
+                                    {categoryTheme.icon}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
 
           {/* Right Column - Wedding Invitation & RSVP */}
           <div className="space-y-4">
