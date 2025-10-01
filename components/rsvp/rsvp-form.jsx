@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import {
-  Baby,
   CheckCircle,
   HelpCircle,
   Lock,
@@ -73,8 +72,8 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
       return false;
     }
 
-    // Validate plus ones
-    if (event?.allowPlusOnes && formData.plusOnes > (event?.maxPlusOnes || 0)) {
+    // Validate plus ones (only when family headcount is not enabled)
+    if (event?.allowPlusOnes && !event?.allowFamilyHeadcount && formData.plusOnes > (event?.maxPlusOnes || 0)) {
       setSubmitError(`Plus ones cannot exceed ${event.maxPlusOnes}`);
       return false;
     }
@@ -88,6 +87,16 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
       if (formData.children < 0) {
         setSubmitError('Children count cannot be negative');
         return false;
+      }
+      
+      // When both Plus Ones and Family Headcount are enabled, 
+      // family headcount should match maxPlusOnes limit
+      if (event?.allowPlusOnes) {
+        const totalFamilyCount = formData.adults + formData.children;
+        if (totalFamilyCount > (event?.maxPlusOnes || 0)) {
+          setSubmitError(`Family headcount (${totalFamilyCount}) cannot exceed the maximum allowed guests (${event.maxPlusOnes})`);
+          return false;
+        }
       }
     }
 
@@ -499,7 +508,7 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
           </div>
 
           {/* Plus Ones Section */}
-          {event?.allowPlusOnes && (
+          {event?.allowPlusOnes && !event?.allowFamilyHeadcount && (
             <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
               <div className="flex items-center gap-2 mb-3">
                 <UserPlus className="h-4 w-4 text-blue-600 dark:text-blue-400" />
@@ -567,6 +576,11 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
               </div>
               <p className="text-xs text-green-700 dark:text-green-300 mb-3">
                 Please specify the number of adults and children attending
+                {event?.allowPlusOnes && (
+                  <span className="block mt-1 font-medium">
+                    Maximum total family size: {event.maxPlusOnes} people
+                  </span>
+                )}
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -599,6 +613,7 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
                       }
                       className="w-20 text-center dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
                       min="1"
+                      max={event?.allowPlusOnes ? event.maxPlusOnes - formData.children : undefined}
                     />
                     <Button
                       type="button"
@@ -607,6 +622,7 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
                       onClick={() =>
                         handleInputChange('adults', formData.adults + 1)
                       }
+                      disabled={event?.allowPlusOnes && (formData.adults + formData.children) >= event.maxPlusOnes}
                     >
                       +
                     </Button>
@@ -642,6 +658,7 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
                       }
                       className="w-20 text-center dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
                       min="0"
+                      max={event?.allowPlusOnes ? event.maxPlusOnes - formData.adults : undefined}
                     />
                     <Button
                       type="button"
@@ -650,6 +667,7 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
                       onClick={() =>
                         handleInputChange('children', formData.children + 1)
                       }
+                      disabled={event?.allowPlusOnes && (formData.adults + formData.children) >= event.maxPlusOnes}
                     >
                       +
                     </Button>
