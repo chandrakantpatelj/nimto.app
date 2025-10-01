@@ -578,7 +578,7 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
                 Please specify the number of adults and children attending
                 {event?.allowPlusOnes && (
                   <span className="block mt-1 font-medium">
-                    Maximum total family size: {event.maxPlusOnes} people
+                    Maximum total family size: {event.maxPlusOnes + 1} people
                   </span>
                 )}
               </p>
@@ -613,7 +613,7 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
                       }
                       className="w-20 text-center dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
                       min="1"
-                      max={event?.allowPlusOnes ? event.maxPlusOnes - formData.children : undefined}
+                      max={event?.allowPlusOnes ? event.maxPlusOnes + 1 - formData.children : undefined}
                     />
                     <Button
                       type="button"
@@ -622,7 +622,7 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
                       onClick={() =>
                         handleInputChange('adults', formData.adults + 1)
                       }
-                      disabled={event?.allowPlusOnes && (formData.adults + formData.children) >= event.maxPlusOnes}
+                      disabled={event?.allowPlusOnes && (formData.adults + formData.children) >= event.maxPlusOnes + 1}
                     >
                       +
                     </Button>
@@ -658,7 +658,7 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
                       }
                       className="w-20 text-center dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
                       min="0"
-                      max={event?.allowPlusOnes ? event.maxPlusOnes - formData.adults : undefined}
+                      max={event?.allowPlusOnes ? event.maxPlusOnes + 1 - formData.adults : undefined}
                     />
                     <Button
                       type="button"
@@ -667,7 +667,7 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
                       onClick={() =>
                         handleInputChange('children', formData.children + 1)
                       }
-                      disabled={event?.allowPlusOnes && (formData.adults + formData.children) >= event.maxPlusOnes}
+                      disabled={event?.allowPlusOnes && (formData.adults + formData.children) >= event.maxPlusOnes + 1}
                     >
                       +
                     </Button>

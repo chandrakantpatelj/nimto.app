@@ -199,12 +199,9 @@ export async function PUT(request) {
         // Validate Plus Ones
         if (plusOnes !== undefined) {
             if (!event.allowPlusOnes && plusOnes > 0) {
-                return NextResponse.json(
-                    { success: false, error: 'Plus ones are not allowed for this event' },
-                    { status: 400 },
-                );
+                guest.plusOnes = 0;
             }
-            if (event.allowPlusOnes && plusOnes > (event.maxPlusOnes || 0)) {
+            if (event.allowPlusOnes && plusOnes > (event.maxPlusOnes + 1 || 0)) {
                 return NextResponse.json(
                     { success: false, error: `Plus ones cannot exceed ${event.maxPlusOnes}` },
                     { status: 400 },
@@ -215,10 +212,12 @@ export async function PUT(request) {
         // Validate Family Headcount
         if (adults !== undefined || children !== undefined) {
             if (!event.allowFamilyHeadcount && (adults > 1 || children > 0)) {
-                return NextResponse.json(
-                    { success: false, error: 'Family headcount is not allowed for this event' },
-                    { status: 400 },
-                );
+                //return NextResponse.json(
+                //  { success: false, error: 'Family headcount is not allowed for this event' },
+                //  { status: 400 },
+                //);
+                guest.adults = 1;
+                guest.children = 0;
             }
             if (event.allowFamilyHeadcount) {
                 if (adults !== undefined && adults < 1) {
@@ -236,14 +235,14 @@ export async function PUT(request) {
                 // Plus ones validation for family headcount
                 if (
                     event.allowPlusOnes &&
-                    (event.maxPlusOnes || 0) > 0 &&
+                    (event.maxPlusOnes + 1 || 0) > 0 &&
                     (adults !== undefined || children !== undefined)
                 ) {
                     const totalAdults = adults !== undefined ? adults : guest.adults;
                     const totalChildren = children !== undefined ? children : guest.children;
-                    if (totalAdults + totalChildren > event.maxPlusOnes) {
+                    if (totalAdults + totalChildren > event.maxPlusOnes + 1 ) {
                         return NextResponse.json(
-                            { success: false, error: `Total guests (adults + children) cannot exceed allowed plus ones (${event.maxPlusOnes})` },
+                            { success: false, error: `Total guests (adults + children) cannot exceed allowed plus ones (${event.maxPlusOnes + 1 })` },
                             { status: 400 },
                         );
                     }
