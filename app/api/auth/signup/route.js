@@ -25,7 +25,7 @@ async function sendVerificationEmail(user, callbackUrl = '/templates') {
 
     // Send the verification email.
     await sendEmail({
-      to: user.email,
+      to: user.email, 
       subject: 'Account Activation',
       content: {
         title: `Hello, ${user.name}`,

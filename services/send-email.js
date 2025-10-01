@@ -1,57 +1,176 @@
 import nodemailer from 'nodemailer';
 
 export async function sendEmail({ to, subject, text, html, content = {} }) {
-  const { title, subtitle, description, buttonLabel, buttonUrl } = content;
+  const { title, subtitle, description, buttonLabel, buttonUrl, eventDetails } = content;
 
   // Build the email HTML template with inline conditions for each section.
   const emailHtml =
     html ??
     `
       <!DOCTYPE html>
-      <html>
+      <html lang="en">
         <head>
           <meta charset="UTF-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <meta http-equiv="X-UA-Compatible" content="IE=edge" />
           <title>${subject}</title>
         </head>
-        <body style="margin: 0; padding: 20px 10px; background-color: #f6f6f6; font-family: Arial, sans-serif; color: #333;">
-          <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f6f6f6;">
+        <body style="margin: 0; padding: 0; background-color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+          <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f8f9fa;">
             <tr>
-              <td align="center">
-                <table role="presentation" width="600" border="0" cellspacing="0" cellpadding="5" style="background-color: #ffffff;">
-                  <!-- Header -->
+              <td align="center" style="padding: 50px 20px;">
+                
+                <!-- Main Container -->
+                <table role="presentation" width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; max-width: 600px; border: 1px solid #e8e8e8;">
+                  
+                  <!-- Simple Header -->
                   <tr>
-                    <td align="center" style="background-color: #ffffff; color: #333; padding: 20px; text-align: center;">
-                      <h1 style="margin: 0; font-size: 20px;">Shoplit</h1>
+                    <td style="padding: 40px 50px 30px 50px; text-align: center; border-bottom: 3px solid #e8e8e8;">
+                      <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://nimto.app'}" style="display: inline-block; text-decoration: none;">
+                        <h1 style="margin: 0; font-size: 28px; font-weight: 600; color: #000000; letter-spacing: 4px;">
+                          NIMTO
+                        </h1>
+                      </a>
                     </td>
                   </tr>
-                  <!-- Content -->
+
+                  <!-- Content Section -->
                   <tr>
-                    <td style="padding: 20px; color: #333;">
-                      ${title ? `<h2 style="margin-top: 0; font-size: 20px;">${title}</h2>` : ''}
-                      ${subtitle ? `<p style="margin: 10px 0; font-size: 16px;">${subtitle}</p>` : ''}
+                    <td style="padding: 50px 50px 40px 50px;">
+                      
+                      ${title ? `<h2 style="margin: 0 0 16px 0; font-size: 24px; font-weight: 600; color: #1a1a1a; line-height: 1.4;">${title}</h2>` : ''}
+                      
+                      ${subtitle ? `<p style="margin: 0 0 30px 0; font-size: 16px; color: #4a4a4a; line-height: 1.6; font-weight: 400;">${subtitle}</p>` : ''}
+                      
+                      ${
+                        eventDetails && (eventDetails.date || eventDetails.time || eventDetails.location || eventDetails.eventDescription)
+                          ? `
+                        <!-- Event Details Box -->
+                        <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 32px 0; border: 1px solid #e0e0e0; background-color: #fafafa;">
+                          <tr>
+                            <td style="padding: 30px;">
+                              
+                              ${
+                                eventDetails.date
+                                  ? `
+                              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 16px;">
+                                <tr>
+                                  <td style="padding: 0;">
+                                    <p style="margin: 0 0 4px 0; font-size: 11px; color: #888888; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Date</p>
+                                    <p style="margin: 0; font-size: 16px; color: #1a1a1a; font-weight: 500;">${eventDetails.date}</p>
+                                  </td>
+                                </tr>
+                              </table>`
+                                  : ''
+                              }
+                              
+                              ${
+                                eventDetails.time
+                                  ? `
+                              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 16px;">
+                                <tr>
+                                  <td style="padding: 0;">
+                                    <p style="margin: 0 0 4px 0; font-size: 11px; color: #888888; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Time</p>
+                                    <p style="margin: 0; font-size: 16px; color: #1a1a1a; font-weight: 500;">${eventDetails.time}</p>
+                                  </td>
+                                </tr>
+                              </table>`
+                                  : ''
+                              }
+                              
+                              ${
+                                eventDetails.location
+                                  ? `
+                              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 16px;">
+                                <tr>
+                                  <td style="padding: 0;">
+                                    <p style="margin: 0 0 4px 0; font-size: 11px; color: #888888; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Location</p>
+                                    <p style="margin: 0; font-size: 16px; color: #1a1a1a; font-weight: 500;">${eventDetails.location}</p>
+                                  </td>
+                                </tr>
+                              </table>`
+                                  : ''
+                              }
+                              
+                              ${
+                                eventDetails.eventDescription
+                                  ? `
+                              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
+                                <tr>
+                                  <td style="padding: 0;">
+                                    <p style="margin: 0 0 8px 0; font-size: 11px; color: #888888; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">About This Event</p>
+                                    <p style="margin: 0; font-size: 15px; color: #4a4a4a; line-height: 1.7;">${eventDetails.eventDescription}</p>
+                                  </td>
+                                </tr>
+                              </table>`
+                                  : ''
+                              }
+                              
+                            </td>
+                          </tr>
+                        </table>`
+                          : ''
+                      }
+                      
+                      ${
+                        description
+                          ? `<p style="margin: 28px 0; font-size: 15px; color: #4a4a4a; line-height: 1.7;">${description}</p>`
+                          : ''
+                      }
+                      
                       ${
                         buttonLabel && buttonUrl
                           ? `
-                        <p style="text-align: center; margin: 30px 0;">
-                          <a href="${buttonUrl}" style="display: inline-block; background-color: #000; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 9px;">
-                            ${buttonLabel}
-                          </a>
+                        <!-- CTA Button -->
+                        <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 36px 0 28px 0;">
+                          <tr>
+                            <td align="center" style="padding: 0;">
+                              <a href="${buttonUrl}" style="display: inline-block; background-color: #000000; color: #ffffff; padding: 16px 48px; text-decoration: none; font-size: 15px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;">
+                                ${buttonLabel}
+                              </a>
+                            </td>
+                          </tr>
+                        </table>
+                        
+                        <p style="margin: 24px 0 0 0; font-size: 13px; color: #888888; text-align: center; line-height: 1.6;">
+                          Or copy this link:<br/>
+                          <a href="${buttonUrl}" style="color: #000000; text-decoration: underline; word-break: break-all;">${buttonUrl}</a>
                         </p>`
                           : ''
                       }
-                      ${
-                        description
-                          ? `<p style="margin: 20px 0; font-size: 16px;">${description}</p>`
-                          : ''
-                      }
-                      <p style="margin: 10px 0; font-size: 16px;">
-                        Thank you,<br />
-                        Shoplit Team
+                      
+                    </td>
+                  </tr>
+
+                  <!-- Signature -->
+                  <tr>
+                    <td style="padding: 0 50px 40px 50px;">
+                      <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="border-top: 1px solid #e8e8e8; padding-top: 30px;">
+                        <tr>
+                          <td>
+                            <p style="margin: 0 0 6px 0; font-size: 15px; color: #1a1a1a; line-height: 1.5;">
+                              Best regards,
+                            </p>
+                            <p style="margin: 0; font-size: 15px; color: #1a1a1a; font-weight: 600;">
+                              The Nimto Team
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- Footer -->
+                  <tr>
+                    <td style="padding: 30px 50px; background-color: #fafafa; border-top: 1px solid #e8e8e8;">
+                      <p style="margin: 0; font-size: 12px; color: #888888; line-height: 1.6; text-align: center;">
+                        © ${new Date().getFullYear()} Nimto. All rights reserved.
                       </p>
                     </td>
                   </tr>
-                  <!-- Footer (Optional) -->
+                  
                 </table>
+                
               </td>
             </tr>
           </table>
