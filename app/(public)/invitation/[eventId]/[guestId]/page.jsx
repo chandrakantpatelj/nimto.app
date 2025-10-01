@@ -413,12 +413,12 @@ export default function PublicEventInvitationPage() {
             <Link href="/" className="flex items-center">
               <img
                 src={toAbsoluteUrl('/media/app/nimto-main-logo.svg')}
-                className="dark:hidden w-[140px] sm:w-[175px]"
+                className="dark:hidden w-[125px] sm:w-[125px]"
                 alt="Nimto"
               />
               <img
                 src={toAbsoluteUrl('/media/app/nimto-main-logo-dark.svg')}
-                className="hidden dark:block w-[140px] sm:w-[175px]"
+                className="hidden dark:block w-[125px] sm:w-[125px]"
                 alt="Nimto"
               />
             </Link>
@@ -634,7 +634,7 @@ export default function PublicEventInvitationPage() {
                       <User className="h-5 w-5" />
                       Your Invitation
                     </span>
-                    <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-3 py-1.5">
+                    <div className="flex items-center gap-2 ml-2 bg-white/20 backdrop-blur-sm rounded-full px-3 py-1.5">
                       <div
                         className={`w-2 h-2 rounded-full ${
                           userGuest.status === 'CONFIRMED'

@@ -262,7 +262,7 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
                   Guest Count
                 </h4>
                 <div className="text-sm text-blue-800 space-y-1">
-                  {userGuest.adults > 1 && (
+                  {userGuest.adults > 0 && (
                     <div>Adults: {userGuest.adults}</div>
                   )}
                   {userGuest.children > 0 && (
