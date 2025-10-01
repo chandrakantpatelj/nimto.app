@@ -57,7 +57,6 @@ export function UserDropdownMenu({ trigger }) {
     await logout({
       redirect: true,
       redirectUrl: '/',
-      reload: true,
       onSuccess: () => {
         console.log('Logout successful');
       },
