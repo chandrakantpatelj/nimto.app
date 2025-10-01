@@ -476,11 +476,11 @@ export default function PublicEventInvitationPage() {
           <div className="order-1 lg:order-1">
             <div className="relative lg:sticky lg:top-6">
               <div className="border-2  rounded-lg bg-white dark:bg-gray-800 shadow-lg">
-                {event.s3ImageUrl ? (
+                {event?.eventThumbnailUrl || event?.s3ImageUrl ? (
                   <div className="relative w-full aspect-[3/4] bg-gray-50 dark:bg-gray-900 flex items-center justify-center rounded-lg overflow-hidden">
                     <img
-                      src={event.s3ImageUrl}
-                      alt={event.title}
+                      src={event?.eventThumbnailUrl || event?.s3ImageUrl}
+                      alt={event?.title}
                       className="w-full h-full object-cover rounded-lg"
                     />
                   </div>
