@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import { format } from 'date-fns';
 import { ArrowLeft, CalendarDays, Clock, MapPin, User } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
+import { toAbsoluteUrl } from '@/lib/helpers';
 import {
   getCategoryTheme,
   getFallbackGradientClasses,
@@ -404,17 +405,75 @@ export default function PublicEventInvitationPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 dark:from-gray-900 dark:to-slate-900/50">
+      {/* Top Logo Header */}
+      <div className="w-full bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-700/50 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
+          <div className="flex items-center justify-between">
+            {/* Logo */}
+            <Link href="/" className="flex items-center">
+              <img
+                src={toAbsoluteUrl('/media/app/nimto-main-logo.svg')}
+                className="dark:hidden w-[140px] sm:w-[175px]"
+                alt="Nimto"
+              />
+              <img
+                src={toAbsoluteUrl('/media/app/nimto-main-logo-dark.svg')}
+                className="hidden dark:block w-[140px] sm:w-[175px]"
+                alt="Nimto"
+              />
+            </Link>
+
+            {/* Status Badge - Desktop Only */}
+            <div className="hidden sm:flex items-center">
+              {userGuest && (
+                <div className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-full px-4 py-2 border border-blue-200 dark:border-blue-800">
+                  <div
+                    className={`w-2 h-2 rounded-full ${
+                      userGuest.status === 'CONFIRMED'
+                        ? 'bg-green-500'
+                        : userGuest.status === 'PENDING'
+                          ? 'bg-yellow-500'
+                          : userGuest.status === 'DECLINED'
+                            ? 'bg-red-500'
+                            : 'bg-gray-500'
+                    }`}
+                  ></div>
+                  <span className="text-gray-700 dark:text-gray-300 text-sm font-medium capitalize">
+                    {userGuest.status || 'Pending'}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Enhanced Header with Better Layout */}
       <div
         className={`${getHeaderGradientClasses(category)} text-white shadow-xl relative overflow-hidden`}
       >
         <div className="absolute inset-0 bg-black/10"></div>
-        <div className="relative z-10 px-4 sm:px-6 py-6">
+        <div className="relative z-10 px-4 sm:px-6 py-6 sm:py-8">
           <div className="max-w-7xl mx-auto">
-            {/* Mobile-first layout */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              {/* Back Button */}
-              <div className="flex items-center">
+            {/* Centered Content */}
+            <div className="text-center space-y-3">
+              {/* Title */}
+              <h1 className="text-2xl sm:text-4xl font-bold text-white drop-shadow-lg">
+                You're Invited!
+              </h1>
+              
+              {/* Invited by Information */}
+              {event.User && (
+                <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 sm:px-6 py-2 sm:py-3 border border-white/30">
+                  <User className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                  <span className="text-white text-sm sm:text-base font-medium">
+                    Invited by {event.User.name || event.User.email}
+                  </span>
+                </div>
+              )}
+
+              {/* Back Button - Mobile */}
+              <div className="pt-2">
                 <Link href="/">
                   <Button
                     variant="ghost"
@@ -425,38 +484,6 @@ export default function PublicEventInvitationPage() {
                     Back to Home
                   </Button>
                 </Link>
-              </div>
-
-              {/* Title - Center on larger screens, left-aligned on mobile */}
-              <div className="text-center sm:flex-1">
-                <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
-                  You're Invited!
-                </h1>
-                {/* <p className="text-blue-100 text-sm sm:text-base font-medium mt-1">
-                  ✨ {categoryTheme.name} Event Invitation
-                </p> */}
-              </div>
-
-              {/* Status Badge - Hidden on mobile, shown in guest card instead */}
-              <div className="hidden sm:flex items-center">
-                {userGuest && (
-                  <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20">
-                    <div
-                      className={`w-2 h-2 rounded-full ${
-                        userGuest.status === 'CONFIRMED'
-                          ? 'bg-green-400'
-                          : userGuest.status === 'PENDING'
-                            ? 'bg-yellow-400'
-                            : userGuest.status === 'DECLINED'
-                              ? 'bg-red-400'
-                              : 'bg-gray-400'
-                      }`}
-                    ></div>
-                    <span className="text-white text-sm font-medium capitalize">
-                      {userGuest.status || 'Pending'}
-                    </span>
-                  </div>
-                )}
               </div>
             </div>
           </div>

@@ -2,7 +2,7 @@ import { sendEmail } from './send-email.js';
 
 export async function sendEventInvitation({ guest, event, invitationUrl }) {
   const { name, email, phone } = guest;
-  const { title, description, startDateTime, location } = event;
+  const { title, description, startDateTime, location, User } = event;
 
   // Use email if available, otherwise use phone
   const contactInfo = email || phone;
@@ -25,20 +25,22 @@ export async function sendEventInvitation({ guest, event, invitationUrl }) {
     hour12: true,
   });
 
+  // Get host name
+  const hostName = User?.name || User?.email || 'the event host';
+
   const subject = `You're invited to ${title}!`;
 
   const content = {
     title: `You're Invited!`,
-    subtitle: `You've been invited to attend ${title}`,
-    description: `
-      <p><strong>Event Details:</strong></p>
-      <p><strong>Date:</strong> ${eventDate}</p>
-      <p><strong>Time:</strong> ${eventTime}</p>
-      ${location ? `<p><strong>Location:</strong> ${location}</p>` : ''}
-      ${description ? `<p><strong>Description:</strong> ${description}</p>` : ''}
-      <p>Please click the button below to view the full invitation and respond.</p>
-    `,
-    buttonLabel: 'View Invitation',
+    subtitle: `${hostName} has invited you to attend ${title}`,
+    eventDetails: {
+      date: eventDate,
+      time: eventTime,
+      location: location || null,
+      eventDescription: description || null,
+    },
+    description: 'Please click the button below to view the full invitation and RSVP to this event.',
+    buttonLabel: 'View Invitation & RSVP',
     buttonUrl: invitationUrl,
   };
 
