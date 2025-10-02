@@ -407,6 +407,21 @@ export default function PublicEventInvitationPage() {
         },
     };
 
+    function extractHourMinute(dateString) {
+        // Match the time part after the 'T'
+        const match = dateString.match(/T(\d{2}):(\d{2})/);
+        if (match) {
+            let hour = match[1];
+            let minute = match[2];
+            // Optionally format to 12-hour with AM/PM
+            const hourNum = parseInt(hour, 10);
+            const ampm = hourNum >= 12 ? 'PM' : 'AM';
+            const hour12 = ((hourNum + 11) % 12 + 1); // 12-hour format
+            return `${hour12}:${minute} ${ampm}`;
+        }
+        return 'Invalid Time';
+    }
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 dark:from-gray-900 dark:to-slate-900/50">
             {/* Top Logo Header */}
@@ -535,8 +550,8 @@ export default function PublicEventInvitationPage() {
                                                     <span className="font-semibold text-purple-900 dark:text-purple-300 text-sm block mb-1">
                                                         Time
                                                     </span>
-                                                    <p className="text-purple-700 dark:text-purple-200 font-medium">
-                                                        {format(new Date(event.startDateTime), 'h:mm a')}
+                                                    <p className="text-purple-700 dark:text-purple-200 font-medium"> 
+                                                        {extractHourMinute(event.startDateTime)}
                                                     </p>
                                                 </div>
                                             </div>
