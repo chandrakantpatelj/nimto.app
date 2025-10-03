@@ -1,7 +1,3 @@
-const { PrismaClient } = require('@prisma/client');
-
-const prisma = new PrismaClient();
-
 const categories = [
   {
     name: 'Baby & Kids',
@@ -69,33 +65,4 @@ const categories = [
   },
 ];
 
-async function main() {
-  console.log('🌱 Seeding template categories...');
-
-  try {
-    // Clear existing categories
-    await prisma.templateCategory.deleteMany();
-
-    // Create categories
-    for (const categoryData of categories) {
-      await prisma.templateCategory.create({
-        data: categoryData,
-      });
-    }
-
-    console.log('✅ Template categories seeded successfully!');
-    console.log(`📊 Created ${categories.length} categories`);
-  } catch (error) {
-    console.error('❌ Error seeding template categories:', error);
-    throw error;
-  }
-}
-
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+module.exports = categories;
