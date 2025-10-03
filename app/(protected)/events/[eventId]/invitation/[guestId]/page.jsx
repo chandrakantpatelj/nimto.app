@@ -145,65 +145,7 @@ export default function EventInvitationPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
-      {/* Enhanced Header with Better Layout */}
-      <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-xl relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/20 via-purple-600/20 to-pink-600/20"></div>
-        <div className="relative z-10 px-6 py-4">
-          <div className="flex items-center justify-between max-w-7xl mx-auto">
-            {/* Left Side - Back Button */}
-            <div className="flex items-center">
-              <Link href="/invited-events">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-white hover:bg-white/20 border border-white/20 hover:border-white/40 transition-all duration-200 backdrop-blur-sm bg-white/10"
-                >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  <span className="hidden sm:inline">
-                    Back to Invited Events
-                  </span>
-                  <span className="sm:hidden">Back</span>
-                </Button>
-              </Link>
-            </div>
-
-            {/* Center - Title */}
-            <div className="flex-1 text-center px-4">
-              <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
-                You're Invited!
-              </h1>
-            </div>
-
-            {/* Right Side - Event Status Badge */}
-            <div className="flex items-center">
-              {userGuest && (
-                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3 py-1.5 border border-white/20">
-                  <div
-                    className={`w-2 h-2 rounded-full ${
-                      userGuest.status === 'CONFIRMED'
-                        ? 'bg-green-400'
-                        : userGuest.status === 'PENDING'
-                          ? 'bg-yellow-400'
-                          : userGuest.status === 'DECLINED'
-                            ? 'bg-red-400'
-                            : 'bg-gray-400'
-                    }`}
-                  ></div>
-                  <span className="text-white text-xs font-medium capitalize">
-                    {userGuest.status || 'Pending'}
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-        {/* Enhanced Decorative Elements */}
-        <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-12 translate-x-12"></div>
-        <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/5 rounded-full translate-y-10 -translate-x-10"></div>
-        <div className="absolute top-1/2 left-1/4 w-2 h-2 bg-white/20 rounded-full"></div>
-        <div className="absolute top-1/3 right-1/3 w-1 h-1 bg-white/30 rounded-full"></div>
-      </div>
-
+      
       {/* Main Content */}
       <div className="p-4 sm:p-6 max-w-7xl mx-auto">
         {/* Main Content Grid */}
