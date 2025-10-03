@@ -93,6 +93,10 @@ export async function PUT(request, { params }) {
       }
     }
 
+      if (guestResponse === "") {
+          guestResponse = null;
+      }
+
     const guest = await prisma.guest.update({
       where: { id },
       data: {

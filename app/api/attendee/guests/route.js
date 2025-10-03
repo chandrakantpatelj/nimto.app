@@ -151,7 +151,7 @@ export async function PUT(request) {
             !['PENDING', 'CONFIRMED', 'DECLINED', 'MAYBE'].includes(newStatus)
         ) {
             return NextResponse.json(
-                { success: false, error: 'Valid status is required' },
+                { success: false, error: 'Please select at least one RSVP response.' },
                 { status: 400 },
             );
         }
@@ -263,7 +263,9 @@ export async function PUT(request) {
 
         // Convert response to proper enum value
         let guestResponse = null;
-        if (response) {
+        if (response === "") {
+            guestResponse = null;
+        } else if (response) {
             const normalizedResponse = response.toString().toLowerCase();
             if (normalizedResponse === 'yes') {
                 guestResponse = 'YES';
@@ -275,8 +277,13 @@ export async function PUT(request) {
                 ['YES', 'NO', 'MAYBE'].includes(response.toString().toUpperCase())
             ) {
                 // If it's already a valid enum value, keep it
-                guestResponse = response.toString().toUpperCase();
+                guestResponse = response?.toString().toUpperCase();
             }
+        }
+
+        // Check for empty string before updating
+        if (guestResponse === "") {
+            guestResponse = null;
         }
 
         // Update the guest record
