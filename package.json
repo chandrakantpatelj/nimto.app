@@ -11,9 +11,7 @@
     "postinstall": "prisma generate",
     "db:migrate": "prisma migrate deploy",
     "db:seed": "prisma db seed",
-    "migrate:safe": "node scripts/safe-migrate.js",
-    "deploy": "npm run db:migrate && npm run build && npm start",
-    "deploy:safe": "npm run migrate:safe && npm run build && npm start",
+    "deploy": "npm run db:migrate && npm run db:seed",
     "lint": "eslint .",
     "test": "jest",
     "test:coverage": "jest --coverage"
