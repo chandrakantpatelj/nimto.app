@@ -37,7 +37,8 @@ export async function GET(request) {
             id: true,
             title: true,
             startDateTime: true,
-            location: true,
+            locationAddress: true,
+            locationUnit: true,
           },
         },
       },
@@ -143,7 +144,8 @@ export async function POST(request) {
             id: true,
             title: true,
             startDateTime: true,
-            location: true,
+            locationAddress: true,
+            locationUnit: true,
             description: true,
           },
         },
@@ -165,7 +167,9 @@ export async function POST(request) {
           title: guest.event.title,
           description: guest.event.description,
           startDateTime: guest.event.startDateTime,
-          location: guest.event.location,
+          location: guest.event.locationAddress
+            ? `${guest.event.locationAddress}${guest.event.locationUnit ? `, ${guest.event.locationUnit}` : ''}`
+            : null,
         },
         invitationUrl,
       });
@@ -246,20 +250,21 @@ export async function PUT(request) {
     // Update guest
     const updatedGuest = await prisma.guest.update({
       where: { id: guestId },
-      data: {
+    data: {
         ...(name && { name }),
         ...(email && { email }),
         ...(phone && { phone }),
         ...(status && { status }),
-        ...(response !== undefined && { response }),
-      },
+        ...(response !== undefined && { response: response === "" ? null : response }),
+    },
       include: {
         event: {
           select: {
             id: true,
             title: true,
             startDateTime: true,
-            location: true,
+            locationAddress: true,
+            locationUnit: true,
             description: true,
           },
         },

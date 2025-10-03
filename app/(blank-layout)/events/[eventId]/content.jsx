@@ -4,7 +4,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useEventActions, useEvents } from '@/store/hooks';
 import { useSession } from 'next-auth/react';
+import { DEFAULT_MAP_CENTER } from '@/lib/constants';
 import { useToast } from '@/providers/toast-provider';
+import AdvancedProcessingLoader from '@/components/common/advanced-processing-loader';
 import { AuthModal } from '@/components/common/auth-modal';
 import { TemplateHeader } from '../components';
 import InvitationPopup from '../components/InvitationPopup';
@@ -46,7 +48,18 @@ function EditEventContent() {
 
       const event = await fetchEventById(eventId).unwrap();
 
-      setSelectedEvent(event);
+      // Ensure mapCenter is set when showMap is true
+      const eventWithDefaults = {
+        ...event,
+        mapCenter:
+          event.showMap && event.locationAddress && !event.mapCenter
+            ? DEFAULT_MAP_CENTER
+            : event.mapCenter,
+      };
+
+      // Update both the selectedEvent and the events store
+      setSelectedEvent(eventWithDefaults);
+      updateEventInStore(eventWithDefaults);
     } catch (err) {
       const errorMessage = err.message || 'Error loading event data';
       setError(errorMessage);
@@ -54,11 +67,11 @@ function EditEventContent() {
     } finally {
       setLoading(false);
     }
-  }, [eventId, fetchEventById, setSelectedEvent]);
+  }, [eventId, fetchEventById, setSelectedEvent, updateEventInStore]);
 
   // Load existing event data
   useEffect(() => {
-    if (eventId && !eventData && !hasLoadedRef.current) {
+    if (eventId && !hasLoadedRef.current) {
       fetchEventData();
     } else if (eventData) {
       setLoading(false);
@@ -74,7 +87,33 @@ function EditEventContent() {
         setShowAuthModal(true);
         return;
       }
+    }
 
+    // Check required fields when moving from step 1 to step 2 (Step2 component)
+    if (activeStep === 1) {
+      // Check Event Title
+      if (!eventData?.title || !eventData.title.trim()) {
+        toastError('Event title is required. Please enter an event title.');
+        return;
+      }
+
+      // Check Start Date
+      if (!eventData?.startDateTime) {
+        toastError(
+          'Start date is required. Please select an event start date.',
+        );
+        return;
+      }
+
+      // Check Location
+      if (!eventData?.locationAddress || !eventData.locationAddress.trim()) {
+        toastError('Location is required. Please add an event location.');
+        return;
+      }
+    }
+
+    // Only check Pixie editor readiness if we're on step 0 (design step)
+    if (activeStep === 0) {
       if (!pixieEditorRef.current?.save) {
         toastError('Editor not ready. Please try again.');
         return;
@@ -203,11 +242,11 @@ function EditEventContent() {
           message = `Event updated successfully and invitations sent to ${newGuestsCount} new guests`;
         }
 
-        // Note: Redux store will be updated when user navigates back to events page
-        // No need to update store here as it will be refreshed from API
+        // Update the Redux store with the latest event data from API response
+        updateEventInStore(data.data);
 
-        // Clear selectedEvent from store after successful update
-        resetEventCreation();
+        // Update selectedEvent with the latest data
+        setSelectedEvent(data.data);
 
         toastSuccess(message);
         router.push('/events');
@@ -291,6 +330,17 @@ function EditEventContent() {
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         mode="signin"
+      />
+
+      <AdvancedProcessingLoader
+        isVisible={isUpdating && !showInvitationPopup}
+        title="Updating Event"
+        description="Please wait while we process your event..."
+        tasks={[
+          { icon: '✨', text: 'Processing event data...' },
+          { icon: '🎨', text: 'Optimizing assets...' },
+          { icon: '💾', text: 'Saving to database...' },
+        ]}
       />
     </>
   );

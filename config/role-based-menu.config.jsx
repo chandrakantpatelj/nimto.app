@@ -1,15 +1,15 @@
 import {
+  BarChart3,
   CalendarCheck,
   FileText,
+  Home,
   LayoutDashboard,
   Mail,
   MessageSquare,
   Settings,
+  Shield,
   UserCircle,
   UserCog,
-  Home,
-  Shield,
-  BarChart3
 } from 'lucide-react';
 
 // Base menu items that are common to all roles
@@ -83,6 +83,11 @@ const HOST_MENU_ITEMS = [
     path: '/templates',
   },
   {
+    title: 'Invited Events',
+    icon: Mail,
+    path: '/invited-events',
+  },
+  {
     title: 'Messaging',
     icon: MessageSquare,
     path: '/messaging',
@@ -146,4 +151,3 @@ export function getCustomRoleBasedMenuItems(userRole, options = {}) {
 
 // Export the main function for use in components
 export { getRoleBasedMenuItems as MENU_SIDEBAR_ROLE_BASED };
-

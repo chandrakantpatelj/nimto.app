@@ -23,7 +23,8 @@ export async function GET(request, { params }) {
             id: true,
             title: true,
             startDateTime: true,
-            location: true,
+            locationAddress: true,
+            locationUnit: true,
           },
         },
       },
@@ -92,6 +93,10 @@ export async function PUT(request, { params }) {
       }
     }
 
+      if (guestResponse === "") {
+          guestResponse = null;
+      }
+
     const guest = await prisma.guest.update({
       where: { id },
       data: {
@@ -108,7 +113,8 @@ export async function PUT(request, { params }) {
             id: true,
             title: true,
             startDateTime: true,
-            location: true,
+            locationAddress: true,
+            locationUnit: true,
           },
         },
       },

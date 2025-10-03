@@ -58,7 +58,12 @@ export async function GET(request) {
       where.OR = [
         { title: { contains: search, mode: 'insensitive' } },
         { description: { contains: search, mode: 'insensitive' } },
-        { location: { contains: search, mode: 'insensitive' } },
+        {
+          OR: [
+            { locationAddress: { contains: search, mode: 'insensitive' } },
+            { locationUnit: { contains: search, mode: 'insensitive' } },
+          ],
+        },
       ];
     }
 
@@ -148,17 +153,41 @@ export async function POST(request) {
       description,
       startDateTime,
       endDateTime,
-      location,
+      locationAddress,
+      locationUnit,
+      showMap,
       templateId,
       jsonContent,
       imagePath,
       status,
+      // Event features
+      privateGuestList = false,
+      allowPlusOnes = false,
+      allowMaybeRSVP = true,
+      allowFamilyHeadcount = false,
+      limitEventCapacity = false,
+      maxEventCapacity = 0,
+      maxPlusOnes = 0,
     } = body;
 
-    // Validate required startDateTime
+    // Validate required fields
+    if (!title || !title.trim()) {
+      return NextResponse.json(
+        { success: false, error: 'Event title is required' },
+        { status: 400 },
+      );
+    }
+
     if (!startDateTime) {
       return NextResponse.json(
-        { success: false, error: 'startDateTime is required' },
+        { success: false, error: 'Start date is required' },
+        { status: 400 },
+      );
+    }
+
+    if (!locationAddress || !locationAddress.trim()) {
+      return NextResponse.json(
+        { success: false, error: 'Location address is required' },
         { status: 400 },
       );
     }
@@ -169,13 +198,23 @@ export async function POST(request) {
         description,
         startDateTime: new Date(startDateTime),
         endDateTime: endDateTime ? new Date(endDateTime) : null,
-        location,
+        locationAddress,
+        locationUnit,
+        showMap: showMap !== undefined ? showMap : true, // Temporarily disabled until DB migration is confirmed
         templateId,
         jsonContent,
         imagePath,
         status: status || 'DRAFT',
         createdByUserId: session.user.id, // Automatically set from session
         isTrashed: false,
+        // Event features
+        privateGuestList,
+        allowPlusOnes,
+        allowMaybeRSVP,
+        allowFamilyHeadcount,
+        limitEventCapacity,
+        maxEventCapacity,
+        maxPlusOnes,
       },
       include: {
         creator: {

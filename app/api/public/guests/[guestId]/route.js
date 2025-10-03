@@ -93,14 +93,19 @@ export async function GET(request, { params }) {
       );
     }
 
-    // Generate S3 URL for event image if it exists
+    // Generate S3 URLs for event images if they exist
     try {
       if (guest.event.imagePath) {
         guest.event.s3ImageUrl = generateDirectS3Url(guest.event.imagePath);
       }
+      
+      // Generate thumbnail URL if eventThumbnailPath exists
+      if (guest.event.eventThumbnailPath) {
+        guest.event.eventThumbnailUrl = generateDirectS3Url(guest.event.eventThumbnailPath);
+      }
     } catch (s3Error) {
       console.warn('S3 URL generation failed:', s3Error);
-      // Continue without S3 URL
+      // Continue without S3 URLs
     }
 
     return NextResponse.json({

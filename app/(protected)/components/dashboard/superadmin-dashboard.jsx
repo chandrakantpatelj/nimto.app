@@ -1,22 +1,23 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { 
-  Users, 
-  CalendarDays, 
-  Shield, 
-  Settings, 
-  UserCheck,
+import { useRouter } from 'next/navigation';
+import { useEventActions, useEvents } from '@/store/hooks';
+import {
   Activity,
   BarChart3,
-  Database
+  CalendarDays,
+  Database,
+  Settings,
+  Shield,
+  UserCheck,
+  Users,
 } from 'lucide-react';
-import { apiFetch } from '@/lib/api';
-import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import { apiFetch } from '@/lib/api';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export function SuperAdminDashboard() {
   const [stats, setStats] = useState({
@@ -28,11 +29,15 @@ export function SuperAdminDashboard() {
     systemHealth: 'healthy',
     recentActivity: [],
     userRoles: {},
-    eventStats: {}
+    eventStats: {},
   });
   const [loading, setLoading] = useState(true);
   const { data: session } = useSession();
   const router = useRouter();
+
+  // Redux state and actions
+  const { events } = useEvents();
+  const { fetchAllEvents } = useEventActions();
 
   useEffect(() => {
     fetchSystemStats();
@@ -41,43 +46,51 @@ export function SuperAdminDashboard() {
   const fetchSystemStats = async () => {
     try {
       setLoading(true);
-      
+
       // Fetch all users
-      const usersResponse = await apiFetch('/api/user-management/users?limit=1000');
+      const usersResponse = await apiFetch(
+        '/api/user-management/users?limit=1000',
+      );
       const usersData = await usersResponse.json();
       const users = usersData?.data || [];
-      
-      // Fetch all events (admin can see all events)
-      const eventsResponse = await apiFetch('/api/events?admin=true');
-      const eventsData = await eventsResponse.json();
-      const events = eventsData?.data || [];
-      
+
+      // Fetch all events using Redux (admin can see all events)
+      await fetchAllEvents({ admin: 'true' });
+
       // Fetch all guests
       const guestsResponse = await apiFetch('/api/events/guests');
       const guestsData = await guestsResponse.json();
-      
-      const guests = guestsData?.data || [];      
-      
+
+      const guests = guestsData?.data || [];
+
       // Calculate user statistics
       const totalUsers = users.length;
-      const activeUsers = users.filter(user => user.status === 'ACTIVE').length;
-      const inactiveUsers = users.filter(user => user.status === 'INACTIVE').length;
-            
+      const activeUsers = users.filter(
+        (user) => user.status === 'ACTIVE',
+      ).length;
+      const inactiveUsers = users.filter(
+        (user) => user.status === 'INACTIVE',
+      ).length;
+
       // Calculate role distribution
       const userRoles = users.reduce((acc, user) => {
         const roleName = user.role?.name || 'No Role';
         acc[roleName] = (acc[roleName] || 0) + 1;
         return acc;
       }, {});
-      
+
       // Calculate event statistics
       const totalEvents = events.length;
       const totalGuests = guests.length;
-      const publishedEvents = events.filter(event => event.status === 'PUBLISHED').length;
-      const draftEvents = events.filter(event => event.status === 'DRAFT').length;
-      
+      const publishedEvents = events.filter(
+        (event) => event.status === 'PUBLISHED',
+      ).length;
+      const draftEvents = events.filter(
+        (event) => event.status === 'DRAFT',
+      ).length;
+
       // Get recent activity (last 10 events created)
-      const recentActivity = events
+      const recentActivity = [...events]
         .sort((a, b) => {
           try {
             return new Date(b.createdAt) - new Date(a.createdAt);
@@ -86,7 +99,7 @@ export function SuperAdminDashboard() {
           }
         })
         .slice(0, 10);
-      
+
       setStats({
         totalUsers,
         totalEvents,
@@ -98,14 +111,14 @@ export function SuperAdminDashboard() {
         userRoles,
         eventStats: {
           published: publishedEvents,
-          draft: draftEvents
-        }
+          draft: draftEvents,
+        },
       });
     } catch (error) {
       console.error('Error fetching system stats:', error);
       console.error('Error details:', error.message, error.stack);
       // Set some default stats in case of error
-      setStats(prev => ({
+      setStats((prev) => ({
         ...prev,
         totalUsers: 0,
         totalEvents: 0,
@@ -114,7 +127,7 @@ export function SuperAdminDashboard() {
         inactiveUsers: 0,
         userRoles: {},
         eventStats: { published: 0, draft: 0 },
-        recentActivity: []
+        recentActivity: [],
       }));
     } finally {
       setLoading(false);
@@ -123,10 +136,14 @@ export function SuperAdminDashboard() {
 
   const getHealthColor = (health) => {
     switch (health) {
-      case 'healthy': return 'text-green-600';
-      case 'warning': return 'text-yellow-600';
-      case 'critical': return 'text-red-600';
-      default: return 'text-gray-600';
+      case 'healthy':
+        return 'text-green-600';
+      case 'warning':
+        return 'text-yellow-600';
+      case 'critical':
+        return 'text-red-600';
+      default:
+        return 'text-gray-600';
     }
   };
 
@@ -138,7 +155,7 @@ export function SuperAdminDashboard() {
         month: 'short',
         day: 'numeric',
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
       });
     } catch (error) {
       console.warn('Invalid date format:', dateString);
@@ -159,7 +176,9 @@ export function SuperAdminDashboard() {
       {/* Welcome Header */}
       <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg p-4 sm:p-6 text-white">
         <h1 className="text-xl sm:text-2xl font-bold mb-2">System Overview</h1>
-        <p className="text-purple-100 text-sm sm:text-base">Welcome, {session?.user?.name}. Here's your system dashboard</p>
+        <p className="text-purple-100 text-sm sm:text-base">
+          Welcome, {session?.user?.name}. Here's your system dashboard
+        </p>
       </div>
 
       {/* System Health */}
@@ -170,8 +189,11 @@ export function SuperAdminDashboard() {
             <Database className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${getHealthColor(stats.systemHealth)}`}>
-              {stats.systemHealth.charAt(0).toUpperCase() + stats.systemHealth.slice(1)}
+            <div
+              className={`text-2xl font-bold ${getHealthColor(stats.systemHealth)}`}
+            >
+              {stats.systemHealth.charAt(0).toUpperCase() +
+                stats.systemHealth.slice(1)}
             </div>
             <p className="text-xs text-muted-foreground">
               All systems operational
@@ -200,7 +222,8 @@ export function SuperAdminDashboard() {
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalEvents}</div>
             <p className="text-xs text-muted-foreground">
-              {stats.eventStats.published} published, {stats.eventStats.draft} drafts
+              {stats.eventStats.published} published, {stats.eventStats.draft}{' '}
+              drafts
             </p>
           </CardContent>
         </Card>
@@ -212,9 +235,7 @@ export function SuperAdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalGuests}</div>
-            <p className="text-xs text-muted-foreground">
-              Across all events
-            </p>
+            <p className="text-xs text-muted-foreground">Across all events</p>
           </CardContent>
         </Card>
       </div>
@@ -229,31 +250,31 @@ export function SuperAdminDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <Button 
-              className="w-full justify-start" 
+            <Button
+              className="w-full justify-start"
               onClick={() => router.push('/user-management/users')}
             >
               <Users className="h-4 w-4 mr-2" />
               Manage Users
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="w-full justify-start"
               onClick={() => router.push('/user-management/roles')}
             >
               <Shield className="h-4 w-4 mr-2" />
               Manage Roles
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="w-full justify-start"
               onClick={() => router.push('/settings')}
             >
               <Settings className="h-4 w-4 mr-2" />
               System Settings
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="w-full justify-start"
               onClick={() => router.push('/reportings')}
             >
@@ -294,8 +315,8 @@ export function SuperAdminDashboard() {
               <Activity className="h-5 w-5" />
               Recent System Activity
             </span>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="sm"
               onClick={() => router.push('/events')}
             >
@@ -312,13 +333,16 @@ export function SuperAdminDashboard() {
           ) : (
             <div className="space-y-4">
               {stats.recentActivity.map((event) => (
-                <div key={event.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg hover:bg-gray-50 gap-3">
+                <div
+                  key={event.id}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg hover:bg-gray-50 gap-3"
+                >
                   <div className="flex-1">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
-                      <h3 className="font-medium text-sm sm:text-base">{event.title}</h3>
-                      <Badge variant="outline">
-                        {event.status}
-                      </Badge>
+                      <h3 className="font-medium text-sm sm:text-base">
+                        {event.title}
+                      </h3>
+                      <Badge variant="outline">{event.status}</Badge>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                       <div className="flex items-center gap-1">
@@ -335,8 +359,8 @@ export function SuperAdminDashboard() {
                       </div>
                     </div>
                   </div>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     className="w-full sm:w-auto"
                     onClick={() => router.push(`/events/${event.id}`)}

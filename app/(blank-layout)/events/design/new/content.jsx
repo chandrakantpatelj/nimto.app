@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useEventActions, useEvents, useTemplateLoading } from '@/store/hooks';
 import { useSession } from 'next-auth/react';
+import AdvancedProcessingLoader from '@/components/common/advanced-processing-loader';
 import { showCustomToast } from '@/components/common/custom-toast';
 import { TemplateHeader } from '../../components';
 import InvitationConfirmationPopup from '../../components/InvitationConfirmationPopup';
@@ -65,7 +66,9 @@ function NewEventFromTemplateContent() {
           templateId: templateData.id,
           description: '',
           startDateTime: null,
-          location: '',
+          locationAddress: '',
+          locationUnit: '',
+          showMap: true,
           status: 'DRAFT',
           guests: [],
           jsonContent: templateData.jsonContent,
@@ -239,6 +242,17 @@ function NewEventFromTemplateContent() {
         onConfirm={handleConfirmPublish}
         isCreating={isCreating}
         eventData={eventData}
+      />
+
+      <AdvancedProcessingLoader
+        isVisible={isCreating && !showInvitationPopup}
+        title="Creating Event"
+        description="Please wait while we process your event..."
+        tasks={[
+          { icon: '✨', text: 'Processing event data...' },
+          { icon: '🎨', text: 'Optimizing assets...' },
+          { icon: '💾', text: 'Saving to database...' },
+        ]}
       />
     </div>
   );

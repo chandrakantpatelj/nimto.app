@@ -102,7 +102,7 @@ export function HostDashboard() {
       });
 
       // Get recent events (last 5)
-      const recentEvents = events
+      const recentEvents = [...events]
         .sort((a, b) => {
           try {
             return new Date(b.createdAt) - new Date(a.createdAt);
@@ -332,10 +332,15 @@ export function HostDashboard() {
                         <CalendarDays className="h-3 w-3 sm:h-4 sm:w-4" />
                         {formatDate(event.startDateTime)}
                       </div>
-                      {event.location && (
+                      {(event.locationAddress || event.locationUnit) && (
                         <div className="flex items-center gap-1">
                           <MapPin className="h-3 w-3 sm:h-4 sm:w-4" />
-                          <span className="truncate">{event.location}</span>
+                          <span className="truncate">
+                            {event.locationAddress}
+                            {event.locationUnit
+                              ? `, ${event.locationUnit}`
+                              : ''}
+                          </span>
                         </div>
                       )}
                       <div className="flex items-center gap-1">

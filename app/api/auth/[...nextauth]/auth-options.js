@@ -134,7 +134,7 @@ const authOptions = {
                 data: {
                   email: profile.email,
                   name: profile.name,
-                  password: '', // No password for OAuth users
+                  password: null, // No password for OAuth users
                   avatar: profile.picture || null,
                   emailVerifiedAt: new Date(),
                   roleId: defaultRole.id,

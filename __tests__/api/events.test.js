@@ -386,9 +386,8 @@ describe('Events API', () => {
         id: 'new-event',
         title: 'New Event',
         description: 'New Event Description',
-        date: new Date('2024-02-01'),
-        time: '16:00',
-        location: 'New Location',
+        startDateTime: new Date('2024-02-01'),
+        locationAddress: 'New Location',
         status: 'DRAFT',
         createdByUserId: 'user1',
         createdAt: new Date(),
@@ -406,9 +405,8 @@ describe('Events API', () => {
       const eventData = {
         title: 'New Event',
         description: 'New Event Description',
-        date: '2024-02-01',
-        time: '16:00',
-        location: 'New Location',
+        startDateTime: '2024-02-01',
+        locationAddress: 'New Location',
         status: 'DRAFT',
         createdByUserId: 'user1',
       };
@@ -429,10 +427,106 @@ describe('Events API', () => {
       expect(mockPrisma.event.create).toHaveBeenCalledWith({
         data: {
           ...eventData,
-          date: new Date('2024-02-01'),
+          startDateTime: new Date('2024-02-01'),
+          endDateTime: null,
+          locationUnit: undefined,
+          showMap: true,
+          templateId: undefined,
+          jsonContent: undefined,
+          imagePath: undefined,
+          isTrashed: false,
+          // Event features with defaults
+          privateGuestList: false,
+          allowPlusOnes: false,
+          allowMaybeRSVP: true,
+          allowFamilyHeadcount: false,
+          limitEventCapacity: false,
+          maxEventCapacity: 0,
+          maxPlusOnes: 0,
         },
         include: {
-          User: {
+          creator: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+      });
+    });
+
+    it('should create an event with custom event features', async () => {
+      const mockEvent = {
+        id: 'new-event',
+        title: 'New Event',
+        description: 'New Event Description',
+        startDateTime: new Date('2024-02-01'),
+        locationAddress: 'New Location',
+        status: 'DRAFT',
+        createdByUserId: 'user1',
+        privateGuestList: true,
+        allowPlusOnes: true,
+        allowMaybeRSVP: false,
+        allowFamilyHeadcount: true,
+        limitEventCapacity: true,
+        maxEventCapacity: 50,
+        maxPlusOnes: 2,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        User: {
+          id: 'user1',
+          name: 'Test User',
+          email: 'user@test.com',
+        },
+      };
+
+      mockPrisma.event.create.mockResolvedValue(mockEvent);
+
+      // Create mock request with event data including features
+      const eventData = {
+        title: 'New Event',
+        description: 'New Event Description',
+        startDateTime: '2024-02-01',
+        locationAddress: 'New Location',
+        status: 'DRAFT',
+        createdByUserId: 'user1',
+        privateGuestList: true,
+        allowPlusOnes: true,
+        allowMaybeRSVP: false,
+        allowFamilyHeadcount: true,
+        limitEventCapacity: true,
+        maxEventCapacity: 50,
+        maxPlusOnes: 2,
+      };
+
+      mockRequest = new NextRequest('http://localhost:3000/api/events', {
+        method: 'POST',
+        body: JSON.stringify(eventData),
+      });
+
+      // Call the API
+      const response = await POST(mockRequest);
+      const data = await response.json();
+
+      // Assertions
+      expect(response.status).toBe(200);
+      expect(data.success).toBe(true);
+      expect(data.data.title).toBe('New Event');
+      expect(mockPrisma.event.create).toHaveBeenCalledWith({
+        data: {
+          ...eventData,
+          startDateTime: new Date('2024-02-01'),
+          endDateTime: null,
+          locationUnit: undefined,
+          showMap: true,
+          templateId: undefined,
+          jsonContent: undefined,
+          imagePath: undefined,
+          isTrashed: false,
+        },
+        include: {
+          creator: {
             select: {
               id: true,
               name: true,

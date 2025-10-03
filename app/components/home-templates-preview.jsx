@@ -31,7 +31,7 @@ export function HomeTemplatesPreview() {
   }, [fetchFeaturedTemplates]);
 
   const handleTemplateSelect = (template, source = 'home') => {
-    console.log('Home page: Storing template for event creation:', {
+    console.log('Home page: Storing design for event creation:', {
       id: template.id,
       name: template.name,
       s3ImageUrl: template.s3ImageUrl,
@@ -60,7 +60,7 @@ export function HomeTemplatesPreview() {
   if (error) {
     return (
       <div className="text-center py-12">
-        <p className="text-red-600 dark:text-red-400 mb-4">Error loading templates: {error}</p>
+        <p className="text-red-600 dark:text-red-400 mb-4">Error loading designs: {error}</p>
         <Button onClick={refreshTemplates}>Try Again</Button>
       </div>
     );
@@ -71,7 +71,7 @@ export function HomeTemplatesPreview() {
       <div className="text-center py-12">
         <p className="text-gray-600 dark:text-gray-400 mb-4">No templates available yet.</p>
         <Button asChild>
-          <Link href="/templates">Browse All Templates</Link>
+          <Link href="/templates">Browse All Designs</Link>
         </Button>
       </div>
     );
@@ -81,14 +81,14 @@ export function HomeTemplatesPreview() {
     <div className="space-y-8">
       <div className="text-center">
         <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-          Featured Templates
+          Featured Designs
         </h2>
         <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-          Choose from our collection of beautiful invitation templates to create your perfect event
+          Choose from our collection of beautiful invitation designs to create your perfect event
         </p>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid p-3 grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4">
         {templates.map((template) => (
           <div key={template.id} className="group relative rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300">
             {/* Template Background Image */}
@@ -110,7 +110,7 @@ export function HomeTemplatesPreview() {
               {/* Status Badge */}
               <div className="absolute top-3 left-3">
                 <Badge className="bg-white/90 dark:bg-gray-800/90 text-gray-700 dark:text-gray-300 text-xs font-medium px-2 py-1 shadow-sm">
-                  TEMPLATE
+                  DESIGN
                 </Badge>
               </div>
 
@@ -124,7 +124,7 @@ export function HomeTemplatesPreview() {
                 <div className="space-y-0.5 sm:space-y-1 text-xs sm:text-sm opacity-90">
                   <div className="flex items-center">
                     <Calendar className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1 sm:mr-1.5" />
-                    <span className="truncate">{template.category || 'Event Template'}</span>
+                    <span className="truncate">{template.category || 'Event Design'}</span>
                   </div>
                   
                   <div className="flex items-center">
@@ -153,7 +153,7 @@ export function HomeTemplatesPreview() {
                     className="bg-white text-gray-900 hover:bg-gray-100 font-medium text-xs sm:text-sm"
                   >
                     <Link href={`/events/design/${template.id}`}>
-                      Use Template
+                      Use Design
                     </Link>
                   </Button>
                   {template.isPremium && (
@@ -173,7 +173,7 @@ export function HomeTemplatesPreview() {
       <div className="text-center">
         <Button asChild size="lg" variant="outline">
           <Link href="/templates">
-            View All Templates
+            View All Designs
           </Link>
         </Button>
       </div>

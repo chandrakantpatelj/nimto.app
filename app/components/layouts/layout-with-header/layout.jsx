@@ -31,7 +31,7 @@ function LayoutWithHeader({ children }) {
                 <main className="grow" role="content">
                     {children}
                 </main>
-               <CommonFooter />
+               
             </div>
         </>
     );
