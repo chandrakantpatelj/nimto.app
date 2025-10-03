@@ -250,13 +250,13 @@ export async function PUT(request) {
     // Update guest
     const updatedGuest = await prisma.guest.update({
       where: { id: guestId },
-      data: {
+    data: {
         ...(name && { name }),
         ...(email && { email }),
         ...(phone && { phone }),
         ...(status && { status }),
-        ...(response !== undefined && { response }),
-      },
+        ...(response !== undefined && { response: response === "" ? null : response }),
+    },
       include: {
         event: {
           select: {
