@@ -187,6 +187,7 @@ const GuestListTable = ({
         const exportData = filteredData.map((guest) => ({
             Name: guest.name,
             Email: guest.email,
+            Phone: guest.phone || '',
             RSVP: guest.status || 'PENDING',
             'Total Adults': guest.status === 'PENDING' || !guest.status ? '-' : guest.adults ?? '-',
             'Total Kids': guest.status === 'PENDING' || !guest.status ? '-' : guest.children ?? '-',
@@ -227,6 +228,9 @@ const GuestListTable = ({
                             </span>
                             <span className="text-sm text-gray-500 dark:text-gray-400">
                                 {row.original.email}
+                            </span>
+                            <span className="text-sm text-gray-500 dark:text-gray-400">
+                                {row.original.phone}
                             </span>
                         </div>
                     </div>

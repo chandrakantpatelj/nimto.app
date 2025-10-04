@@ -125,6 +125,21 @@ export function ManageGuestContent({ event }) {
         }
     };
 
+    function extractHourMinute(dateString) {
+        // Match the time part after the 'T'
+        const match = dateString.match(/T(\d{2}):(\d{2})/);
+        if (match) {
+            let hour = match[1];
+            let minute = match[2];
+            // Optionally format to 12-hour with AM/PM
+            const hourNum = parseInt(hour, 10);
+            const ampm = hourNum >= 12 ? 'PM' : 'AM';
+            const hour12 = ((hourNum + 11) % 12 + 1); // 12-hour format
+            return `${hour12}:${minute} ${ampm}`;
+        }
+        return 'Invalid Time';
+    }
+
     return (
         <div className="space-y-6">
             {/* Event Overview Card */}
@@ -151,7 +166,7 @@ export function ManageGuestContent({ event }) {
                             </div>
                             <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
                                 <Clock className="w-4 h-4" />
-                                <span>{formatTime(event.startDateTime)}</span>
+                                <span>{extractHourMinute(event.startDateTime)}</span>
                             </div>
                             {(event.locationAddress || event.locationUnit) && (
                                 <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
