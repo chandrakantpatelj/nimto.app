@@ -249,19 +249,22 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
                                 <p className="text-sm mt-1">{userGuest.response}</p>
                             </div>
                         )}
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                                setIsUpdatingResponse(true);
-                                setFormData((prev) => ({
-                                    ...prev,
-                                    status: userGuest.status,
-                                }));
-                            }}
-                        >
-                            Update Response
-                        </Button>
+                        {/* Only show Update Response if event is not in the past (browser timezone aware) */}
+                        {new Date(event?.startDateTime) > new Date() && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                    setIsUpdatingResponse(true);
+                                    setFormData((prev) => ({
+                                        ...prev,
+                                        status: userGuest.status,
+                                    }));
+                                }}
+                            >
+                                Update Response
+                            </Button>
+                        )}
                     </div>
                 </CardContent>
             </Card>
