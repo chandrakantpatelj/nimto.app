@@ -141,7 +141,22 @@ export default function EventInvitationPage() {
       ...prevEvent,
       guests: [updatedGuest],
     }));
-  };
+    };
+
+    function extractHourMinute(dateString) {
+        // Match the time part after the 'T'
+        const match = dateString.match(/T(\d{2}):(\d{2})/);
+        if (match) {
+            let hour = match[1];
+            let minute = match[2];
+            // Optionally format to 12-hour with AM/PM
+            const hourNum = parseInt(hour, 10);
+            const ampm = hourNum >= 12 ? 'PM' : 'AM';
+            const hour12 = ((hourNum + 11) % 12 + 1); // 12-hour format
+            return `${hour12}:${minute} ${ampm}`;
+        }
+        return 'Invalid Time';
+    }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
@@ -188,13 +203,6 @@ export default function EventInvitationPage() {
                     <div className="w-2 h-8 bg-gradient-to-b from-yellow-400 to-orange-500 rounded-full"></div>
                     {event.title}
                   </CardTitle>
-                  {userGuest && (
-                    <div className="text-right flex-shrink-0">
-                      <span className="text-blue-100 text-sm font-medium whitespace-nowrap">
-                        Invited {formatDate(userGuest.invitedAt)}
-                      </span>
-                    </div>
-                  )}
                 </div>
               </CardHeader>
               <CardContent className="p-4">
@@ -215,6 +223,21 @@ export default function EventInvitationPage() {
                           </p>
                         </div>
                       </div>
+                    )}
+                    {event.startDateTime && (
+                        <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20 rounded-lg border border-purple-100 dark:border-purple-800 shadow-sm hover:shadow-md transition-all duration-300">
+                            <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-lg">
+                                <Clock className="h-5 w-5 text-white" />
+                            </div>
+                            <div>
+                                <span className="font-semibold text-purple-900 dark:text-purple-300 text-sm block mb-1">
+                                    Time
+                                </span>
+                                <p className="text-purple-700 dark:text-purple-200 font-medium">
+                                    {extractHourMinute(event.startDateTime)}
+                                </p>
+                            </div>
+                        </div>
                     )}
                     {(event.locationAddress || event.locationUnit) && (
                       <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-red-50 to-pink-50 rounded-lg border border-red-100 shadow-sm hover:shadow-md transition-all duration-300 group">
@@ -245,21 +268,6 @@ export default function EventInvitationPage() {
                           </span>
                           <p className="text-green-700 font-medium text-sm truncate">
                             {event.User.name || event.User.email}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                    {event.time && (
-                      <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-purple-50 to-violet-50 rounded-lg border border-purple-100 shadow-sm hover:shadow-md transition-all duration-300 group">
-                        <div className="p-2.5 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-lg group-hover:scale-110 transition-transform duration-200">
-                          <Clock className="h-4 w-4 text-white" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <span className="font-semibold text-purple-900 text-xs block mb-1">
-                            Time
-                          </span>
-                          <p className="text-purple-700 font-medium text-sm truncate">
-                            {event.time}
                           </p>
                         </div>
                       </div>
