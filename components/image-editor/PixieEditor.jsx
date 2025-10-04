@@ -543,7 +543,7 @@ const PixieEditor = forwardRef(
                   Loading Image Editor
                 </h3>
                 <p className="text-sm text-gray-600">
-                  Initializing Pixie editor...
+                  Initializing Nimto editor...
                 </p>
               </div>
               <div className="flex justify-center space-x-1">
