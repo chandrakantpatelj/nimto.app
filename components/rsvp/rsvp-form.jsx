@@ -435,7 +435,7 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
                                     <div className="flex items-center gap-2 mb-3">
                                         <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                                         <Label className="text-sm font-medium text-blue-900 dark:text-blue-300">
-                                            Attendee Headcount
+                                            Guest Count
                                         </Label>
                                     </div>
                                     <p className="text-xs text-blue-700 dark:text-blue-300 mb-3">
@@ -445,41 +445,113 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
                                         </span>
                                     </p>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        {/* Adults Input */}
                                         <div>
                                             <Label className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2 block">
                                                 Adults
                                             </Label>
-                                            <Input
-                                                type="number"
-                                                value={formData.adults}
-                                                onChange={(e) =>
-                                                    handleInputChange(
-                                                        'adults',
-                                                        Math.max(1, parseInt(e.target.value) || 1)
-                                                    )
-                                                }
-                                                min={1}
-                                                max={(event?.maxPlusOnes || 0) + 1 - formData.children}
-                                                className="w-20 text-center dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
-                                            />
+                                            <div className="flex items-center gap-2">
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() =>
+                                                        handleInputChange(
+                                                            'adults',
+                                                            Math.max(1, formData.adults - 1)
+                                                        )
+                                                    }
+                                                    disabled={formData.adults <= 1}
+                                                >
+                                                    -
+                                                </Button>
+                                                <Input
+                                                    type="number"
+                                                    value={formData.adults}
+                                                    onChange={(e) =>
+                                                        handleInputChange(
+                                                            'adults',
+                                                            Math.max(1, parseInt(e.target.value) || 1)
+                                                        )
+                                                    }
+                                                    min={1}
+                                                    max={(event?.maxPlusOnes || 0) + 1 - formData.children}
+                                                    className="w-20 text-center dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() =>
+                                                        handleInputChange(
+                                                            'adults',
+                                                            Math.min(
+                                                                (event?.maxPlusOnes || 0) + 1 - formData.children,
+                                                                formData.adults + 1
+                                                            )
+                                                        )
+                                                    }
+                                                    disabled={
+                                                        formData.adults >= (event?.maxPlusOnes || 0) + 1 - formData.children
+                                                    }
+                                                >
+                                                    +
+                                                </Button>
+                                            </div>
                                         </div>
+                                        {/* Children Input */}
                                         <div>
                                             <Label className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2 block">
                                                 Children
                                             </Label>
-                                            <Input
-                                                type="number"
-                                                value={formData.children}
-                                                onChange={(e) =>
-                                                    handleInputChange(
-                                                        'children',
-                                                        Math.max(0, parseInt(e.target.value) || 0)
-                                                    )
-                                                }
-                                                min={0}
-                                                max={(event?.maxPlusOnes || 0) + 1 - formData.adults}
-                                                className="w-20 text-center dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
-                                            />
+                                            <div className="flex items-center gap-2">
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() =>
+                                                        handleInputChange(
+                                                            'children',
+                                                            Math.max(0, formData.children - 1)
+                                                        )
+                                                    }
+                                                    disabled={formData.children <= 0}
+                                                >
+                                                    -
+                                                </Button>
+                                                <Input
+                                                    type="number"
+                                                    value={formData.children}
+                                                    onChange={(e) =>
+                                                        handleInputChange(
+                                                            'children',
+                                                            Math.max(0, parseInt(e.target.value) || 0)
+                                                        )
+                                                    }
+                                                    min={0}
+                                                    max={(event?.maxPlusOnes || 0) + 1 - formData.adults}
+                                                    className="w-20 text-center dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600"
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() =>
+                                                        handleInputChange(
+                                                            'children',
+                                                            Math.min(
+                                                                (event?.maxPlusOnes || 0) + 1 - formData.adults,
+                                                                formData.children + 1
+                                                            )
+                                                        )
+                                                    }
+                                                    disabled={
+                                                        formData.children >= (event?.maxPlusOnes || 0) + 1 - formData.adults
+                                                    }
+                                                >
+                                                    +
+                                                </Button>
+                                            </div>
                                         </div>
                                     </div>
                                     <div className="mt-2 text-sm text-blue-800 dark:text-blue-300">
