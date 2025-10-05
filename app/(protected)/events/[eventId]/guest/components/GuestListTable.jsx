@@ -191,7 +191,7 @@ const GuestListTable = ({
             RSVP: guest.status || 'PENDING',
             'Total Adults': guest.status === 'PENDING' || !guest.status ? '-' : guest.adults ?? '-',
             'Total Kids': guest.status === 'PENDING' || !guest.status ? '-' : guest.children ?? '-',
-            Invitation: guest.invitedAt ? 'Sent' : 'Not Sent',
+            Invitation: guest.status === 'INVITED' ? 'Sent' : 'Not Sent',
             Notes: guest.response ?? '',
         }));
         const worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -290,7 +290,7 @@ const GuestListTable = ({
                 accessorFn: (row) => row.invitation,
                 header: ({ column }) => <DataGridColumnHeader title="Invitation" column={column} />,
                 cell: ({ row }) => {
-                    const isSent = row.original.invitedAt;
+                    const isSent = row.original.status === 'INVITED';
                     return (
                         <div className="flex items-center gap-2">
                             <div
