@@ -19,12 +19,12 @@ export async function sendEventInvitation({ guest, event, invitationUrl }) {
         month: 'long',
         day: 'numeric',
     });
-    //const eventTime = eventDateTime.toLocaleTimeString('en-US', {
-    //    hour: 'numeric',
-    //    minute: '2-digit',
-    //    hour12: true,
-    //});
-    const eventTime = extractHourMinute(startDateTime);
+    const eventTime = eventDateTime.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+    });
+    //const eventTime = extractHourMinute(startDateTime);
 
     // Get host name
     const hostName = User?.name || User?.email || 'The event host';
@@ -87,16 +87,13 @@ export async function sendBulkEventInvitations({ guests, event, baseUrl }) {
 }
 
 export function extractHourMinute(dateString) {
-    // Match the time part after the 'T'
-    const match = dateString.match(/T(\d{2}):(\d{2})/);
+    if (!dateString) return { hour: null, minute: null };
+    const str = typeof dateString === 'string' ? dateString : dateString.toISOString();
+    const match = str.match(/T(\d{2}):(\d{2})/);
     if (match) {
         let hour = match[1];
         let minute = match[2];
-        // Optionally format to 12-hour with AM/PM
-        const hourNum = parseInt(hour, 10);
-        const ampm = hourNum >= 12 ? 'PM' : 'AM';
-        const hour12 = ((hourNum + 11) % 12 + 1); // 12-hour format
-        return `${hour12}:${minute} ${ampm}`;
+        return { hour, minute };
     }
-    return 'Invalid Time';
+    return { hour: null, minute: null };
 }

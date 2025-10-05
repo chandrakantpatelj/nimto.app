@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Bell, Send, Trash2, UserPlus } from 'lucide-react';
+﻿import React, { useState, useRef } from 'react';
+import { Bell, Send, Trash2, UserPlus, Upload } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { useToast } from '@/providers/toast-provider';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,20 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ConfirmationDialog } from './confirmation-dialog';
+import AdvancedProcessingLoader from '@/components/common/advanced-processing-loader';
+import * as XLSX from 'xlsx';
+
+// Simple spinner for loading indication
+function Spinner() {
+    return (
+        <div className="flex items-center justify-center w-full h-full">
+            <svg className="animate-spin h-6 w-6 text-green-600" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+            </svg>
+        </div>
+    );
+}
 
 function ManageGuestForm({
     event,
@@ -22,21 +36,36 @@ function ManageGuestForm({
     const [guestPhone, setGuestPhone] = useState('');
     const [isAdding, setIsAdding] = useState(false);
     const [isSending, setIsSending] = useState(false);
+    const [isImporting, setIsImporting] = useState(false);
     const [deleteConfirmation, setDeleteConfirmation] = useState({
         isOpen: false,
         guestCount: 0,
     });
+    const [showDuplicateModal, setShowDuplicateModal] = useState(false);
+    const [duplicateGuests, setDuplicateGuests] = useState([]);
+    const fileInputRef = useRef(null);
     const { toastSuccess, toastError, toastWarning } = useToast();
 
     // Calculate counts
-    const unsentCount = guests.filter((guest) => !guest.invitedAt).length;
+    const unsentCount = guests.filter((guest) => guest.status === 'PENDING').length;
     const reminderCount = guests.filter(
-        (guest) => guest.invitedAt && (guest.status === 'PENDING' || !guest.status),
+        (guest) => guest.invitedAt && (guest.status === 'INVITED' || !guest.status),
     ).length;
 
     const handleAddGuest = async () => {
         if (!guestName.trim() || (!guestEmail.trim() && !guestPhone.trim())) {
             toastWarning('Please enter guest name and at least one contact: email or phone number');
+            return;
+        }
+
+        // Duplicate check: if any field matches, consider duplicate
+        const isDuplicate = guests.some(g =>
+            (guestName.trim() && g.name && g.name.trim().toLowerCase() === guestName.trim().toLowerCase()) ||
+            (guestEmail.trim() && g.email && g.email.trim().toLowerCase() === guestEmail.trim().toLowerCase()) ||
+            (guestPhone.trim() && g.phone && g.phone.trim().toLowerCase() === guestPhone.trim().toLowerCase())
+        );
+        if (isDuplicate) {
+            toastWarning('Guest already exists (by name, email, or phone).');
             return;
         }
 
@@ -59,15 +88,12 @@ function ManageGuestForm({
                 throw new Error('Failed to add guest');
             }
 
-            // Clear form
             setGuestName('');
             setGuestEmail('');
             setGuestPhone('');
 
-            // Show success message
             toastSuccess(`Guest "${guestName.trim()}" has been added successfully!`);
 
-            // Notify parent component to refresh guest list
             if (onGuestAdded) {
                 onGuestAdded();
             }
@@ -77,6 +103,89 @@ function ManageGuestForm({
         } finally {
             setIsAdding(false);
         }
+    };
+
+    // Import from Excel logic
+    const handleImportExcelClick = () => {
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+            fileInputRef.current.click();
+        }
+    };
+
+    const handleExcelFileChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        setIsImporting(true);
+        const reader = new FileReader();
+        reader.onload = async (evt) => {
+            const data = new Uint8Array(evt.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const sheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheetName];
+            const rows = XLSX.utils.sheet_to_json(worksheet);
+
+            // Normalize and deduplicate
+            const existingGuests = guests || [];
+            const newGuests = [];
+            const duplicates = [];
+
+            rows.forEach(row => {
+                // Accept columns: name, email, phone (case-insensitive)
+                const name = (row.name || row.Name || '').trim();
+                const email = (row.email || row.Email || '').trim();
+                const phone = (row.phone || row.Phone || '').trim();
+
+                if (!name && !email && !phone) return; // skip empty row
+
+                // Duplicate if any field matches
+                const isDuplicate = existingGuests.some(g =>
+                    (name && g.name && g.name.trim().toLowerCase() === name.toLowerCase()) ||
+                    (email && g.email && g.email.trim().toLowerCase() === email.toLowerCase()) ||
+                    (phone && g.phone && g.phone.trim().toLowerCase() === phone.toLowerCase())
+                );
+
+                if (isDuplicate) {
+                    duplicates.push({ name, email, phone });
+                } else {
+                    newGuests.push({ name, email: email || undefined, phone: phone || undefined });
+                }
+            });
+
+            let addedCount = 0;
+            for (const guest of newGuests) {
+                try {
+                    const response = await apiFetch('/api/events/guests', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            eventId: event.id,
+                            name: guest.name,
+                            email: guest.email,
+                            phone: guest.phone,
+                        }),
+                    });
+                    if (response.ok) {
+                        addedCount++;
+                    }
+                } catch (err) {
+                    // Optionally handle error for individual guest
+                }
+            }
+
+            if (addedCount > 0) {
+                toastSuccess(`${addedCount} guest${addedCount > 1 ? 's' : ''} imported successfully.`);
+                if (onGuestAdded) onGuestAdded();
+            }
+            if (duplicates.length > 0) {
+                setDuplicateGuests(duplicates);
+                setShowDuplicateModal(true);
+            }
+            setIsImporting(false);
+        };
+        reader.readAsArrayBuffer(file);
     };
 
     const handleSendToSelected = async () => {
@@ -108,7 +217,6 @@ function ManageGuestForm({
             const data = await response.json();
             if (data.success) {
                 toastSuccess(data.message);
-                // Refresh guest list
                 if (onGuestAdded) {
                     onGuestAdded();
                 }
@@ -134,7 +242,7 @@ function ManageGuestForm({
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        type: 'invitation', // Send to all unsent
+                        type: 'invitation',
                     }),
                 },
             );
@@ -146,7 +254,6 @@ function ManageGuestForm({
             const data = await response.json();
             if (data.success) {
                 toastSuccess(data.message);
-                // Refresh guest list
                 if (onGuestAdded) {
                     onGuestAdded();
                 }
@@ -172,7 +279,7 @@ function ManageGuestForm({
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        type: 'reminder', // Send reminders to pending guests
+                        type: 'reminder',
                     }),
                 },
             );
@@ -184,11 +291,8 @@ function ManageGuestForm({
             }
 
             const data = await response.json();
-            console.log('Reminder API Response:', data);
-
             if (data.success) {
                 toastSuccess(data.message);
-                // Refresh guest list
                 if (onGuestAdded) {
                     onGuestAdded();
                 }
@@ -250,7 +354,7 @@ function ManageGuestForm({
     return (
         <>
             <div className="space-y-6">
-                {/* Add Guest Section */}
+                {/* Add Guest Section - Inline, 4 columns */}
                 <Card className="p-6 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/50 dark:to-emerald-950/50 border-green-200 dark:border-green-800">
                     <div className="space-y-4">
                         <div className="flex items-center gap-2">
@@ -261,9 +365,8 @@ function ManageGuestForm({
                                 Add New Guest
                             </h3>
                         </div>
-
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-end">
-                            <div className="col-span-1">
+                            <div>
                                 <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
                                     Guest Name
                                 </Label>
@@ -275,7 +378,7 @@ function ManageGuestForm({
                                     className="h-12 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-base"
                                 />
                             </div>
-                            <div className="col-span-1">
+                            <div>
                                 <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
                                     Email Address
                                 </Label>
@@ -287,7 +390,7 @@ function ManageGuestForm({
                                     className="h-12 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-base"
                                 />
                             </div>
-                            <div className="col-span-1">
+                            <div>
                                 <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
                                     Phone Number
                                 </Label>
@@ -299,7 +402,7 @@ function ManageGuestForm({
                                     className="h-12 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-base"
                                 />
                             </div>
-                            <div className="col-span-1 flex items-end">
+                            <div className="flex items-end gap-2">
                                 <Button
                                     variant="primary"
                                     className="w-full h-12 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 dark:from-green-600 dark:to-green-700 dark:hover:from-green-700 dark:hover:to-green-800 text-white font-medium shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -311,10 +414,66 @@ function ManageGuestForm({
                                         {isAdding ? 'Adding...' : 'Add Guest'}
                                     </span>
                                 </Button>
+                                <Button
+                                    variant="outline"
+                                    className="w-full h-12 flex items-center justify-center gap-2"
+                                    onClick={handleImportExcelClick}
+                                    disabled={isImporting}
+                                >
+                                    <Upload className="w-4 h-4" />
+                                    <span className="text-sm sm:text-base">Import from Excel</span>
+                                </Button>
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept=".xlsx,.xls"
+                                    style={{ display: 'none' }}
+                                    onChange={handleExcelFileChange}
+                                />
                             </div>
                         </div>
                     </div>
                 </Card>
+
+                {/* AdvancedProcessingLoader Backdrop for Import */}
+                {isImporting && (
+                    <AdvancedProcessingLoader
+                        isVisible={true}
+                        title="Importing Guests"
+                        description="Please wait while we process your guest list..."
+                        tasks={[
+                            { icon: '📥', text: 'Reading Excel file...' },
+                            { icon: '🔎', text: 'Checking for duplicates...' },
+                            { icon: '👤', text: 'Adding new guests...' },
+                        ]}
+                    />
+                )}
+
+                {/* Duplicate Modal */}
+                {showDuplicateModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                        <div className="bg-white dark:bg-card rounded-lg shadow-lg max-w-md w-full p-6">
+                            <h3 className="text-lg font-bold mb-4 text-red-700">Duplicate Guests Not Added</h3>
+                            <p className="mb-3 text-sm text-muted-foreground">
+                                The following guests were already in your list (by name, email, or phone) and were not added:
+                            </p>
+                            <ul className="mb-4 max-h-40 overflow-y-auto text-sm">
+                                {duplicateGuests.map((g, idx) => (
+                                    <li key={idx} className="mb-2">
+                                        <span className="font-semibold">{g.name || '(No Name)'}</span>
+                                        {g.email && <span className="ml-2">📧 {g.email}</span>}
+                                        {g.phone && <span className="ml-2">📞 {g.phone}</span>}
+                                    </li>
+                                ))}
+                            </ul>
+                            <div className="flex justify-end">
+                                <Button variant="primary" onClick={() => setShowDuplicateModal(false)}>
+                                    OK
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Guest Actions Section */}
                 <Card className="p-6 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/50 dark:to-cyan-950/50 border-blue-200 dark:border-blue-800">
@@ -327,7 +486,6 @@ function ManageGuestForm({
                                 Guest Management
                             </h3>
                         </div>
-
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
                             <div className="lg:col-span-4">
                                 <div className="relative">
