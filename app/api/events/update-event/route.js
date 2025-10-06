@@ -201,6 +201,7 @@ export async function PUT(request) {
 
     // Handle guest updates if provided
     let newlyCreatedGuestIds = [];
+    let updatedGuestIds = [];
     if (guests && Array.isArray(guests)) {
       try {
         // Validate guest data first
@@ -225,6 +226,37 @@ export async function PUT(request) {
           }
         }
 
+        // Get IDs of guests in the payload (existing guests only)
+        const guestIdsInPayload = guests
+          .filter(
+            (g) =>
+              g.id &&
+              typeof g.id === 'string' &&
+              g.id.length > 0 &&
+              !g.id.startsWith('temp-'),
+          )
+          .map((g) => g.id);
+
+        // Delete guests that are no longer in the payload
+        if (existingEvent.guests && existingEvent.guests.length > 0) {
+          const existingGuestIds = existingEvent.guests.map((g) => g.id);
+          const guestsToDelete = existingGuestIds.filter(
+            (guestId) => !guestIdsInPayload.includes(guestId),
+          );
+
+          if (guestsToDelete.length > 0) {
+            await prisma.guest.deleteMany({
+              where: {
+                id: { in: guestsToDelete },
+                eventId: id,
+              },
+            });
+            console.log(
+              `Deleted ${guestsToDelete.length} removed guests from event ${id}`,
+            );
+          }
+        }
+
         // Process each guest - update existing or create new
         for (const guest of guests) {
           if (
@@ -243,6 +275,7 @@ export async function PUT(request) {
                 status: guest.status,
               },
             });
+            updatedGuestIds.push(guest.id);
           } else {
             // Create new guest (no ID, temp ID, or invalid ID)
             const newGuest = await prisma.guest.create({
@@ -309,13 +342,26 @@ export async function PUT(request) {
         let guestsToInvite = [];
 
         if (invitationType === 'all') {
-          // Send to all guests
-          guestsToInvite = updatedEvent.guests || [];
+          // Send to all CURRENT guests (only those in the database after deletion)
+          // Filter to only include guests that are in the payload
+          const allCurrentGuestIds = [
+            ...newlyCreatedGuestIds,
+            ...updatedGuestIds,
+          ];
+          guestsToInvite = (updatedEvent.guests || []).filter((guest) =>
+            allCurrentGuestIds.includes(guest.id),
+          );
+          console.log(
+            `Sending invitations to ${guestsToInvite.length} current guests (payload only)`,
+          );
         } else if (invitationType === 'new') {
           // Send only to newly created guests
           if (newlyCreatedGuestIds.length > 0) {
             guestsToInvite = (updatedEvent.guests || []).filter((guest) =>
               newlyCreatedGuestIds.includes(guest.id),
+            );
+            console.log(
+              `Sending invitations to ${guestsToInvite.length} new guests`,
             );
           }
         }
