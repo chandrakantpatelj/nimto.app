@@ -19,6 +19,7 @@ import {
 export default function PhoneInput({
   value = '',
   onChange,
+  onValidationChange,
   placeholder = 'Enter phone number',
   defaultCountry = 'IN',
   showValidation = false,
@@ -67,13 +68,29 @@ export default function PhoneInput({
         const validation = validatePhoneNumber(phone, country);
         setIsValid(validation.isValid);
         setValidationMessage(validation.error || '');
+
+        // Notify parent component of validation status
+        if (onValidationChange) {
+          onValidationChange({
+            isValid: validation.isValid,
+            error: validation.error || '',
+          });
+        }
       } else {
         // Don't show validation for empty fields
         setIsValid(false);
         setValidationMessage('');
+
+        // Notify parent component that field is empty
+        if (onValidationChange) {
+          onValidationChange({
+            isValid: false,
+            error: '',
+          });
+        }
       }
     },
-    [showValidation],
+    [showValidation, onValidationChange],
   );
 
   useEffect(() => {
