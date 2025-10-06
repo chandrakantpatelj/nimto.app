@@ -4,7 +4,7 @@ import React, { useRef, useState } from 'react';
 import { useEventActions, useEvents } from '@/store/hooks';
 import { Edit2, Search, Settings, Upload, UserPlus, X } from 'lucide-react';
 import * as XLSX from 'xlsx';
-import { POPULAR_COUNTRIES, validatePhoneNumber } from '@/lib/phone-utils';
+// Phone validation is handled by PhoneInput component
 import { useToast } from '@/providers/toast-provider'; // Use the same toast provider as in design/page.jsx
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -82,24 +82,8 @@ function Step3() {
       return;
     }
 
-    // Validate phone number if provided
-    if (newGuest.phone.trim()) {
-      // Extract country code from phone number (assuming format like +91XXXXXXXXXX)
-      const phoneValue = newGuest.phone.replace(/^\+\d+\s*/, ''); // Remove country code prefix
-      const dialCode = newGuest.phone.match(/^\+\d+/)?.[0]; // Extract dial code like +91
-
-      // Find country by dial code
-      const country = POPULAR_COUNTRIES.find((c) => c.dialCode === dialCode);
-      const countryCodeStr = country ? country.code : 'IN'; // Default to India if not found
-
-      const phoneValidation = validatePhoneNumber(phoneValue, countryCodeStr);
-      if (!phoneValidation.isValid) {
-        setPhoneValidationError(
-          phoneValidation.error || 'Invalid phone number',
-        );
-        return;
-      }
-    }
+    // Phone validation is now handled in real-time by PhoneInput component
+    // The phoneValidationError state will be set by the PhoneInput's onValidationChange callback
 
     addGuest({
       name: newGuest.name,
@@ -346,12 +330,21 @@ function Step3() {
                             onChange={(value) =>
                               handleInputChange('phone', value)
                             }
+                            onValidationChange={(validation) => {
+                              if (validation.error) {
+                                setPhoneValidationError(validation.error);
+                              } else {
+                                setPhoneValidationError('');
+                              }
+                            }}
                             placeholder="Enter phone number"
-                            showValidation={true}
+                            showValidation={false}
                             disabled={false}
                           />
                         </div>
                       </div>
+
+                      {/* Phone Validation Error Message */}
 
                       {/* Action Buttons - Responsive layout */}
                       <div className="flex flex-col sm:flex-row gap-2 xl:flex-shrink-0 w-full sm:w-auto">
@@ -376,6 +369,7 @@ function Step3() {
                           <span className="sm:hidden">Import Excel</span>
                         </Button>
                       </div>
+
                       <input
                         ref={fileInputRef}
                         type="file"
@@ -384,6 +378,16 @@ function Step3() {
                         onChange={handleExcelFileChange}
                       />
                     </div>
+                    {phoneValidationError && (
+                      <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-md">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
+                          <p className="text-sm text-red-700 font-medium">
+                            {phoneValidationError}
+                          </p>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Validation Error Message */}
                     {validationError && (
@@ -404,30 +408,6 @@ function Step3() {
                           </div>
                           <p className="text-sm text-red-800 dark:text-red-200">
                             {validationError}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Phone Validation Error Message */}
-                    {phoneValidationError && (
-                      <div className="mt-3 p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800/50 rounded-lg">
-                        <div className="flex items-start gap-2">
-                          <div className="w-4 h-4 bg-red-100 dark:bg-red-900/50 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
-                            <svg
-                              className="w-2.5 h-2.5 text-red-600 dark:text-red-400"
-                              fill="currentColor"
-                              viewBox="0 0 20 20"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
-                          </div>
-                          <p className="text-sm text-red-800 dark:text-red-200">
-                            {phoneValidationError}
                           </p>
                         </div>
                       </div>
