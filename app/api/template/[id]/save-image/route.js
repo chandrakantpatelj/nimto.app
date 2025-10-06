@@ -24,7 +24,7 @@ export async function POST(request, { params }) {
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
     const { imageData, imageFormat = 'png' } = await request.json();
 
     if (!imageData) {

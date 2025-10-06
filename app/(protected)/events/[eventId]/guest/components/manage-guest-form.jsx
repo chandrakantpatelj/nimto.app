@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import PhoneInput from '@/components/ui/phone-input';
 import { ConfirmationDialog } from './confirmation-dialog';
 
 function ManageGuestForm({
@@ -17,8 +18,12 @@ function ManageGuestForm({
   selectedGuests,
   onSelectedGuestsChange,
 }) {
+  // Debug log to verify new component is loading
+  console.log('🚀 NEW ManageGuestForm component loaded with country dropdown!');
+
   const [guestName, setGuestName] = useState('');
   const [guestEmail, setGuestEmail] = useState('');
+  const [guestPhone, setGuestPhone] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState({
@@ -34,13 +39,21 @@ function ManageGuestForm({
   ).length;
 
   const handleAddGuest = async () => {
-    if (!guestName.trim() || !guestEmail.trim()) {
-      toastWarning('Please fill in both name and email');
+    if (!guestName.trim()) {
+      toastWarning('Please enter guest name');
+      return;
+    }
+
+    if (!guestEmail.trim() && !guestPhone.trim()) {
+      toastWarning('Please provide either email or phone number');
       return;
     }
 
     try {
       setIsAdding(true);
+
+      // Phone is already in E.164 format from PhoneInput component
+
       const response = await apiFetch('/api/events/guests', {
         method: 'POST',
         headers: {
@@ -49,7 +62,8 @@ function ManageGuestForm({
         body: JSON.stringify({
           eventId: event.id,
           name: guestName.trim(),
-          email: guestEmail.trim(),
+          email: guestEmail.trim() || null,
+          phone: guestPhone.trim() || null, // Already in E.164 format
         }),
       });
 
@@ -60,6 +74,7 @@ function ManageGuestForm({
       // Clear form
       setGuestName('');
       setGuestEmail('');
+      setGuestPhone('');
 
       // Show success message
       toastSuccess(`Guest "${guestName.trim()}" has been added successfully!`);
@@ -177,12 +192,15 @@ function ManageGuestForm({
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         console.error('API Error Response:', errorData);
-        throw new Error(errorData.error || `HTTP ${response.status}: Failed to send reminders`);
+        throw new Error(
+          errorData.error ||
+            `HTTP ${response.status}: Failed to send reminders`,
+        );
       }
 
       const data = await response.json();
       console.log('Reminder API Response:', data);
-      
+
       if (data.success) {
         toastSuccess(data.message);
         // Refresh guest list
@@ -248,8 +266,9 @@ function ManageGuestForm({
     <>
       <div className="space-y-6">
         {/* Add Guest Section */}
-        <Card className="p-6 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/50 dark:to-emerald-950/50 border-green-200 dark:border-green-800">
+        <Card className="p-4 sm:p-6 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/50 dark:to-emerald-950/50 border-green-200 dark:border-green-800">
           <div className="space-y-4">
+            {/* Header */}
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-green-100 dark:bg-green-900/50 rounded-lg flex items-center justify-center">
                 <UserPlus className="w-4 h-4 text-green-600 dark:text-green-400" />
@@ -259,41 +278,63 @@ function ManageGuestForm({
               </h3>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 items-end">
-              <div className="sm:col-span-1 lg:col-span-4">
-                <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
-                  Guest Name
-                </Label>
-                <Input
-                  type="text"
-                  placeholder="e.g Jane Doe"
-                  value={guestName}
-                  onChange={(e) => setGuestName(e.target.value)}
-                  className="h-12 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-base"
-                />
+            {/* Responsive Form Layout */}
+            <div className="space-y-4">
+              {/* Desktop: 3 columns, Mobile: 1 column */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                {/* Name Field */}
+                <div className="lg:col-span-1">
+                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                    Guest Name <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    type="text"
+                    placeholder="e.g. Jane Doe"
+                    value={guestName}
+                    onChange={(e) => setGuestName(e.target.value)}
+                    className="h-10 w-full bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-sm sm:text-base"
+                  />
+                </div>
+
+                {/* Email Field */}
+                <div className="lg:col-span-1">
+                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                    Email Address{' '}
+                    <span className="text-xs text-gray-500">(Optional)</span>
+                  </Label>
+                  <Input
+                    type="email"
+                    placeholder="e.g. jane@example.com"
+                    value={guestEmail}
+                    onChange={(e) => setGuestEmail(e.target.value)}
+                    className="h-10 w-full bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-sm sm:text-base"
+                  />
+                </div>
+
+                {/* Phone Number Field */}
+                <div className="lg:col-span-1">
+                  <PhoneInput
+                    value={guestPhone}
+                    onChange={setGuestPhone}
+                    placeholder="Enter phone number"
+                    defaultCountry="IN"
+                    showValidation={true}
+                    className="h-10"
+                  />
+                </div>
               </div>
-              <div className="sm:col-span-1 lg:col-span-4">
-                <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
-                  Email Address
-                </Label>
-                <Input
-                  type="email"
-                  placeholder="e.g jane@example.com"
-                  value={guestEmail}
-                  onChange={(e) => setGuestEmail(e.target.value)}
-                  className="h-12 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-base"
-                />
-              </div>
-              <div className="sm:col-span-2 lg:col-span-4">
+
+              {/* Add Button - Full width on mobile, centered on desktop */}
+              <div className="flex justify-center lg:justify-start">
                 <Button
                   variant="primary"
-                  className="w-full h-12 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 dark:from-green-600 dark:to-green-700 dark:hover:from-green-700 dark:hover:to-green-800 text-white font-medium shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full sm:w-auto px-6 h-10 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 dark:from-green-600 dark:to-green-700 dark:hover:from-green-700 dark:hover:to-green-800 text-white font-medium shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={handleAddGuest}
                   disabled={isAdding}
                 >
                   <UserPlus className="w-4 h-4 mr-2" />
                   <span className="text-sm sm:text-base">
-                    {isAdding ? 'Adding...' : 'Add Guest'}
+                    {isAdding ? 'Adding Guest...' : '+ Add Guest'}
                   </span>
                 </Button>
               </div>

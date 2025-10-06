@@ -84,7 +84,7 @@ export async function DELETE(request, { params }) {
       return accessCheck.error;
     }
 
-    const { session } = accessCheck;
+    // const { session } = accessCheck;
 
     // Get the event with its guests for cleanup
     const event = await prisma.event.findUnique({

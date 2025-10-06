@@ -37,10 +37,7 @@ function Step2({ thumbnailData, session }) {
                     lat: location.lat(),
                     lng: location.lng(),
                   };
-                  console.log(
-                    'Geocoding successful, new mapCenter:',
-                    mapCenter,
-                  );
+
                   updateEventData({ mapCenter });
                 } else {
                   console.warn('Geocoding failed:', status);

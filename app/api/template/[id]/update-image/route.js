@@ -67,7 +67,7 @@ export async function POST(request, { params }) {
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
     const {
       imageData,
       imageFormat = 'png',
@@ -190,7 +190,7 @@ export async function PUT(request, { params }) {
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
     const formData = await request.formData();
     const file = formData.get('image');
     const useExistingPath = formData.get('useExistingPath') === 'true';

@@ -34,7 +34,7 @@ export async function POST(request, { params }) {
       );
     }
 
-    const { id } = params;
+    const { id = null } = await params;
     const { imageBlob, imageFormat = 'png' } = await request.json();
 
     // Validate event ID

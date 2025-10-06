@@ -13,11 +13,14 @@ import {
   Clock,
   Edit,
   HelpCircle,
+  Mail,
   MoreHorizontal,
+  Phone,
   Trash2,
   XCircle,
 } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
+import { formatPhoneForDisplay } from '@/lib/phone-utils';
 import { useToast } from '@/providers/toast-provider';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -39,7 +42,13 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { ConfirmationDialog } from './confirmation-dialog';
 import { EditGuestModal } from './edit-guest-modal';
 
-const GuestListTable = ({ event, searchQuery, onGuestsUpdate, selectedGuests, onSelectedGuestsChange }) => {
+const GuestListTable = ({
+  event,
+  searchQuery,
+  onGuestsUpdate,
+  selectedGuests,
+  onSelectedGuestsChange,
+}) => {
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 10,
@@ -66,7 +75,7 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate, selectedGuests, on
   // Sync rowSelection with selectedGuests
   useEffect(() => {
     const newRowSelection = {};
-    selectedGuests.forEach(guestId => {
+    selectedGuests.forEach((guestId) => {
       newRowSelection[guestId] = true;
     });
     setRowSelection(newRowSelection);
@@ -167,11 +176,15 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate, selectedGuests, on
   const getStatusIcon = (status) => {
     switch (status) {
       case 'CONFIRMED':
-        return <CheckCircle className="size-4 text-green-600 dark:text-green-400" />;
+        return (
+          <CheckCircle className="size-4 text-green-600 dark:text-green-400" />
+        );
       case 'DECLINED':
         return <XCircle className="size-4 text-red-600 dark:text-red-400" />;
       case 'MAYBE':
-        return <HelpCircle className="size-4 text-yellow-600 dark:text-yellow-400" />;
+        return (
+          <HelpCircle className="size-4 text-yellow-600 dark:text-yellow-400" />
+        );
       default:
         return <Clock className="size-4 text-gray-600 dark:text-gray-400" />;
     }
@@ -216,11 +229,22 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate, selectedGuests, on
           <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 dark:from-blue-600 dark:to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
             {row.original.name?.charAt(0)?.toUpperCase() || '?'}
           </div>
-          <div className="flex flex-col">
+          <div className="flex flex-col gap-1">
             <span className="font-medium text-gray-900 dark:text-white">
               {row.original.name}
             </span>
-            <span className="text-sm text-gray-500 dark:text-gray-400">{row.original.email}</span>
+            {row.original.email && (
+              <div className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
+                <Mail className="w-3.5 h-3.5" />
+                <span>{row.original.email}</span>
+              </div>
+            )}
+            {row.original.phone && (
+              <div className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
+                <Phone className="w-3.5 h-3.5" />
+                <span>{formatPhoneForDisplay(row.original.phone)}</span>
+              </div>
+            )}
           </div>
         </div>
       ),
@@ -300,7 +324,9 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate, selectedGuests, on
               </p>
             </div>
           ) : (
-            <span className="text-gray-400 dark:text-gray-500 italic">No response</span>
+            <span className="text-gray-400 dark:text-gray-500 italic">
+              No response
+            </span>
           )}
         </div>
       ),
@@ -315,7 +341,9 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate, selectedGuests, on
       id: 'actions',
       accessorFn: (row) => row.id,
       header: () => (
-        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Actions</span>
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          Actions
+        </span>
       ),
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
@@ -374,13 +402,16 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate, selectedGuests, on
     onSortingChange: setSorting,
     enableRowSelection: true,
     onRowSelectionChange: (updaterOrValue) => {
-      const newSelection = typeof updaterOrValue === 'function' 
-        ? updaterOrValue(rowSelection) 
-        : updaterOrValue;
+      const newSelection =
+        typeof updaterOrValue === 'function'
+          ? updaterOrValue(rowSelection)
+          : updaterOrValue;
       setRowSelection(newSelection);
-      
+
       // Convert row selection to array of selected guest IDs
-      const selectedIds = Object.keys(newSelection).filter(key => newSelection[key]);
+      const selectedIds = Object.keys(newSelection).filter(
+        (key) => newSelection[key],
+      );
       onSelectedGuestsChange(selectedIds);
     },
     getCoreRowModel: getCoreRowModel(),
@@ -394,7 +425,9 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate, selectedGuests, on
       <Card className="p-6 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
         <div className="flex flex-col items-center justify-center h-48 space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 dark:border-blue-800 border-t-blue-600 dark:border-t-blue-400"></div>
-          <p className="text-gray-600 dark:text-gray-300 text-lg">Loading guests...</p>
+          <p className="text-gray-600 dark:text-gray-300 text-lg">
+            Loading guests...
+          </p>
         </div>
       </Card>
     );

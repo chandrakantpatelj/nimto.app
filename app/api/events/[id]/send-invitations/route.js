@@ -12,7 +12,7 @@ export async function POST(request, { params }) {
       return accessCheck.error;
     }
 
-    const { id: eventId } = params;
+    const { id: eventId } = await params;
     const body = await request.json();
     const { guestIds, type = 'invitation' } = body; // type: 'invitation' or 'reminder'
 
@@ -86,22 +86,31 @@ export async function POST(request, { params }) {
       try {
         const invitationUrl = `${baseUrl}/invitation/${eventId}/${guest.id}`;
 
-        // Check if email configuration is available
-        const hasEmailConfig = process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS;
-        
-        if (!hasEmailConfig) {
-          console.warn('Email configuration missing. Skipping email sending.');
+        // Check if any messaging service is available
+        const hasEmailConfig =
+          process.env.SMTP_HOST &&
+          process.env.SMTP_USER &&
+          process.env.SMTP_PASS;
+        const hasTwilioConfig =
+          process.env.TWILIO_ACCOUNT_SID &&
+          process.env.TWILIO_AUTH_TOKEN &&
+          process.env.TWILIO_PHONE_NUMBER;
+
+        if (!hasEmailConfig && !hasTwilioConfig) {
+          console.warn(
+            'No messaging service configured. Skipping invitation sending.',
+          );
           results.push({
             guestId: guest.id,
             guestName: guest.name,
             contact: guest.email || guest.phone,
             success: false,
-            error: 'Email service not configured',
+            error: 'No messaging service configured',
           });
           continue;
         }
 
-        const emailSent = await sendEventInvitation({
+        const invitationResult = await sendEventInvitation({
           guest: {
             name: guest.name,
             email: guest.email,
@@ -118,7 +127,7 @@ export async function POST(request, { params }) {
           invitationUrl,
         });
 
-        if (emailSent) {
+        if (invitationResult.success) {
           // Update invitedAt timestamp
           await prisma.guest.update({
             where: { id: guest.id },
@@ -130,6 +139,8 @@ export async function POST(request, { params }) {
             guestName: guest.name,
             contact: guest.email || guest.phone,
             success: true,
+            emailSent: invitationResult.emailSent,
+            smsSent: invitationResult.smsSent,
           });
         } else {
           results.push({
@@ -137,7 +148,7 @@ export async function POST(request, { params }) {
             guestName: guest.name,
             contact: guest.email || guest.phone,
             success: false,
-            error: 'Failed to send email',
+            error: invitationResult.error || 'Failed to send invitation',
           });
         }
       } catch (error) {
@@ -168,10 +179,10 @@ export async function POST(request, { params }) {
   } catch (error) {
     console.error('Error sending invitations:', error);
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         error: 'Failed to send invitations',
-        details: error.message 
+        details: error.message,
       },
       { status: 500 },
     );
