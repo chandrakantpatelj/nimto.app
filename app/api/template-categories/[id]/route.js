@@ -5,7 +5,7 @@ import authOptions from '@/app/api/auth/[...nextauth]/auth-options';
 
 export async function GET(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const category = await prisma.templateCategory.findUnique({
       where: { id },
@@ -54,7 +54,7 @@ export async function PUT(request, { params }) {
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const {
       name,
@@ -145,7 +145,7 @@ export async function DELETE(request, { params }) {
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     // Check if category exists
     const existingCategory = await prisma.templateCategory.findUnique({

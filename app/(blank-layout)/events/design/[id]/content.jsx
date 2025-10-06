@@ -210,9 +210,7 @@ function EditEventContent() {
 
             if (thumbnailResponse.ok) {
               const thumbnailResult = await thumbnailResponse.json();
-              if (thumbnailResult.success) {
-                toastSuccess('Thumbnail uploaded successfully');
-              } else {
+              if (!thumbnailResult.success) {
                 toastWarning('Event created but thumbnail upload failed');
               }
             } else {

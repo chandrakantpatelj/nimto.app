@@ -13,7 +13,7 @@ export async function GET(request, { params }) {
       return accessCheck.error;
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     const guest = await prisma.guest.findUnique({
       where: { id },
@@ -73,7 +73,7 @@ export async function PUT(request, { params }) {
       return accessCheck.error;
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
 
     const { name, email, phone, status, response } = body;
@@ -142,7 +142,7 @@ export async function DELETE(request, { params }) {
       return accessCheck.error;
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     const guest = await prisma.guest.delete({
       where: { id },
