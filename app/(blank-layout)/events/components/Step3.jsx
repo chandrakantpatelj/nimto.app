@@ -303,7 +303,7 @@ function Step3() {
                     <h2 className="text-lg sm:text-xl font-bold text-foreground dark:text-white mb-4">
                       Add a Guest
                     </h2>
-                    <div className="flex flex-col xl:flex-row gap-4 items-end">
+                    <div className="flex flex-col xl:flex-row gap-4 items-center">
                       {/* Input Fields - Responsive layout */}
                       <div className="flex flex-col sm:flex-row gap-4 flex-1 w-full xl:w-auto">
                         <div className="flex-1 min-w-0">
