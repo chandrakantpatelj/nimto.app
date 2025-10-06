@@ -27,6 +27,7 @@ import {
   SheetContent,
   SheetFooter,
   SheetHeader,
+  SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -53,9 +54,9 @@ export function SheetNotifications({ trigger }) {
       <SheetTrigger asChild>{trigger}</SheetTrigger>
       <SheetContent className="p-0 sm:max-w-[500px]">
         <SheetHeader className="mb-0">
-          <h3 className="text-base font-semibold p-3 text-gray-900">
+          <SheetTitle className="text-base font-semibold p-3 text-gray-900">
             Notifications
-          </h3>
+          </SheetTitle>
         </SheetHeader>
         <SheetBody className="grow p-0">
           <Tabs defaultValue="all" className="w-full relative">

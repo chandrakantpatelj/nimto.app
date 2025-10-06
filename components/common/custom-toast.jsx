@@ -1,11 +1,15 @@
-// utils/showCustomToast.jsx
-import { toast } from 'sonner';
-import CustomToast from '../ui/toast';
-
-// import CustomToast from '@/components/CustomToast';
+import { showToast } from './unified-toast';
 
 export const showCustomToast = (message, type = 'info') => {
-  toast.custom(() => <CustomToast message={message} type={type} />, {
-    position: 'top-center',
-  });
+  switch (type) {
+    case 'success':
+      return showToast.success(message);
+    case 'error':
+      return showToast.error(message);
+    case 'warning':
+      return showToast.warning(message);
+    case 'info':
+    default:
+      return showToast.info(message);
+  }
 };

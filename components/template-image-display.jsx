@@ -1,45 +1,50 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Image as ImageIcon } from 'lucide-react';
 
-export default function TemplateImageDisplay({ template, className = "w-full h-32 object-cover" }) {
+export default function TemplateImageDisplay({
+  template,
+  className = 'w-full h-32 object-cover',
+  useThumbnail = false, // New prop to control whether to use thumbnail or full image
+}) {
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Memoize the image URL to prevent unnecessary re-renders
+  // Use image proxy for validation
   const imageUrl = useMemo(() => {
-    // Use S3 URL directly from template data (should be provided by API)
-    if (template?.s3ImageUrl) {
-      return template.s3ImageUrl;
+    // Choose between thumbnail and full image based on useThumbnail prop
+    const sourceUrl = useThumbnail && template?.templateThumbnailUrl 
+      ? template.templateThumbnailUrl 
+      : template?.s3ImageUrl;
+      
+    if (sourceUrl) {
+      // If URL is already a proxy URL, use it directly
+      if (sourceUrl.startsWith('/api/image-proxy')) {
+        return sourceUrl;
+      }
+      // If it's a direct S3 URL, wrap it with image proxy
+      return `/api/image-proxy?url=${sourceUrl}`;
     }
-    
-    // If no s3ImageUrl is provided, we can't generate it on client side
-    // This indicates an issue with the API
-    console.warn(`Template ${template?.id} missing s3ImageUrl from API`);
     return null;
-  }, [template?.s3ImageUrl, template?.id]);
+  }, [template?.s3ImageUrl, template?.templateThumbnailUrl, useThumbnail]);
 
-
-
-  // Reset error state when template changes
+  // Reset states when template changes
   useEffect(() => {
     setError(false);
     setLoading(true);
-    
-    // Add a timeout to prevent infinite loading
-    const timeoutId = setTimeout(() => {
-      setLoading(false);
-      setError(true);
-    }, 5000); // 5 second timeout
-    
-    return () => clearTimeout(timeoutId);
   }, [template?.id]);
 
-  // Show "No Image" when there's no s3ImageUrl
-  if (!template?.s3ImageUrl) {
+  // Show "No Image" when there's no image URL available
+  const hasImage = useThumbnail 
+    ? template?.templateThumbnailUrl || template?.s3ImageUrl
+    : template?.s3ImageUrl;
+    
+  if (!hasImage) {
     return (
-      <div className={`${className} bg-gray-100 flex items-center justify-center rounded-t-xl`}>
+      <div
+        className={`${className} bg-gray-100 flex items-center justify-center rounded-t-xl`}
+      >
         <div className="text-center">
           <ImageIcon className="w-8 h-8 text-gray-400 mx-auto mb-2" />
           <p className="text-xs text-gray-500">No Image</p>
@@ -48,37 +53,11 @@ export default function TemplateImageDisplay({ template, className = "w-full h-3
     );
   }
 
-
-
-  // Show loading state only briefly, then show image
-  if (loading) {
-    return (
-      <div className={`${className} bg-gray-100 flex items-center justify-center rounded-t-xl`}>
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto mb-2"></div>
-          <p className="text-xs text-gray-500">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Show the image immediately when we have a URL
-  if (!imageUrl) {
-    return (
-      <div className={`${className} bg-gray-100 flex items-center justify-center rounded-t-xl`}>
-        <div className="text-center">
-          <ImageIcon className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-          <p className="text-xs text-gray-500">No Image URL</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Show image with error handling overlay
+  // Show image with error handling
   return (
     <div className={`${className} relative`}>
       <img
-        src={imageUrl}
+        src={template?.templateThumbnailUrl || imageUrl}
         className={`w-full h-full object-cover rounded-t-xl`}
         alt={template.name || 'Template Image'}
         onLoad={() => {
@@ -90,8 +69,8 @@ export default function TemplateImageDisplay({ template, className = "w-full h-3
           setLoading(false);
         }}
       />
-      
-      {/* Show loading overlay */}
+
+      {/* Loading overlay */}
       {loading && (
         <div className="absolute inset-0 bg-gray-100 flex items-center justify-center rounded-t-xl">
           <div className="text-center">
@@ -100,13 +79,13 @@ export default function TemplateImageDisplay({ template, className = "w-full h-3
           </div>
         </div>
       )}
-      
-      {/* Show error overlay */}
+
+      {/* Error overlay */}
       {error && (
         <div className="absolute inset-0 bg-gray-100 flex items-center justify-center rounded-t-xl">
           <div className="text-center">
             <ImageIcon className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-            <p className="text-xs text-gray-500">Image Failed to Load</p>
+            <p className="text-xs text-gray-500">Image unavailable</p>
           </div>
         </div>
       )}

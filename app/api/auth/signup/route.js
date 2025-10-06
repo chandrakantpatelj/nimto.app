@@ -8,7 +8,7 @@ import { getSignupSchema } from '@/app/(auth)/forms/signup-schema';
 import { UserStatus } from '@/app/models/user';
 
 // Helper function to generate a verification token and send the email.
-async function sendVerificationEmail(user) {
+async function sendVerificationEmail(user, callbackUrl = '/templates') {
   try {
     // Create a new verification token.
     const token = await prisma.verificationToken.create({
@@ -20,12 +20,12 @@ async function sendVerificationEmail(user) {
     });
     console.log("token", token);
 
-    // Construct the verification URL.
-    const verificationUrl = `${process.env.NEXTAUTH_URL}/verify-email?token=${token.token}`;
+    // Construct the verification URL with callbackUrl parameter.
+    const verificationUrl = `${process.env.NEXTAUTH_URL}/verify-email?token=${token.token}&callbackUrl=${encodeURIComponent(callbackUrl)}`;
 
     // Send the verification email.
     await sendEmail({
-      to: user.email,
+      to: user.email, 
       subject: 'Account Activation',
       content: {
         title: `Hello, ${user.name}`,
@@ -74,8 +74,11 @@ export async function POST(req) {
     // Parse the request body as JSON.
     const body = await req.json();
 
+    // Extract callbackUrl from body if present
+    const { callbackUrl, ...signupData } = body;
+
     // Validate the data using safeParse.
-    const result = getSignupSchema().safeParse(body);
+    const result = getSignupSchema().safeParse(signupData);
     if (!result.success) {
       return NextResponse.json(
         {
@@ -159,8 +162,8 @@ export async function POST(req) {
       include: { role: true },
     });
     console.log("user", user)
-    // Send the verification email.
-    await sendVerificationEmail(user);
+    // Send the verification email with callbackUrl.
+    await sendVerificationEmail(user, callbackUrl || '/templates');
 
     return NextResponse.json(
       {

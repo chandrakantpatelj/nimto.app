@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { RiCheckboxCircleFill } from '@remixicon/react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
+import { useToast } from '@/providers/toast-provider';
 import { toAbsoluteUrl } from '@/lib/helpers';
 import { Alert, AlertIcon, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';

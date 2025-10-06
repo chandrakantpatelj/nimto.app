@@ -20,7 +20,7 @@ import {
   Settings2,
   X,
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { useToast } from '@/providers/toast-provider';
 import { toAbsoluteUrl } from '@/lib/helpers';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 import { Alert, AlertIcon, AlertTitle } from '@/components/ui/alert';
@@ -885,7 +885,7 @@ function ActionsCell({ row }) {
       ),
 
       {
-        position: 'top-center',
+        position: 'bottom-right',
       },
     );
   };
@@ -899,9 +899,12 @@ function ActionsCell({ row }) {
       </DropdownMenuTrigger>
       <DropdownMenuContent side="bottom" align="end">
         <DropdownMenuItem
-          onClick={() =>
-            alert(`Clicked on action button for row ${row.original.user.name}`)
-          }
+          onClick={() => {
+            // TODO: Implement session action functionality
+            console.log(
+              `Clicked on action button for row ${row.original.user.name}`,
+            );
+          }}
         >
           Action
         </DropdownMenuItem>

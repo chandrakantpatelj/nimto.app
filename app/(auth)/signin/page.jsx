@@ -1,11 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { RiErrorWarningFill } from '@remixicon/react';
-import { AlertCircle, Eye, EyeOff, LoaderCircleIcon } from 'lucide-react';
+import {
+  AlertCircle,
+  Check,
+  Eye,
+  EyeOff,
+  LoaderCircleIcon,
+} from 'lucide-react';
 import { signIn } from 'next-auth/react';
 import { useForm } from 'react-hook-form';
 import { Alert, AlertIcon, AlertTitle } from '@/components/ui/alert';
@@ -25,36 +30,87 @@ import { getSigninSchema } from '../forms/signin-schema';
 
 export default function Page() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState(null);
 
+  // Get callback URL from search params, default to templates
+  const rawCallbackUrl = searchParams.get('callbackUrl');
+  const callbackUrl = rawCallbackUrl
+    ? decodeURIComponent(rawCallbackUrl)
+    : '/templates';
+  const prefilledEmail = searchParams.get('email') || '';
+  const showVerificationMessage = searchParams.get('verification') === 'true';
+
   const form = useForm({
     resolver: zodResolver(getSigninSchema()),
     defaultValues: {
-      email: 'demo@kt.com',
-      password: 'demo123',
+      email: prefilledEmail,
+      password: '',
       rememberMe: false,
     },
   });
 
-  async function onSubmit(values) {
+  // Update form when email parameter changes
+  useEffect(() => {
+    if (prefilledEmail) {
+      form.setValue('email', prefilledEmail);
+    }
+  }, [prefilledEmail, form]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const result = await form.trigger();
+    if (!result) return;
+
     setIsProcessing(true);
     setError(null);
 
     try {
+      const values = form.getValues();
       const response = await signIn('credentials', {
         redirect: false,
         email: values.email,
         password: values.password,
         rememberMe: values.rememberMe,
+        callbackUrl: callbackUrl, // redirect to callback URL after login
       });
 
+      console.log('SignIn Response:', response);
+
       if (response?.error) {
-        const errorData = JSON.parse(response.error);
-        setError(errorData.message);
+        // Handle both plain string and JSON error formats safely
+        try {
+          const errorData = JSON.parse(response.error);
+          setError(errorData.message || 'Authentication failed');
+        } catch {
+          setError(response.error);
+        }
+      } else if (response?.ok) {
+        // Successful login: redirect to callbackUrl or default
+        const redirectUrl = response.url || callbackUrl || '/templates';
+
+        // Use window.location.href as fallback for more reliable redirects
+        try {
+          router.push(redirectUrl);
+          router.refresh();
+
+          // Fallback: if router.push doesn't work within 2 seconds, use window.location
+          setTimeout(() => {
+            if (window.location.pathname === '/signin') {
+              window.location.href = redirectUrl;
+            }
+          }, 2000);
+        } catch (redirectError) {
+          console.error(
+            'Router redirect failed, using window.location:',
+            redirectError,
+          );
+          window.location.href = redirectUrl;
+        }
       } else {
-        router.push('/');
+        setError('Authentication failed. Please try again.');
       }
     } catch (err) {
       setError(
@@ -65,44 +121,61 @@ export default function Page() {
     } finally {
       setIsProcessing(false);
     }
-  }
+  };
 
   return (
     <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="block w-full space-y-5"
-      >
-        <div className="space-y-1.5 pb-3">
+      <form onSubmit={handleSubmit} className="block w-full space-y-5">
+        {/* Header */}
+        <div>
           <h1 className="text-2xl font-semibold tracking-tight text-center">
-            Sign in to Metronic
+            Sign in to Nimto
           </h1>
+          <p className="mt-2 text-sm text-slate-600 text-center">
+            Manage your events seamlessly.
+          </p>
         </div>
 
-        <Alert size="sm" close={false}>
-          <AlertIcon>
-            <RiErrorWarningFill className="text-primary" />
-          </AlertIcon>
-          <AlertTitle className="text-accent-foreground">
-            Use <span className="text-mono font-semibold">demo@kt.com</span>{' '}
-            username and{' '}
-            <span className="text-mono font-semibold">demo123</span> for demo
-            access.
-          </AlertTitle>
-        </Alert>
+        {/* Verification Message */}
+        {showVerificationMessage && (
+          <Alert className="mb-4 border-l-4 border-l-green-500 bg-green-50 text-green-800 shadow-sm">
+            <AlertIcon>
+              <Check className="h-4 w-4 text-green-600" />
+            </AlertIcon>
+            <div className="space-y-1">
+              <AlertTitle className="text-sm font-semibold text-green-900">
+                Email Verification Required
+              </AlertTitle>
+              <div className="text-sm">
+                <p>
+                  We've sent a verification email to{' '}
+                  <span className="font-semibold text-green-900 bg-green-100 px-1.5 py-0.5 rounded text-xs">
+                    {prefilledEmail}
+                  </span>
+                </p>
+                <p className="mt-1 text-xs text-green-700">
+                  Check your email and click the verification link before
+                  signing in.
+                </p>
+              </div>
+            </div>
+          </Alert>
+        )}
 
-        <div className="flex flex-col gap-3.5">
+        {/* Social Login */}
+        <div className="flex flex-col gap-1.5">
           <Button
             variant="outline"
             type="button"
-            onClick={() => signIn('google', { callbackUrl: '/' })}
+            onClick={() => signIn('google', { callbackUrl: callbackUrl })}
           >
-            <Icons.googleColorful className="size-5! opacity-100!" /> Sign in
-            with Google
+            <Icons.googleColorful className="size-5 opacity-100" /> Sign in with
+            Google
           </Button>
         </div>
 
-        <div className="relative py-1.5">
+        {/* Divider */}
+        <div className="relative">
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t" />
           </div>
@@ -111,6 +184,7 @@ export default function Page() {
           </div>
         </div>
 
+        {/* Error Alert */}
         {error && (
           <Alert variant="destructive">
             <AlertIcon>
@@ -120,11 +194,12 @@ export default function Page() {
           </Alert>
         )}
 
+        {/* Email */}
         <FormField
           control={form.control}
           name="email"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="gap-0">
               <FormLabel>Email</FormLabel>
               <FormControl>
                 <Input placeholder="Your email" {...field} />
@@ -134,11 +209,12 @@ export default function Page() {
           )}
         />
 
+        {/* Password */}
         <FormField
           control={form.control}
           name="password"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="gap-0">
               <div className="flex justify-between items-center gap-2.5">
                 <FormLabel>Password</FormLabel>
                 <Link
@@ -151,17 +227,16 @@ export default function Page() {
               <div className="relative">
                 <Input
                   placeholder="Your password"
-                  type={passwordVisible ? 'text' : 'password'} // Toggle input type
+                  type={passwordVisible ? 'text' : 'password'}
                   {...field}
                 />
-
                 <Button
                   type="button"
                   variant="ghost"
                   mode="icon"
                   size="sm"
-                  onClick={() => setPasswordVisible(!passwordVisible)} // Toggle visibility
-                  className="absolute end-0 top-1/2 -translate-y-1/2 h-7 w-7 me-1.5 bg-transparent!"
+                  onClick={() => setPasswordVisible(!passwordVisible)}
+                  className="absolute end-0 top-1/2 -translate-y-1/2 h-7 w-7 me-1.5"
                   aria-label={
                     passwordVisible ? 'Hide password' : 'Show password'
                   }
@@ -178,6 +253,7 @@ export default function Page() {
           )}
         />
 
+        {/* Remember Me */}
         <div className="flex items-center space-x-2">
           <FormField
             control={form.control}
@@ -189,7 +265,6 @@ export default function Page() {
                   checked={field.value}
                   onCheckedChange={(checked) => field.onChange(!!checked)}
                 />
-
                 <label
                   htmlFor="remember-me"
                   className="text-sm leading-none text-muted-foreground"
@@ -201,19 +276,25 @@ export default function Page() {
           />
         </div>
 
+        {/* Submit */}
         <div className="flex flex-col gap-2.5">
           <Button type="submit" disabled={isProcessing}>
-            {isProcessing ? (
-              <LoaderCircleIcon className="size-4 animate-spin" />
-            ) : null}
+            {isProcessing && (
+              <LoaderCircleIcon className="size-4 animate-spin mr-2" />
+            )}
             Continue
           </Button>
         </div>
 
+        {/* Signup link */}
         <p className="text-sm text-muted-foreground text-center">
           Don&apos;t have an account?{' '}
           <Link
-            href="/signup"
+            href={
+              callbackUrl !== '/templates'
+                ? `/signup?callbackUrl=${encodeURIComponent(callbackUrl)}`
+                : '/signup'
+            }
             className="text-sm font-semibold text-foreground hover:text-primary"
           >
             Sign Up

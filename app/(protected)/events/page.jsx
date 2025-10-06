@@ -1,8 +1,10 @@
 'use client';
 
 import { Fragment } from 'react';
+import Link from 'next/link';
 import { CirclePlus } from 'lucide-react';
 import { useRoleBasedAccess } from '@/hooks/use-role-based-access';
+import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Container } from '@/components/common/container';
 import {
@@ -18,27 +20,31 @@ import { PageNavbar } from '../account/page-navbar';
 import { RoleBasedEventContent } from './components/role-based-content';
 
 function EventManagementPage() {
-  const { user, roles, designVariants } = useRoleBasedAccess();
+  const { data: session } = useSession();
+  const { user, roles } = useRoleBasedAccess();
+  const isAuthenticated = !!session;
 
   return (
     <Fragment>
-      <PageNavbar />
+      {isAuthenticated && <PageNavbar />}
       <Container>
         <Toolbar>
           <ToolbarHeading>
             <ToolbarPageTitle text="Events" />
             <ToolbarDescription>
-              {user?.name} ({user?.roleName})
+              {isAuthenticated ? `${user?.name} (${user?.roleName})` : 'Browse public events'}
             </ToolbarDescription>
           </ToolbarHeading>
           <ToolbarActions>
-            {/* {(roles.isHost || roles.isApplicationAdmin) && ( */}
-            <Button variant="primary" asChild>
-              <a href="/events/select-template">
-                <CirclePlus /> Create New Event
-              </a>
-            </Button>
-            {/* )} */}
+            {isAuthenticated && (roles.isHost ||
+              roles.isApplicationAdmin ||
+              roles.isSuperAdmin) && (
+              <Button variant="primary" asChild>
+                <Link href="/events/select-template">
+                  <CirclePlus /> Create New Event
+                </Link>
+              </Button>
+            )}
           </ToolbarActions>
         </Toolbar>
       </Container>

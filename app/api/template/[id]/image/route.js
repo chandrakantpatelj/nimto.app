@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import { generateS3Url } from '@/lib/s3-utils';
+import { generateProxyUrl } from '@/lib/s3-utils';
 
 const prisma = new PrismaClient();
 
 // GET /api/template/[id]/image - Get template image
 export async function GET(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const template = await prisma.template.findFirst({
       where: {
@@ -24,19 +24,19 @@ export async function GET(request, { params }) {
     if (!template) {
       return NextResponse.json(
         { success: false, error: 'Template not found' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     if (!template.imagePath) {
       return NextResponse.json(
         { success: false, error: 'Template has no image' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
-    // Generate the full S3 URL
-    const imageUrl = generateS3Url(template.imagePath);
+    // Generate the standardized proxy URL
+    const imageUrl = generateProxyUrl(template.imagePath);
 
     return NextResponse.json({
       success: true,
@@ -51,7 +51,7 @@ export async function GET(request, { params }) {
     console.error('Error fetching template image:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch template image' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

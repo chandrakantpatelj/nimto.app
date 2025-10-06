@@ -10,12 +10,15 @@ const Toaster = ({ ...props }) => {
   return (
     <Sonner
       theme={theme}
+      position="bottom-right"
+      duration={5000}
       className="group toaster [&_[data-type=success]>[data-icon]]:text-success [&_[data-type=success]_[data-title]]:text-success [&_[data-type=info]_[data-title]]:text-info [&_[data-type=error]>[data-icon]]:text-destructive [&_[data-type=error]_[data-title]]:text-destructive"
       toastOptions={{
         classNames: {
           toast:
-            'group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground! group-[.toaster]:border-border group-[.toaster]:shadow-lg has-[[role=alert]]:border-0! has-[[role=alert]]:shadow-none! has-[[role=alert]]:bg-transparent!',
-          description: 'group-[.toast]:text-muted-foreground',
+            'group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground! group-[.toaster]:border-border group-[.toaster]:shadow-lg has-[[role=alert]]:border-0! has-[[role=alert]]:shadow-none! has-[[role=alert]]:bg-transparent! text-base font-medium min-w-[400px]',
+          title: 'text-base font-semibold',
+          description: 'group-[.toast]:text-muted-foreground text-sm',
           actionButton:
             'group-[.toast]:rounded-md! group-[.toast]:bg-primary group-[.toast]:text-primary-foreground!',
           cancelButton:

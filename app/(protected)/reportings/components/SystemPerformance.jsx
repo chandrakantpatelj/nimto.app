@@ -1,8 +1,11 @@
 import React from 'react';
+import { useTheme } from 'next-themes';
 import { Card, CardContent } from '@/components/ui/card';
 import { KeenIcon } from '@/components/keenicons/keenicons';
 
 function SystemPerformance() {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
   // Mock data - in a real app, this would come from an API
   const performanceStats = {
     apiUptime: '99.93%',
@@ -19,7 +22,7 @@ function SystemPerformance() {
     graphLabel,
     graphColor,
   }) => (
-    <Card className="bg-white border border-gray-200 shadow-sm">
+    <Card className=" border border-border shadow-sm">
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div className="flex-1">
@@ -30,16 +33,20 @@ function SystemPerformance() {
                 <KeenIcon icon={icon} className="text-lg" />
               </div>
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-1">{value}</h3>
-            <p className="text-sm font-medium text-gray-600 mb-1">{title}</p>
-            <p className="text-xs text-gray-500 mb-3">{description}</p>
+            <h3 className="text-2xl font-bold text-mono mb-1">{value}</h3>
+            <p className="text-sm font-medium  mb-1">{title}</p>
+            <p className="text-xs text-secondary-foreground mb-3">
+              {description}
+            </p>
             <div className="flex items-center space-x-1">
               <div
                 className={`w-16 h-1 ${graphColor} rounded-full overflow-hidden`}
               >
                 <div className="w-4/5 h-full bg-current rounded-full opacity-80"></div>
               </div>
-              <span className="text-xs text-gray-500">{graphLabel}</span>
+              <span className="text-xs text-secondary-foreground">
+                {graphLabel}
+              </span>
             </div>
           </div>
         </div>
@@ -50,10 +57,10 @@ function SystemPerformance() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">
+        <h2 className="text-xl font-semibold  mb-2">
           System Performance Overview
         </h2>
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-sm text-secondary-foreground mb-4">
           Technical performance metrics and monitoring
         </p>
       </div>
@@ -64,7 +71,11 @@ function SystemPerformance() {
           value={performanceStats.apiUptime}
           description="Last 90 days. Sourced from hosting provider monitoring."
           icon="chart-line"
-          iconColor="bg-green-100 text-green-600"
+          iconColor={
+            isDark
+              ? 'bg-green-500/20 text-green-400'
+              : 'bg-green-100 text-green-600'
+          }
           graphLabel="Uptime %"
           graphColor="bg-green-200"
         />
@@ -74,7 +85,11 @@ function SystemPerformance() {
           value={performanceStats.avgResponseTime}
           description="Last 90 days. Sourced from hosting provider monitoring."
           icon="chart-line"
-          iconColor="bg-purple-100 text-purple-600"
+          iconColor={
+            isDark
+              ? 'bg-purple-500/20 text-purple-400'
+              : 'bg-purple-100 text-purple-600'
+          }
           graphLabel="Response (ms)"
           graphColor="bg-purple-200"
         />
@@ -84,7 +99,11 @@ function SystemPerformance() {
           value={performanceStats.errorRate}
           description="Last 24 hours. From application logs or APM."
           icon="chart-line"
-          iconColor="bg-orange-100 text-orange-600"
+          iconColor={
+            isDark
+              ? 'bg-yellow-500/20 text-yellow-400'
+              : 'bg-yellow-100 text-yellow-600'
+          }
           graphLabel="Error Rate %"
           graphColor="bg-orange-200"
         />

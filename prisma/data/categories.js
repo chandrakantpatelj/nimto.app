@@ -1,0 +1,68 @@
+const categories = [
+  {
+    name: 'Baby & Kids',
+    slug: 'baby-kids',
+    description: 'Baby showers, kids birthdays, and children events',
+    icon: '👶',
+    color: '#FFB6C1',
+    sortOrder: 1,
+  },
+  {
+    name: 'Parties',
+    slug: 'parties',
+    description: 'General party invitations',
+    icon: '🎉',
+    color: '#FF6347',
+    sortOrder: 2,
+  },
+  {
+    name: 'Birthday',
+    slug: 'birthday',
+    description: 'Birthday party invitations',
+    icon: '🎂',
+    color: '#FF69B4',
+    sortOrder: 3,
+  },
+  {
+    name: 'Wedding',
+    slug: 'wedding',
+    description: 'Wedding invitations',
+    icon: '💒',
+    color: '#F0E68C',
+    sortOrder: 4,
+  },
+  {
+    name: 'Business',
+    slug: 'business',
+    description: 'Business event invitations',
+    icon: '💼',
+    color: '#4682B4',
+    sortOrder: 5,
+  },
+  {
+    name: 'Holidays',
+    slug: 'holidays',
+    description: 'Holiday celebration invitations',
+    icon: '🎄',
+    color: '#32CD32',
+    sortOrder: 6,
+  },
+  {
+    name: 'Sports',
+    slug: 'sports',
+    description: 'Sports event invitations',
+    icon: '⚽',
+    color: '#90EE90',
+    sortOrder: 7,
+  },
+  {
+    name: 'Graduation',
+    slug: 'graduation',
+    description: 'Graduation celebration invitations',
+    icon: '🎓',
+    color: '#9370DB',
+    sortOrder: 8,
+  },
+];
+
+module.exports = categories;

@@ -6,9 +6,9 @@ import { RiCheckboxCircleFill, RiErrorWarningFill } from '@remixicon/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { LoaderCircleIcon, X } from 'lucide-react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
 import { apiFetch } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/providers/toast-provider';
 import {
   Alert,
   AlertDescription,
@@ -53,6 +53,8 @@ import { usePermissionSelectQuery } from '../../permissions/hooks/use-permission
 import { RoleSchema } from '../forms/role-schema';
 
 const RoleEditDialog = ({ open, closeDialog, role }) => {
+  const { toastSuccess, toastWarning, toastError } = useToast();
+
   const queryClient = useQueryClient();
   const [selectedPermissions, setSelectedPermissions] = useState([]);
   const { data: permissionList } = usePermissionSelectQuery();
@@ -116,41 +118,14 @@ const RoleEditDialog = ({ open, closeDialog, role }) => {
         ? 'Role updated successfully'
         : 'Role added successfully';
 
-      toast.custom(
-        () => (
-          <Alert variant="mono" icon="success">
-            <AlertIcon>
-              <RiCheckboxCircleFill />
-            </AlertIcon>
-            <AlertTitle>{message}</AlertTitle>
-          </Alert>
-        ),
-
-        {
-          position: 'top-center',
-          duration: 1000 * 5, // 5 seconds
-        },
-      );
+      toastSuccess(message);
 
       queryClient.invalidateQueries({ queryKey: ['user-roles'] });
       closeDialog();
     },
     onError: (error) => {
       const message = error.message;
-      toast.custom(
-        () => (
-          <Alert variant="mono" icon="destructive">
-            <AlertIcon>
-              <RiErrorWarningFill />
-            </AlertIcon>
-            <AlertTitle>{message}</AlertTitle>
-          </Alert>
-        ),
-
-        {
-          position: 'top-center',
-        },
-      );
+      toastError(message);
     },
   });
 

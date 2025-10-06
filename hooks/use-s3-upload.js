@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { getPublicUrl } from '@/lib/s3-presigned';
 
 export function useS3Upload() {
@@ -30,7 +30,8 @@ export function useS3Upload() {
         throw new Error(errorData.error || 'Failed to get upload URL');
       }
 
-      const { presignedUrl, key, bucket, region } = await presignedResponse.json();
+      const { presignedUrl, key, bucket, region } =
+        await presignedResponse.json();
 
       // Step 2: Upload directly to S3 using pre-signed URL
       const uploadResponse = await fetch(presignedUrl, {
@@ -48,12 +49,14 @@ export function useS3Upload() {
           statusText: uploadResponse.statusText,
           errorText,
           presignedUrl: presignedUrl.substring(0, 100) + '...',
-          key
+          key,
         });
-        throw new Error(`Failed to upload file to S3: ${uploadResponse.status} ${uploadResponse.statusText}`);
+        throw new Error(
+          `Failed to upload file to S3: ${uploadResponse.status} ${uploadResponse.statusText}`,
+        );
       }
 
-      // Step 3: Generate public URL using path-style format (bucket name in path)
+      // Step 3: Generate public URL using AWS standard path format (bucket/bucket/path)
       const publicUrl = `https://${bucket}.s3.${region}.amazonaws.com/${bucket}/${key}`;
 
       setUploadProgress(100);
@@ -63,7 +66,6 @@ export function useS3Upload() {
         key,
         fileName: file.name,
       };
-
     } catch (err) {
       setError(err.message);
       throw err;
@@ -73,76 +75,79 @@ export function useS3Upload() {
     }
   }, []);
 
-  const uploadWithProgress = useCallback(async (file, directory = 'templates', onProgress) => {
-    setUploading(true);
-    setUploadProgress(0);
-    setError(null);
+  const uploadWithProgress = useCallback(
+    async (file, directory = 'templates', onProgress) => {
+      setUploading(true);
+      setUploadProgress(0);
+      setError(null);
 
-    try {
-      // Step 1: Get pre-signed URL
-      const presignedResponse = await fetch('/api/s3/presigned-url', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          fileName: file.name,
-          contentType: file.type,
-          directory,
-        }),
-      });
-
-      if (!presignedResponse.ok) {
-        const errorData = await presignedResponse.json();
-        throw new Error(errorData.error || 'Failed to get upload URL');
-      }
-
-      const { presignedUrl, key, bucket, region } = await presignedResponse.json();
-
-      // Step 2: Upload with progress tracking
-      const xhr = new XMLHttpRequest();
-      
-      return new Promise((resolve, reject) => {
-        xhr.upload.addEventListener('progress', (event) => {
-          if (event.lengthComputable) {
-            const progress = Math.round((event.loaded / event.total) * 100);
-            setUploadProgress(progress);
-            if (onProgress) onProgress(progress);
-          }
+      try {
+        // Step 1: Get pre-signed URL
+        const presignedResponse = await fetch('/api/s3/presigned-url', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            fileName: file.name,
+            contentType: file.type,
+            directory,
+          }),
         });
 
-        xhr.addEventListener('load', () => {
-          if (xhr.status === 200) {
-            const publicUrl = `https://${bucket}.s3.${region}.amazonaws.com/${bucket}/${key}`;
-            setUploadProgress(100);
-            resolve({
-              success: true,
-              url: publicUrl,
-              key,
-              fileName: file.name,
-            });
-          } else {
+        if (!presignedResponse.ok) {
+          const errorData = await presignedResponse.json();
+          throw new Error(errorData.error || 'Failed to get upload URL');
+        }
+
+        const { presignedUrl, key, bucket, region } =
+          await presignedResponse.json();
+
+        // Step 2: Upload with progress tracking
+        const xhr = new XMLHttpRequest();
+
+        return new Promise((resolve, reject) => {
+          xhr.upload.addEventListener('progress', (event) => {
+            if (event.lengthComputable) {
+              const progress = Math.round((event.loaded / event.total) * 100);
+              setUploadProgress(progress);
+              if (onProgress) onProgress(progress);
+            }
+          });
+
+          xhr.addEventListener('load', () => {
+            if (xhr.status === 200) {
+              const publicUrl = `https://${bucket}.s3.${region}.amazonaws.com/${bucket}/${key}`;
+              setUploadProgress(100);
+              resolve({
+                success: true,
+                url: publicUrl,
+                key,
+                fileName: file.name,
+              });
+            } else {
+              reject(new Error('Upload failed'));
+            }
+          });
+
+          xhr.addEventListener('error', () => {
             reject(new Error('Upload failed'));
-          }
+          });
+
+          xhr.open('PUT', presignedUrl);
+          xhr.setRequestHeader('Content-Type', file.type);
+          xhr.send(file);
         });
-
-        xhr.addEventListener('error', () => {
-          reject(new Error('Upload failed'));
-        });
-
-        xhr.open('PUT', presignedUrl);
-        xhr.setRequestHeader('Content-Type', file.type);
-        xhr.send(file);
-      });
-
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    } finally {
-      setUploading(false);
-      setUploadProgress(0);
-    }
-  }, []);
+      } catch (err) {
+        setError(err.message);
+        throw err;
+      } finally {
+        setUploading(false);
+        setUploadProgress(0);
+      }
+    },
+    [],
+  );
 
   const reset = useCallback(() => {
     setUploading(false);

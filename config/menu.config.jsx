@@ -4,7 +4,6 @@ import {
   Badge,
   Bell,
   Bitcoin,
-  Bolt,
   Book,
   Briefcase,
   Building,
@@ -12,7 +11,6 @@ import {
   Captions,
   CheckCircle,
   Code,
-  Codepen,
   Coffee,
   File as DocumentIcon,
   Euro,
@@ -26,10 +24,10 @@ import {
   Grid,
   Heart,
   HelpCircle,
-  Image,
   Kanban,
   Key,
   Layout,
+  LayoutDashboard,
   LayoutGrid,
   LifeBuoy,
   MessageSquare,
@@ -37,7 +35,6 @@ import {
   Network,
   Users as PeopleIcon,
   Plug,
-  ScrollText,
   Settings,
   Share2,
   Shield,
@@ -45,24 +42,30 @@ import {
   ShoppingCart,
   SquareMousePointer,
   Star,
-  Theater,
   TrendingUp,
   UserCheck,
   UserCircle,
+  UserCog,
   Users,
   Briefcase as WorkIcon,
   Zap,
+  Home
 } from 'lucide-react';
 
 export const MENU_SIDEBAR = [
   {
-    title: 'Dashboard',
-    icon: CalendarCheck,
+    title: 'Home',
+    icon: Home,
     path: '/',
   },
   {
+    title: 'Dashboard',
+    icon: LayoutDashboard,
+    path: '/dashboard',
+  },
+  {
     title: 'Users',
-    icon: Users,
+    icon: UserCog,
     path: '/user-management/users',
   },
   {
@@ -79,11 +82,6 @@ export const MENU_SIDEBAR = [
     title: 'Templates',
     icon: FileText,
     path: '/templates',
-  },
-  {
-    title: 'Image Editor',
-    icon: Image,
-    path: '/image-editor/demo',
   },
   {
     title: 'App Settings',
@@ -164,7 +162,7 @@ export const MENU_SIDEBAR_COMPACT = [
   {
     title: 'Dashboards',
     icon: LayoutGrid,
-    path: '/',
+    path: '/dashboard',
   },
   {
     title: 'Public Profile',
@@ -452,6 +450,7 @@ export const MENU_SIDEBAR_COMPACT = [
 
 export const MENU_MEGA = [
   { title: 'Home', path: '/' },
+  { title: 'Dashboard', path: '/dashboard' },
   {
     title: 'Profiles',
     children: [
@@ -856,6 +855,7 @@ export const MENU_MEGA = [
 
 export const MENU_MEGA_MOBILE = [
   { title: 'Home', path: '/' },
+  { title: 'Dashboard', path: '/dashboard' },
   {
     title: 'Profiles',
     children: [

@@ -12,8 +12,8 @@ export function NavbarMenu() {
     () => [
       {
         title: 'Dashboards',
-        path: '/',
-        partial: '/',
+        path: '/dashboard',
+        partial: '/dashboard',
       },
       {
         title: 'Public Profiles',

@@ -1,24 +1,30 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
-import { ScreenLoader } from '@/components/common/screen-loader';
+import { usePathname } from 'next/navigation';
+import { SessionGuard } from '@/components/common/session-guard';
 import { Demo1Layout } from '../components/layouts/demo1/layout';
 
 export default function ProtectedLayout({ children }) {
-  const { data: session, status } = useSession();
-  const router = useRouter();
+  const pathname = usePathname();
 
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/signin');
-    }
-  }, [status, router]);
+  // Allow public access to templates and events routes
+  const isPublicRoute =
+    pathname.startsWith('/templates') || pathname.startsWith('/events');
 
-  if (status === 'loading') {
-    return <ScreenLoader />;
+  // For public routes, render without authentication check
+  if (isPublicRoute) {
+    return <Demo1Layout>{children}</Demo1Layout>;
   }
 
-  return session ? <Demo1Layout>{children}</Demo1Layout> : null;
+  // For protected routes, use session guard with automatic validation and redirect
+  return (
+    <SessionGuard
+      requireAuth={true}
+      onSessionInvalid={(validation) => {
+        console.log('Session invalid in protected layout:', validation.reason);
+      }}
+    >
+      <Demo1Layout>{children}</Demo1Layout>
+    </SessionGuard>
+  );
 }

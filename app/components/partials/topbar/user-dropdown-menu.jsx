@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { I18N_LANGUAGES } from '@/i18n/config';
 import {
   BetweenHorizontalStart,
@@ -16,6 +17,7 @@ import {
 import { signOut, useSession } from 'next-auth/react';
 import { useTheme } from 'next-themes';
 import { toAbsoluteUrl } from '@/lib/helpers';
+import { useLogout } from '@/lib/logout-utils';
 import { useLanguage } from '@/providers/i18n-provider';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -35,6 +37,8 @@ import { Switch } from '@/components/ui/switch';
 
 export function UserDropdownMenu({ trigger }) {
   const { data: session, status } = useSession();
+  const router = useRouter();
+  const logout = useLogout();
 
   console.log('session98597', session);
 
@@ -47,6 +51,19 @@ export function UserDropdownMenu({ trigger }) {
 
   const handleThemeToggle = (checked) => {
     setTheme(checked ? 'dark' : 'light');
+  };
+
+  const handleLogout = async () => {
+    await logout({
+      redirect: true,
+      redirectUrl: '/',
+      onSuccess: () => {
+        console.log('Logout successful');
+      },
+      onError: (error) => {
+        console.error('Logout failed:', error);
+      },
+    });
   };
 
   // Don't render session-dependent content until session is loaded
@@ -101,7 +118,7 @@ export function UserDropdownMenu({ trigger }) {
         <DropdownMenuSeparator />
 
         {/* Menu Items */}
-        <DropdownMenuItem asChild>
+        {/* <DropdownMenuItem asChild>
           <Link
             href="/public-profile/profiles/default"
             className="flex items-center gap-2"
@@ -118,10 +135,10 @@ export function UserDropdownMenu({ trigger }) {
             <User />
             My Profile
           </Link>
-        </DropdownMenuItem>
+        </DropdownMenuItem> */}
 
         {/* My Account Submenu */}
-        <DropdownMenuSub>
+        {/* <DropdownMenuSub>
           <DropdownMenuSubTrigger className="flex items-center gap-2">
             <Settings />
             My Account
@@ -182,9 +199,9 @@ export function UserDropdownMenu({ trigger }) {
               </Link>
             </DropdownMenuItem>
           </DropdownMenuSubContent>
-        </DropdownMenuSub>
+        </DropdownMenuSub> */}
 
-        <DropdownMenuItem asChild>
+        {/* <DropdownMenuItem asChild>
           <Link
             href="https://devs.keenthemes.com"
             className="flex items-center gap-2"
@@ -192,10 +209,10 @@ export function UserDropdownMenu({ trigger }) {
             <FileText />
             Dev Forum
           </Link>
-        </DropdownMenuItem>
+        </DropdownMenuItem> */}
 
         {/* Language Submenu with Radio Group */}
-        <DropdownMenuSub>
+        {/* <DropdownMenuSub>
           <DropdownMenuSubTrigger className="flex items-center gap-2 [&_[data-slot=dropdown-menu-sub-trigger-indicator]]:hidden hover:[&_[data-slot=badge]]:border-input data-[state=open]:[&_[data-slot=badge]]:border-input">
             <Globe />
             <span className="flex items-center justify-between gap-2 grow relative">
@@ -240,12 +257,12 @@ export function UserDropdownMenu({ trigger }) {
               ))}
             </DropdownMenuRadioGroup>
           </DropdownMenuSubContent>
-        </DropdownMenuSub>
+        </DropdownMenuSub> */}
 
         <DropdownMenuSeparator />
 
         {/* Footer */}
-        <DropdownMenuItem
+        {/* <DropdownMenuItem
           className="flex items-center gap-2"
           onSelect={(event) => event.preventDefault()}
         >
@@ -258,13 +275,13 @@ export function UserDropdownMenu({ trigger }) {
               onCheckedChange={handleThemeToggle}
             />
           </div>
-        </DropdownMenuItem>
+        </DropdownMenuItem> */}
         <div className="p-2 mt-1">
           <Button
             variant="outline"
             size="sm"
             className="w-full"
-            onClick={() => signOut()}
+            onClick={handleLogout}
           >
             Logout
           </Button>

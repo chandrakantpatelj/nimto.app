@@ -1,0 +1,307 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { ArrowLeft, CalendarDays, Clock, MapPin, User } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import { apiFetch } from '@/lib/api';
+import { formatEventDate } from '@/lib/date-utils';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import RSVPForm from '@/components/rsvp/rsvp-form';
+
+export default function EventInvitationPage() {
+  const [event, setEvent] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const { data: session } = useSession();
+  const params = useParams();
+
+  const eventId = params.eventId;
+  const guestId = params.guestId;
+
+  useEffect(() => {
+    if (eventId && guestId) {
+      fetchEventInvitation();
+    }
+  }, [eventId, guestId, session?.user?.email]);
+
+  const fetchEventInvitation = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Build query parameters
+      const params = new URLSearchParams();
+      params.append('eventId', eventId);
+
+      // Use session email if available, otherwise the API will handle authentication
+      if (session?.user?.email) {
+        params.append('email', session.user.email);
+      }
+
+      const queryString = params.toString();
+      const url = `/api/attendee/events?${queryString}`;
+
+      const response = await apiFetch(url);
+
+      if (!response.ok) {
+        throw new Error(
+          `API request failed: ${response.status} ${response.statusText}`,
+        );
+      }
+
+      const data = await response.json();
+      const events = data?.data || [];
+
+      // Find the specific event
+      const foundEvent = events.find((e) => e.id === eventId);
+
+      if (!foundEvent) {
+        throw new Error('Event not found or you are not invited to this event');
+      }
+
+      setEvent(foundEvent);
+    } catch (err) {
+      console.error('Error fetching event invitation:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (dateString) => {
+    try {
+      if (!dateString) return 'N/A';
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch (error) {
+      console.warn('Invalid date format:', dateString);
+      return 'Invalid Date';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-2 text-red-600">Error</h2>
+          <p className="text-muted-foreground">{error}</p>
+          <div className="mt-4 space-x-2">
+            <Button onClick={fetchEventInvitation} variant="outline">
+              Try Again
+            </Button>
+            <Link href="/invited-events">
+              <Button variant="outline">Back to Invited Events</Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!event) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-2">Event Not Found</h2>
+          <p className="text-muted-foreground">
+            The event you're looking for doesn't exist or you don't have access
+            to it.
+          </p>
+          <Link href="/invited-events">
+            <Button className="mt-4" variant="outline">
+              Back to Invited Events
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const userGuest = event.guests?.[0]; // Get the user's guest record
+
+  const handleRSVPUpdate = (updatedGuest) => {
+    // Update the event state with the new guest information
+    setEvent((prevEvent) => ({
+      ...prevEvent,
+      guests: [updatedGuest],
+    }));
+    };
+
+    function extractHourMinute(dateString) {
+        // Match the time part after the 'T'
+        const match = dateString.match(/T(\d{2}):(\d{2})/);
+        if (match) {
+            let hour = match[1];
+            let minute = match[2];
+            // Optionally format to 12-hour with AM/PM
+            const hourNum = parseInt(hour, 10);
+            const ampm = hourNum >= 12 ? 'PM' : 'AM';
+            const hour12 = ((hourNum + 11) % 12 + 1); // 12-hour format
+            return `${hour12}:${minute} ${ampm}`;
+        }
+        return 'Invalid Time';
+    }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
+      
+      {/* Main Content */}
+      <div className="p-4 sm:p-6 max-w-7xl mx-auto">
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+          {/* Left Column - Event Image Only */}
+          <div className="order-1 lg:order-1">
+            <div className="relative lg:sticky lg:top-6">
+                <div className="border-2  rounded-lg bg-white dark:bg-gray-800 shadow-lg">
+                    {event?.eventThumbnailUrl || event?.s3ImageUrl ? (
+                        <div className="relative w-full bg-gray-50 dark:bg-gray-900 flex items-center justify-center rounded-lg overflow-hidden">
+                            <img
+                                src={event?.eventThumbnailUrl || event?.s3ImageUrl}
+                                alt={event?.title}
+                                className="w-full h-full object-cover rounded-lg"
+                            />
+                        </div>
+                    ) : (
+                        /* Fallback when no image */
+                        <div
+                            className={`relative w-full aspect-[3/4] ${getFallbackGradientClasses(category)} flex items-center justify-center rounded-lg`}
+                        >
+                            <div className="text-center text-white p-6">
+                                <div className="mb-4 text-5xl sm:text-6xl drop-shadow-lg">
+                                    {categoryTheme.icon}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+
+          {/* Right Column - Wedding Invitation & RSVP */}
+          <div className="space-y-4">
+            {/* Wedding Invitation Card */}
+            <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-blue-50/30">
+              <CardHeader className="bg-gradient-to-r from-blue-400 to-purple-400 text-white rounded-t-lg">
+                <div className="flex items-center justify-between gap-4">
+                  <CardTitle className="text-2xl font-bold flex items-center gap-2">
+                    <div className="w-2 h-8 bg-gradient-to-b from-yellow-400 to-orange-500 rounded-full"></div>
+                    {event.title}
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="p-4">
+                <div className="space-y-3">
+                  {/* Event Details - Improved Layout */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                    {event.startDateTime && (
+                      <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100 shadow-sm hover:shadow-md transition-all duration-300 group">
+                        <div className="p-2.5 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg group-hover:scale-110 transition-transform duration-200">
+                          <CalendarDays className="h-4 w-4 text-white" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <span className="font-semibold text-blue-900 text-xs block mb-1">
+                            Event Date
+                          </span>
+                          <p className="text-blue-700 font-medium text-sm truncate">
+                            {formatEventDate(event.startDateTime)}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    {event.startDateTime && (
+                        <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20 rounded-lg border border-purple-100 dark:border-purple-800 shadow-sm hover:shadow-md transition-all duration-300">
+                            <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-lg">
+                                <Clock className="h-5 w-5 text-white" />
+                            </div>
+                            <div>
+                                <span className="font-semibold text-purple-900 dark:text-purple-300 text-sm block mb-1">
+                                    Time
+                                </span>
+                                <p className="text-purple-700 dark:text-purple-200 font-medium">
+                                    {extractHourMinute(event.startDateTime)}
+                                </p>
+                            </div>
+                        </div>
+                    )}
+                    {(event.locationAddress || event.locationUnit) && (
+                      <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-red-50 to-pink-50 rounded-lg border border-red-100 shadow-sm hover:shadow-md transition-all duration-300 group">
+                        <div className="p-2.5 bg-gradient-to-br from-red-500 to-red-600 rounded-lg shadow-lg group-hover:scale-110 transition-transform duration-200">
+                          <MapPin className="h-4 w-4 text-white" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <span className="font-semibold text-red-900 text-xs block mb-1">
+                            Location
+                          </span>
+                          <p className="text-red-700 font-medium text-sm truncate">
+                            {event.locationAddress}
+                            {event.locationUnit
+                              ? `, ${event.locationUnit}`
+                              : ''}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    {event.User && (
+                      <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-100 shadow-sm hover:shadow-md transition-all duration-300 group">
+                        <div className="p-2.5 bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-lg group-hover:scale-110 transition-transform duration-200">
+                          <User className="h-4 w-4 text-white" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <span className="font-semibold text-green-900 text-xs block mb-1">
+                            Host
+                          </span>
+                          <p className="text-green-700 font-medium text-sm truncate">
+                            {event.User.name || event.User.email}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Event Description */}
+                  {event.description && (
+                    <div className="pt-4 border-t border-gradient-to-r from-blue-200 to-purple-200">
+                      <h3 className="font-bold mb-3 text-lg bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent flex items-center gap-2">
+                        <div className="w-1 h-5 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full"></div>
+                        About This Event
+                      </h3>
+                      <div className="p-3 bg-gradient-to-br from-gray-50 to-blue-50/50 rounded-lg border border-gray-100">
+                        <p className="text-gray-700 leading-relaxed font-medium text-sm">
+                          {event.description}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* RSVP Form */}
+            <RSVPForm
+              event={event}
+              userGuest={userGuest}
+              onRSVPUpdate={handleRSVPUpdate}
+              session={session}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -11,7 +11,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useSettings } from '@/providers/settings-provider';
 import { Button } from '@/components/ui/button';
 import { StoreClientTopbar } from '@/app/(protected)/store-client/components/common/topbar';
-import { Footer } from './components/footer';
+import { CommonFooter } from '@/components/common/footer';
 import { Header } from './components/header';
 import { Sidebar } from './components/sidebar';
 import { Toolbar, ToolbarActions, ToolbarHeading } from './components/toolbar';
@@ -97,7 +97,7 @@ export function Demo8Layout({ children }) {
               </main>
             </div>
 
-            <Footer />
+            <CommonFooter />
           </div>
         </div>
       </div>

@@ -3,114 +3,30 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiFetch } from '@/lib/api';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { showCustomToast } from '@/components/common/custom-toast';
-import PixieEditor from '@/components/image-editor/PixieEditor';
-import { TemplateHeader } from '../../events/components';
+import { useTemplateImage } from '@/hooks/use-template-image';
+import { useToast } from '@/providers/toast-provider';
+import TemplateDesignLayout from './components/TemplateDesignLayout';
 
-function Design() {
+function CreateTemplate() {
   const router = useRouter();
+  const { toastSuccess, toastWarning, toastInfo } = useToast();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Form state
-  const [formData, setFormData] = useState({
-    name: '',
-    category: '',
-    isPremium: false,
-    price: 0,
-    background: '',
-    pageBackground: '',
-    content: [], // This will be populated from the canvas
-    backgroundStyle: {}, // This will be populated from the canvas
-    htmlContent: '', // This will be populated from the canvas
-  });
+  // Template image operations
+  const { uploadTemplateImage } = useTemplateImage();
 
-  // Image state
-  const [imageUrl, setImageUrl] = useState('');
-  const [canvasState, setCanvasState] = useState(null);
-
-  // Handle form field changes
-  const handleInputChange = (field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  // Handle template name change (for header input)
-  const handleTemplateNameChange = (e) => {
-    const value = e.target.value;
-    setFormData((prev) => ({
-      ...prev,
-      name: value,
-    }));
-  };
-
-  // Handle radio button change
-  const handleTypeChange = (value) => {
-    setFormData((prev) => ({
-      ...prev,
-      isPremium: value === 'premium',
-    }));
-  };
-
-  // Handle image upload
-  const handleImageUpload = (file) => {
-    // Create a temporary URL for the uploaded image
-    const tempUrl = URL.createObjectURL(file);
-    setImageUrl(tempUrl);
-
-    // Clean up the temporary URL after a delay
-    setTimeout(() => {
-      URL.revokeObjectURL(tempUrl);
-    }, 1000);
-  };
-
-  // Handle canvas save
-  const handleCanvasSave = (state) => {
-    setCanvasState(state);
-    setFormData((prev) => ({
-      ...prev,
-      content: state.canvas?.objects || [],
-      backgroundStyle: state.canvas?.background || {},
-      htmlContent: state.htmlContent || '',
-    }));
-  };
-
-  // Save template function
-  const handleSaveTemplate = async () => {
+  // Handle save template - CREATE API logic
+  const handleSaveTemplate = async (
+    templateData,
+    uploadedImageFile,
+    thumbnailData,
+  ) => {
     try {
       setLoading(true);
       setError(null);
 
-      // Validate required fields
-      if (!formData.name.trim()) {
-        throw new Error('Template name is required');
-      }
-      if (!formData.category.trim()) {
-        throw new Error('Category is required');
-      }
-
-      // Prepare the data for API
-      const templateData = {
-        name: formData.name.trim(),
-        category: formData.category.trim(),
-        isPremium: formData.isPremium,
-        price: formData.isPremium ? parseFloat(formData.price) || 0 : 0,
-        background: formData.background || null,
-        pageBackground: formData.pageBackground || null,
-        content: formData.content,
-        backgroundStyle: formData.backgroundStyle,
-        htmlContent: formData.htmlContent || null,
-        // These will be populated when canvas is implemented
-        previewImageUrl: null,
-        imagePath: null,
-      };
-
+      // Create template first
       const response = await apiFetch('/api/template/create-template', {
         method: 'POST',
         headers: {
@@ -127,224 +43,71 @@ function Design() {
       const result = await response.json();
 
       if (result.success) {
-        showCustomToast('Template created successfully', 'success');
+        // Upload image if one was selected
+        if (uploadedImageFile) {
+          try {
+            await uploadTemplateImage(result.data.id, uploadedImageFile);
+          } catch (uploadError) {
+            toastWarning('Template created but image upload failed');
+          }
+        }
 
+        // Upload thumbnail if thumbnail data is available
+        if (thumbnailData) {
+          try {
+            const thumbnailResponse = await apiFetch(
+              `/api/template/${result.data.id}/upload-thumbnail`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  imageBlob: thumbnailData.base64Data,
+                  imageFormat: 'png',
+                }),
+              },
+            );
+
+            if (!thumbnailResponse.ok) {
+              const errorData = await thumbnailResponse.json();
+              throw new Error(errorData.error || 'Failed to upload thumbnail');
+            }
+
+            const thumbnailResult = await thumbnailResponse.json();
+            console.log('Thumbnail upload successful:', thumbnailResult);
+          } catch (thumbnailError) {
+            console.error('Thumbnail upload failed:', thumbnailError);
+            toastWarning(
+              'Template created but thumbnail upload failed: ' +
+                thumbnailError.message,
+            );
+          }
+        }
+
+        toastSuccess('Template created successfully');
         router.push('/templates');
       } else {
         throw new Error(result.error || 'Failed to create template');
       }
     } catch (err) {
-      console.error('Error saving template:', err);
+      console.error('Error creating template:', err);
       setError(err.message);
+      throw err; // Re-throw to let the layout handle the error display
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <>
-      <TemplateHeader
-        onSave={handleSaveTemplate}
-        loading={loading}
-        templateName={formData.name}
-        onTemplateNameChange={handleTemplateNameChange}
-      />
-      <div className="flex flex-1 overflow-hidden">
-        <aside className="w-64 flex-shrink-0 bg-white p-4 border-r border-slate-200 overflow-y-auto min-h-[calc(100vh-var(--header-height))] h-100">
-          <Tabs
-            defaultValue="profile"
-            className="text-sm text-muted-foreground"
-          >
-            <TabsList variant="line">
-              <TabsTrigger value="profile">Details</TabsTrigger>
-              <TabsTrigger value="design">Design</TabsTrigger>
-            </TabsList>
-            <TabsContent value="profile">
-              <div className="py-3">
-                {error && (
-                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-                    <p className="text-red-600 text-sm">{error}</p>
-                  </div>
-                )}
-
-                <div className="w-full mb-5">
-                  <Label className="text-muted-foreground">Template Name</Label>
-                  <Input
-                    type="text"
-                    value={formData.name}
-                    onChange={handleTemplateNameChange}
-                    placeholder="Enter template name"
-                  />
-                </div>
-                <div className="w-full mb-5">
-                  <Label className="text-muted-foreground">Category</Label>
-                  <Input
-                    type="text"
-                    value={formData.category}
-                    onChange={(e) =>
-                      handleInputChange('category', e.target.value)
-                    }
-                    placeholder="e.g., Birthday, Corporate, Wedding"
-                  />
-                </div>
-                <Label className="text-muted-foreground">Type </Label>
-
-                <RadioGroup
-                  value={formData.isPremium ? 'premium' : 'free'}
-                  onValueChange={handleTypeChange}
-                  className="flex items-center gap-5 mb-5"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="free" id="free" />
-                    <Label
-                      htmlFor="free"
-                      className="text-foreground text-sm font-normal"
-                    >
-                      Free
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="premium" id="premium" />
-                    <Label
-                      htmlFor="premium"
-                      className="text-foreground text-sm font-normal"
-                    >
-                      Premium
-                    </Label>
-                  </div>
-                </RadioGroup>
-                {formData.isPremium && (
-                  <div className="w-full mb-5">
-                    <Label className="text-muted-foreground">
-                      Price (in dollars)
-                    </Label>
-                    <Input
-                      type="number"
-                      value={formData.price}
-                      onChange={(e) =>
-                        handleInputChange('price', e.target.value)
-                      }
-                      placeholder="0.00"
-                      min="0"
-                      step="0.01"
-                    />
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-            <TabsContent value="design">
-              <div className="py-3">
-                <div className="w-full mb-5">
-                  <Label className="text-muted-foreground">
-                    Upload New Image
-                  </Label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
-                    <label className="cursor-pointer block text-center">
-                      <svg
-                        className="mx-auto h-8 w-8 text-gray-400 mb-2"
-                        stroke="currentColor"
-                        fill="none"
-                        viewBox="0 0 48 48"
-                      >
-                        <path
-                          d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                          strokeWidth={2}
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                      <p className="text-sm font-medium text-gray-600">
-                        Click to upload new image
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        PNG, JPG, GIF up to 5MB (uploads immediately to S3)
-                      </p>
-                      <input
-                        type="file"
-                        className="hidden"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files[0];
-                          if (file) {
-                            handleImageUpload(file);
-                          }
-                        }}
-                      />
-                    </label>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2">
-                    Upload an image to get started. Images are stored in S3 with
-                    unique paths.
-                  </p>
-                </div>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </aside>
-        <main className="flex-1 overflow-auto p-8">
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                Image Editor
-              </h1>
-              <p className="text-gray-600">
-                Edit your image using the powerful Pixie editor
-              </p>
-            </div>
-
-            {/* PixieEditor */}
-            <PixieEditor
-              initialImageUrl={imageUrl}
-              initialContent={canvasState}
-              onSave={handleCanvasSave}
-              width="100%"
-              height="700px"
-              onImageUpload={handleImageUpload}
-            />
-          </div>
-        </main>
-        <aside className="w-74 flex-shrink-0 bg-white p-4 border-l border-slate-200 overflow-y-auto min-h-[calc(100vh-var(--header-height))] h-100">
-          <div className="space-y-6">
-            <h3 className="font-semibold text-lg mb-2 border-b pb-2">
-              Canvas Settings
-            </h3>
-            <div className="py-3">
-              <p className="text-primary fw-500">Canvas Background</p>
-              <div className="w-full mb-5">
-                <Label className="text-muted-foreground">
-                  Color, Gradient, or URL
-                </Label>
-                <Input
-                  type="text"
-                  value={formData.background}
-                  onChange={(e) =>
-                    handleInputChange('background', e.target.value)
-                  }
-                  placeholder="e.g., #ffffff, linear-gradient(...), or image URL"
-                />
-              </div>
-              <hr className="my-3" />
-              <p className="text-primary fw-500">Page Background</p>
-
-              <div className="w-full mb-5">
-                <Label className="text-muted-foreground">
-                  Color, Gradient, or URL
-                </Label>
-                <Input
-                  type="text"
-                  value={formData.pageBackground}
-                  onChange={(e) =>
-                    handleInputChange('pageBackground', e.target.value)
-                  }
-                  placeholder="e.g., #ffffff, linear-gradient(...), or image URL"
-                />
-              </div>
-            </div>
-          </div>
-        </aside>
-      </div>
-    </>
+    <TemplateDesignLayout
+      mode="create"
+      onSave={handleSaveTemplate}
+      loading={loading}
+      error={error}
+      headerButtonText="Create Template"
+    />
   );
 }
 
-export default Design;
+export default CreateTemplate;
