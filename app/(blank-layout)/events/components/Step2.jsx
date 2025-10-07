@@ -5,6 +5,7 @@ import { useEventActions, useEvents } from '@/store/hooks';
 import { format } from 'date-fns';
 import { CalendarDays, Info, MapPin, User } from 'lucide-react';
 import { DEFAULT_MAP_CENTER } from '@/lib/constants';
+import { getUserTimezone } from '@/lib/date-utils';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +19,16 @@ function Step2({ thumbnailData, session }) {
   const { selectedEvent: eventData } = useEvents();
   const { updateSelectedEvent: updateEventData } = useEventActions();
   const [isGeocoding, setIsGeocoding] = useState(false);
+
+  // Set default timezone automatically using smart logic
+  useEffect(() => {
+    if (!eventData?.timezone) {
+      // Smart timezone logic: User timezone > Browser timezone > UTC
+      const smartTimezone =
+        session?.user?.timezone || getUserTimezone() || 'UTC';
+      updateEventData({ timezone: smartTimezone });
+    }
+  }, [eventData?.timezone, session?.user?.timezone, updateEventData]);
 
   // Geocode address when component loads or when address changes
   useEffect(() => {

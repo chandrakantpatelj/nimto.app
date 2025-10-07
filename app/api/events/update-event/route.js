@@ -28,6 +28,8 @@ export async function PUT(request) {
       title,
       description,
       startDateTime,
+      endDateTime,
+      timezone,
       locationAddress,
       locationUnit,
       showMap,
@@ -303,9 +305,13 @@ export async function PUT(request) {
         ...(title && { title }),
         ...(description !== undefined && { description }),
         ...(eventDate && { startDateTime: eventDate }),
+        ...(endDateTime !== undefined && {
+          endDateTime: endDateTime ? new Date(endDateTime) : null,
+        }),
+        ...(timezone !== undefined && { timezone }),
         ...(locationAddress !== undefined && { locationAddress }),
         ...(locationUnit !== undefined && { locationUnit }),
-        ...(showMap !== undefined && { showMap }), // Temporarily disabled until DB migration is confirmed
+        ...(showMap !== undefined && { showMap }),
         ...(templateId !== undefined && { templateId }),
         ...(jsonContent !== undefined && { jsonContent }),
         ...(finalImagePath && { imagePath: finalImagePath }),
