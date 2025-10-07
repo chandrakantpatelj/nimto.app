@@ -6,7 +6,11 @@ import { useParams } from 'next/navigation';
 import { ArrowLeft, CalendarDays, Clock, MapPin, User } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { apiFetch } from '@/lib/api';
-import { formatEventDate } from '@/lib/date-utils';
+import {
+  formatDateInTimezone,
+  formatTimeInTimezone,
+  getTimezoneAbbreviation,
+} from '@/lib/date-utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import RSVPForm from '@/components/rsvp/rsvp-form';
@@ -71,22 +75,6 @@ export default function EventInvitationPage() {
     }
   };
 
-  const formatDate = (dateString) => {
-    try {
-      if (!dateString) return 'N/A';
-      return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } catch (error) {
-      console.warn('Invalid date format:', dateString);
-      return 'Invalid Date';
-    }
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -141,26 +129,10 @@ export default function EventInvitationPage() {
       ...prevEvent,
       guests: [updatedGuest],
     }));
-    };
-
-    function extractHourMinute(dateString) {
-        // Match the time part after the 'T'
-        const match = dateString.match(/T(\d{2}):(\d{2})/);
-        if (match) {
-            let hour = match[1];
-            let minute = match[2];
-            // Optionally format to 12-hour with AM/PM
-            const hourNum = parseInt(hour, 10);
-            const ampm = hourNum >= 12 ? 'PM' : 'AM';
-            const hour12 = ((hourNum + 11) % 12 + 1); // 12-hour format
-            return `${hour12}:${minute} ${ampm}`;
-        }
-        return 'Invalid Time';
-    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
-      
       {/* Main Content */}
       <div className="p-4 sm:p-6 max-w-7xl mx-auto">
         {/* Main Content Grid */}
@@ -168,30 +140,30 @@ export default function EventInvitationPage() {
           {/* Left Column - Event Image Only */}
           <div className="order-1 lg:order-1">
             <div className="relative lg:sticky lg:top-6">
-                <div className="border-2  rounded-lg bg-white dark:bg-gray-800 shadow-lg">
-                    {event?.eventThumbnailUrl || event?.s3ImageUrl ? (
-                        <div className="relative w-full bg-gray-50 dark:bg-gray-900 flex items-center justify-center rounded-lg overflow-hidden">
-                            <img
-                                src={event?.eventThumbnailUrl || event?.s3ImageUrl}
-                                alt={event?.title}
-                                className="w-full h-full object-cover rounded-lg"
-                            />
-                        </div>
-                    ) : (
-                        /* Fallback when no image */
-                        <div
-                            className={`relative w-full aspect-[3/4] ${getFallbackGradientClasses(category)} flex items-center justify-center rounded-lg`}
-                        >
-                            <div className="text-center text-white p-6">
-                                <div className="mb-4 text-5xl sm:text-6xl drop-shadow-lg">
-                                    {categoryTheme.icon}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
+              <div className="border-2  rounded-lg bg-white dark:bg-gray-800 shadow-lg">
+                {event?.eventThumbnailUrl || event?.s3ImageUrl ? (
+                  <div className="relative w-full bg-gray-50 dark:bg-gray-900 flex items-center justify-center rounded-lg overflow-hidden">
+                    <img
+                      src={event?.eventThumbnailUrl || event?.s3ImageUrl}
+                      alt={event?.title}
+                      className="w-full h-full object-cover rounded-lg"
+                    />
+                  </div>
+                ) : (
+                  /* Fallback when no image */
+                  <div
+                    className={`relative w-full aspect-[3/4] ${getFallbackGradientClasses(category)} flex items-center justify-center rounded-lg`}
+                  >
+                    <div className="text-center text-white p-6">
+                      <div className="mb-4 text-5xl sm:text-6xl drop-shadow-lg">
+                        {categoryTheme.icon}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-        </div>
+          </div>
 
           {/* Right Column - Wedding Invitation & RSVP */}
           <div className="space-y-4">
@@ -208,36 +180,46 @@ export default function EventInvitationPage() {
               <CardContent className="p-4">
                 <div className="space-y-3">
                   {/* Event Details - Improved Layout */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                  <div className="grid grid-cols-1 gap-3 text-sm">
                     {event.startDateTime && (
-                      <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100 shadow-sm hover:shadow-md transition-all duration-300 group">
-                        <div className="p-2.5 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg group-hover:scale-110 transition-transform duration-200">
-                          <CalendarDays className="h-4 w-4 text-white" />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {/* Date Card */}
+                        <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100 shadow-sm hover:shadow-md transition-all duration-300 group">
+                          <div className="p-2.5 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg group-hover:scale-110 transition-transform duration-200">
+                            <CalendarDays className="h-4 w-4 text-white" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <span className="font-semibold text-blue-900 text-xs block mb-1">
+                              Date
+                            </span>
+                            <p className="text-blue-700 font-medium text-sm">
+                              {formatDateInTimezone(
+                                event.startDateTime,
+                                event.timezone || 'UTC',
+                              )}
+                            </p>
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <span className="font-semibold text-blue-900 text-xs block mb-1">
-                            Event Date
-                          </span>
-                          <p className="text-blue-700 font-medium text-sm truncate">
-                            {formatEventDate(event.startDateTime)}
-                          </p>
+
+                        {/* Time Card */}
+                        <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-purple-50 to-violet-50 rounded-lg border border-purple-100 shadow-sm hover:shadow-md transition-all duration-300 group">
+                          <div className="p-2.5 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-lg group-hover:scale-110 transition-transform duration-200">
+                            <Clock className="h-4 w-4 text-white" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <span className="font-semibold text-purple-900 text-xs block mb-1">
+                              Time
+                            </span>
+                            <p className="text-purple-700 font-medium text-sm">
+                              {formatTimeInTimezone(
+                                event.startDateTime,
+                                event.timezone || 'UTC',
+                              )}{' '}
+                              {getTimezoneAbbreviation(event.timezone || 'UTC')}
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    )}
-                    {event.startDateTime && (
-                        <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20 rounded-lg border border-purple-100 dark:border-purple-800 shadow-sm hover:shadow-md transition-all duration-300">
-                            <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-lg">
-                                <Clock className="h-5 w-5 text-white" />
-                            </div>
-                            <div>
-                                <span className="font-semibold text-purple-900 dark:text-purple-300 text-sm block mb-1">
-                                    Time
-                                </span>
-                                <p className="text-purple-700 dark:text-purple-200 font-medium">
-                                    {extractHourMinute(event.startDateTime)}
-                                </p>
-                            </div>
-                        </div>
                     )}
                     {(event.locationAddress || event.locationUnit) && (
                       <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-red-50 to-pink-50 rounded-lg border border-red-100 shadow-sm hover:shadow-md transition-all duration-300 group">

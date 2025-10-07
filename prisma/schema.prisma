@@ -159,27 +159,27 @@ model SystemSetting {
 }
 
 model Template {
-  id               String   @id @default(cuid())
-  name             String
-  category         String
-  jsonContent      String?
-  isPremium        Boolean  @default(false)
-  price            Float    @default(0)
-  isSystemTemplate Boolean  @default(false)
-  createdByUserId  String?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-  isTrashed        Boolean  @default(false)
-  imagePath        String?
-  badge            String?
-  colors           String[]
-  isFeatured       Boolean  @default(false)
-  isNew            Boolean  @default(false)
-  isTrending       Boolean  @default(false)
-  keywords         String[]
-  orientation      String   @default("portrait")
-  popularity       Float    @default(0)
-  templateThumbnailPath String? // S3 key for exported template thumbnail
+  id                    String   @id @default(cuid())
+  name                  String
+  category              String
+  jsonContent           String?
+  isPremium             Boolean  @default(false)
+  price                 Float    @default(0)
+  isSystemTemplate      Boolean  @default(false)
+  createdByUserId       String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  isTrashed             Boolean  @default(false)
+  imagePath             String?
+  badge                 String?
+  colors                String[]
+  isFeatured            Boolean  @default(false)
+  isNew                 Boolean  @default(false)
+  isTrending            Boolean  @default(false)
+  keywords              String[]
+  orientation           String   @default("portrait")
+  popularity            Float    @default(0)
+  templateThumbnailPath String?
 
   @@index([category])
   @@index([isPremium])
@@ -211,15 +211,12 @@ model Event {
   id                   String      @id @default(cuid())
   title                String
   description          String?
-  startDateTime        DateTime    // Required start date and time
-  endDateTime          DateTime?   // Optional end date and time
-  locationAddress      String?
-  locationUnit         String?
-  showMap              Boolean     @default(true)
+  startDateTime        DateTime
+  endDateTime          DateTime?
   templateId           String?
   jsonContent          String?
   imagePath            String?
-  eventThumbnailPath   String? // S3 key for exported event thumbnail
+  eventThumbnailPath   String?
   status               EventStatus @default(DRAFT)
   createdByUserId      String
   createdAt            DateTime    @default(now())
@@ -232,6 +229,10 @@ model Event {
   maxEventCapacity     Int         @default(0)
   maxPlusOnes          Int         @default(0)
   privateGuestList     Boolean     @default(false)
+  locationAddress      String?
+  locationUnit         String?
+  showMap              Boolean     @default(true)
+  timezone             String      @default("UTC")
   User                 User        @relation(fields: [createdByUserId], references: [id])
   guests               Guest[]
 

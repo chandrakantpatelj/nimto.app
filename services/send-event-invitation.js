@@ -1,3 +1,9 @@
+import {
+  formatDateInTimezone,
+  formatEventDateWithTimezone,
+  formatTimeInTimezone,
+  getTimezoneAbbreviation,
+} from '@/lib/date-utils.js';
 import { sendEmail } from './send-email.js';
 import { sendMessage } from './send-sms.js';
 
@@ -8,26 +14,29 @@ export async function sendEventInvitation({
   channels = ['email', 'sms'],
 }) {
   const { name, email, phone } = guest;
-  const { title, description, startDateTime, location, User } = event;
+  const { title, description, startDateTime, timezone, location, User } = event;
 
   if (!email && !phone) {
     console.warn(`No contact info for guest ${name}`);
     return { success: false, error: 'No contact information available' };
   }
 
-  // Format the event date and time
-  const eventDateTime = new Date(startDateTime);
-  const eventDate = eventDateTime.toLocaleDateString('en-US', {
+  // Get event timezone (default to UTC if not set)
+  const eventTimezone = timezone || 'UTC';
+
+  // Use our comprehensive timezone utilities for consistent formatting
+  const formattedDateTime = formatEventDateWithTimezone(
+    startDateTime,
+    eventTimezone,
+    true, // Show timezone abbreviation
+  );
+
+  // Use our smart timezone utilities for separate date and time
+  const eventDate = formatDateInTimezone(startDateTime, eventTimezone, {
     weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
   });
-  const eventTime = eventDateTime.toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  });
+  const eventTime = formatTimeInTimezone(startDateTime, eventTimezone);
+  const timezoneAbbr = getTimezoneAbbreviation(eventTimezone);
 
   // Get host name
   const hostName = User?.name || User?.email || 'The event host';
@@ -76,7 +85,8 @@ export async function sendEventInvitation({
   // Send SMS/WhatsApp if phone is available and sms channel is requested
   if (phone && channels.includes('sms')) {
     try {
-      const smsMessage = `Hi ${name}! You're invited to "${title}" on ${eventDate} at ${eventTime}${location ? ` at ${location}` : ''}. View details and RSVP: ${invitationUrl}`;
+      // Use formatted date/time with timezone for SMS
+      const smsMessage = `Hi ${name}! You're invited to "${title}" on ${formattedDateTime}${location ? ` at ${location}` : ''}. View details and RSVP: ${invitationUrl}`;
 
       const smsResult = await sendMessage({
         to: phone,

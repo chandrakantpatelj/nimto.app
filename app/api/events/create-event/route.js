@@ -71,6 +71,8 @@ export async function POST(request) {
       title,
       description,
       startDateTime,
+      endDateTime,
+      timezone, // Event timezone (IANA identifier)
       locationAddress,
       locationUnit,
       showMap,
@@ -118,14 +120,14 @@ export async function POST(request) {
     // Try to find user by session ID first
     let user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { id: true, name: true, email: true },
+      select: { id: true, name: true, email: true, timezone: true },
     });
 
     // If not found by ID, try to find by email (common issue with NextAuth)
     if (!user && session.user.email) {
       user = await prisma.user.findUnique({
         where: { email: session.user.email },
-        select: { id: true, name: true, email: true },
+        select: { id: true, name: true, email: true, timezone: true },
       });
 
       if (user) {
@@ -139,7 +141,7 @@ export async function POST(request) {
           name: session.user.name,
           email: session.user.email, // Additional check to ensure it's the right user
         },
-        select: { id: true, name: true, email: true },
+        select: { id: true, name: true, email: true, timezone: true },
       });
     }
 
@@ -194,12 +196,16 @@ export async function POST(request) {
       );
     }
 
-    // First create the event to get the event ID
+    // Smart timezone logic: Use provided timezone > User timezone > UTC
+    let eventTimezone = timezone || user?.timezone || 'UTC';
+
     const event = await prisma.event.create({
       data: {
         title,
         description,
         startDateTime: eventDate,
+        endDateTime: endDateTime ? new Date(endDateTime) : null,
+        timezone: eventTimezone,
         locationAddress,
         locationUnit,
         showMap: showMap !== undefined ? showMap : true,
@@ -225,6 +231,7 @@ export async function POST(request) {
             id: true,
             name: true,
             email: true,
+            timezone: true,
           },
         },
       },

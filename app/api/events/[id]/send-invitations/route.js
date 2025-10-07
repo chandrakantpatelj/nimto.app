@@ -24,6 +24,7 @@ export async function POST(request, { params }) {
         title: true,
         description: true,
         startDateTime: true,
+        timezone: true, // Include timezone for proper invitation formatting
         locationAddress: true,
         locationUnit: true,
       },
