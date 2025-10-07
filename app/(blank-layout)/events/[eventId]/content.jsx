@@ -247,7 +247,7 @@ function EditEventContent() {
         setSelectedEvent(data.data);
 
         toastSuccess(message);
-        // router.push('/events');
+        router.push('/events');
       } else {
         toastError(data.error || 'Failed to update event');
       }
