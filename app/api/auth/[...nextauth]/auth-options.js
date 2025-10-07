@@ -99,14 +99,14 @@ const authOptions = {
 
               if (existingUser) {
                 // Update `lastSignInAt` field for existing users
-                await prisma.user.update({
-                  where: { id: existingUser.id },
-                  data: {
-                    name: profile.name,
-                    avatar: profile.picture || null,
-                    lastSignInAt: new Date(),
-                  },
-                });
+                  await prisma.user.update({
+                      where: { id: existingUser.id },
+                      data: {
+                          name: profile.name,
+                          avatar: existingUser.avatar ? existingUser.avatar : (profile.picture || null),
+                          lastSignInAt: new Date(),
+                      },
+                  });
 
                 return {
                   id: existingUser.id,
