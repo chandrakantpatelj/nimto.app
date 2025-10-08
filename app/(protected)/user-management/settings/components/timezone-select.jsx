@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getTimeZones } from '@/i18n/timezones';
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -24,6 +24,12 @@ const TimezoneSelect = ({ defaultValue = '', onChange }) => {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(defaultValue);
   const timeZoneList = getTimeZones();
+
+  // Update value when defaultValue changes
+  useEffect(() => {
+    setValue(defaultValue);
+  }, [defaultValue]);
+
   const selectedValue = value
     ? timeZoneList.find((timezone) => timezone.value === value)?.label
     : '';
@@ -55,10 +61,24 @@ const TimezoneSelect = ({ defaultValue = '', onChange }) => {
                 {timeZoneList.map(({ value: itemValue, label }) => (
                   <CommandItem
                     key={itemValue}
-                    value={itemValue}
+                    value={label}
                     onSelect={(currentValue) => {
-                      onChange(currentValue === value ? '' : currentValue);
-                      setValue(currentValue === value ? '' : currentValue);
+                      // Find the timezone by matching the label
+                      const selectedTimezone = timeZoneList.find(
+                        (tz) => tz.label === currentValue,
+                      );
+                      if (selectedTimezone) {
+                        onChange(
+                          selectedTimezone.value === value
+                            ? ''
+                            : selectedTimezone.value,
+                        );
+                        setValue(
+                          selectedTimezone.value === value
+                            ? ''
+                            : selectedTimezone.value,
+                        );
+                      }
                       setOpen(false);
                     }}
                   >

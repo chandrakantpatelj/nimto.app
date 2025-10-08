@@ -4,7 +4,7 @@ import { useSession } from 'next-auth/react';
 
 export function useRoleBasedAccess() {
   const { data: session } = useSession();
-  const userRole = session?.user?.roleName?.toLowerCase();
+  const userRole = session?.user?.roleSlug?.toLowerCase();
 
   // Role definitions - only supporting the four specified roles
   const roles = {

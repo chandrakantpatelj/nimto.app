@@ -8,7 +8,10 @@ export const getTimeZones = () => {
   // Fetch supported timezones
   const timezones = Intl.supportedValuesOf('timeZone');
 
-  return timezones
+  // Add UTC as it's not included in supportedValuesOf but is commonly used
+  const allTimezones = [...timezones, 'UTC'];
+
+  return allTimezones
     .map((timezone) => {
       const formatter = new Intl.DateTimeFormat('en', {
         timeZone: timezone,
