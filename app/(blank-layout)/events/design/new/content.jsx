@@ -69,7 +69,7 @@ function NewEventFromTemplateContent() {
           locationAddress: '',
           locationUnit: '',
           showMap: true,
-          status: 'DRAFT',
+          status: 'PUBLISHED', // Default to PUBLISHED
           guests: [],
           jsonContent: templateData.jsonContent,
           imagePath: templateData.imagePath,
@@ -167,13 +167,14 @@ function NewEventFromTemplateContent() {
 
       const eventDataToSave = {
         ...eventData,
-        status: 'PUBLISHED',
+        status: eventData.status || 'PUBLISHED', // Use selected status or default to PUBLISHED
         createdByUserId: session.user.id,
       };
 
       await addEventToStore(eventDataToSave);
       setShowInvitationPopup(false);
-      showCustomToast('Event created successfully!', 'success');
+      const statusMessage = eventData.status === 'DRAFT' ? 'Event saved as draft!' : 'Event created successfully!';
+      showCustomToast(statusMessage, 'success');
 
       // Reset event creation state
       resetEventCreation();
@@ -209,11 +210,10 @@ function NewEventFromTemplateContent() {
         activeStep={activeStep}
         onBack={handleBack}
         onNext={handleNext}
-        onPublish={handlePublishEvent}
+        onPublishEvent={handlePublishEvent}
         isCreating={isCreating}
-        showNext={activeStep < 2}
-        showPublish={activeStep === 2}
-        showBack={activeStep > 0}
+        hasGuests={eventData?.guests?.length > 0}
+        eventStatus={eventData?.status}
       />
 
       <div

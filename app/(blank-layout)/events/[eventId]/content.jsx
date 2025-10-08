@@ -186,6 +186,7 @@ function EditEventContent() {
 
       const requestBody = {
         ...eventData,
+        status: eventData.status || 'PUBLISHED', // Use selected status or default to PUBLISHED
         invitationType,
         guests: eventData.guests || [],
       };
@@ -305,6 +306,7 @@ function EditEventContent() {
         title="Edit Event"
         publishButtonText="Update Event"
         isEditMode={true}
+        eventStatus={eventData.status}
       />
 
       {activeStep === 0 && (

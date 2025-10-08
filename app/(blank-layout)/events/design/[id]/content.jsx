@@ -67,7 +67,7 @@ function EditEventContent() {
           locationAddress: '',
           locationUnit: '',
           showMap: true,
-          status: 'DRAFT',
+          status: 'PUBLISHED', // Default to PUBLISHED
           guests: [],
           jsonContent: templateData.jsonContent,
           imagePath: templateData.imagePath,
@@ -172,6 +172,7 @@ function EditEventContent() {
 
       const requestData = {
         ...eventData,
+        status: eventData.status || 'PUBLISHED', // Use selected status or default to PUBLISHED
         sendInvitations,
         guests: (eventData.guests || []).map((guest) => ({
           name: guest.name,
@@ -223,11 +224,12 @@ function EditEventContent() {
         } else {
         }
 
-        toastSuccess(
-          sendInvitations
+        const statusMessage = eventData.status === 'DRAFT' 
+          ? 'Event saved as draft!'
+          : sendInvitations
             ? 'Event created and invitations sent successfully!'
-            : 'Event created successfully!',
-        );
+            : 'Event created successfully!';
+        toastSuccess(statusMessage);
 
         addEventToStore(result.data.event);
         resetEventCreation();
@@ -273,6 +275,7 @@ function EditEventContent() {
         hasGuests={eventData.guests?.length > 0}
         title="Create Event"
         publishButtonText="Create Event"
+        eventStatus={eventData.status}
       />
 
       {activeStep === 0 && (

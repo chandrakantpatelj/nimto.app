@@ -316,8 +316,7 @@ export function AdminEventContent() {
                   </Button>
                 </div>
 
-                {/* Status Badge Overlay */}
-                {console.log('event.status', event.status)}
+                {/* Status Badge Overlay */}                
                 <div className="absolute top-4 left-4">
                   <Badge
                     variant="secondary"
