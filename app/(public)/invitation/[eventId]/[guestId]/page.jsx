@@ -384,49 +384,6 @@ export default function PublicEventInvitationPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 dark:from-gray-900 dark:to-slate-900/50">
-      {/* Top Logo Header */}
-      <div className="w-full bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-700/50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
-          <div className="flex items-center justify-between">
-            {/* Logo */}
-            <Link href="/" className="flex items-center">
-              <img
-                src={toAbsoluteUrl('/media/app/nimto-main-logo.svg')}
-                className="dark:hidden w-[125px] sm:w-[125px]"
-                alt="Nimto"
-              />
-              <img
-                src={toAbsoluteUrl('/media/app/nimto-main-logo-dark.svg')}
-                className="hidden dark:block w-[125px] sm:w-[125px]"
-                alt="Nimto"
-              />
-            </Link>
-
-            {/* Status Badge - Desktop Only */}
-            <div className="hidden sm:flex items-center">
-              {userGuest && (
-                <div className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-full px-4 py-2 border border-blue-200 dark:border-blue-800">
-                  <div
-                    className={`w-2 h-2 rounded-full ${
-                      userGuest.status === 'CONFIRMED'
-                        ? 'bg-green-500'
-                        : userGuest.status === 'PENDING'
-                          ? 'bg-yellow-500'
-                          : userGuest.status === 'DECLINED'
-                            ? 'bg-red-500'
-                            : 'bg-gray-500'
-                    }`}
-                  ></div>
-                  <span className="text-gray-700 dark:text-gray-300 text-sm font-medium capitalize">
-                    {userGuest.status || 'Pending'}
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Main Content - Portrait Layout */}
       <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
         {/* Portrait Layout Grid - Image Left, Details Right */}
