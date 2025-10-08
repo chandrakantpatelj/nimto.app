@@ -3,9 +3,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useEventActions, useEvents } from '@/store/hooks';
 import { format } from 'date-fns';
-import { CalendarDays, Info, MapPin, User } from 'lucide-react';
+import { CalendarDays, Clock, Info, MapPin, User } from 'lucide-react';
 import { DEFAULT_MAP_CENTER } from '@/lib/constants';
-import { getUserTimezone } from '@/lib/date-utils';
+import {
+  formatTimeInTimezone,
+  getTimezoneAbbreviation,
+  getUserTimezone,
+} from '@/lib/date-utils';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -294,6 +298,16 @@ function Step2({ thumbnailData, session }) {
                               </span>
                             </p>
                           )}
+                          {/* Timezone Information */}
+                          {eventData.timezone && (
+                            <div className="flex items-center gap-2 mt-2">
+                              <Clock className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                              <p className="text-sm text-slate-600 dark:text-slate-300 font-medium">
+                                {getTimezoneAbbreviation(eventData.timezone)} •{' '}
+                                {eventData.timezone.replace(/_/g, ' ')}
+                              </p>
+                            </div>
+                          )}
                         </div>
                       ) : (
                         <p className="text-base text-foreground font-medium">
@@ -349,7 +363,7 @@ function Step2({ thumbnailData, session }) {
                 </div>
 
                 {/* Who's Coming */}
-                <div className="mt-6 pt-6 border-t border-border">
+                {/* <div className="mt-6 pt-6 border-t border-border">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <div className="p-2 bg-muted rounded-lg">
@@ -363,7 +377,7 @@ function Step2({ thumbnailData, session }) {
                       See all guests
                     </button>
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
