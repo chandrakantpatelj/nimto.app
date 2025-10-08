@@ -99,14 +99,16 @@ const authOptions = {
 
               if (existingUser) {
                 // Update `lastSignInAt` field for existing users
-                  await prisma.user.update({
-                      where: { id: existingUser.id },
-                      data: {
-                          name: profile.name,
-                          avatar: existingUser.avatar ? existingUser.avatar : (profile.picture || null),
-                          lastSignInAt: new Date(),
-                      },
-                  });
+                await prisma.user.update({
+                  where: { id: existingUser.id },
+                  data: {
+                    name: profile.name,
+                    avatar: existingUser.avatar
+                      ? existingUser.avatar
+                      : profile.picture || null,
+                    lastSignInAt: new Date(),
+                  },
+                });
 
                 return {
                   id: existingUser.id,
@@ -114,7 +116,8 @@ const authOptions = {
                   name: existingUser.name || 'Anonymous',
                   status: existingUser.status,
                   roleId: existingUser.roleId,
-                  roleName: existingUser.role.slug,
+                  roleSlug: existingUser.role.slug,
+                  roleName: existingUser.role.name,
                   avatar: existingUser.avatar,
                 };
               }
@@ -149,7 +152,8 @@ const authOptions = {
                 status: newUser.status,
                 avatar: newUser.avatar,
                 roleId: newUser.roleId,
-                roleName: defaultRole.slug,
+                roleSlug: defaultRole.slug,
+                roleName: defaultRole.name,
               };
             },
           }),
@@ -177,7 +181,8 @@ const authOptions = {
           token.avatar = user.avatar;
           token.status = user.status;
           token.roleId = user.roleId;
-          token.roleName = role?.slug;
+          token.roleSlug = role?.slug;
+          token.roleName = role?.name;
         } else if (token.id) {
           // Performance-optimized strategy: Smart caching with intelligent refresh
           const now = Date.now();
@@ -218,7 +223,8 @@ const authOptions = {
 
               // Update token with fresh data and cache timestamp
               token.roleId = currentUser.roleId;
-              token.roleName = currentUser.role?.slug;
+              token.roleSlug = currentUser.role?.slug;
+              token.roleName = currentUser.role?.name;
               token.status = currentUser.status;
               token.email = currentUser.email;
               token.name = currentUser.name;
@@ -251,6 +257,7 @@ const authOptions = {
         session.user.avatar = token.avatar;
         session.user.status = token.status;
         session.user.roleId = token.roleId;
+        session.user.roleSlug = token.roleSlug;
         session.user.roleName = token.roleName;
       }
       return session;

@@ -36,8 +36,8 @@ export async function POST(request) {
     // Check if user is super admin
     const session = await getServerSession(authOptions);
     if (
-      !session?.user?.roleName ||
-      session.user.roleName.toLowerCase() !== 'super-admin'
+      !session?.user?.roleSlug ||
+      session.user.roleSlug.toLowerCase() !== 'super-admin'
     ) {
       return NextResponse.json(
         {
