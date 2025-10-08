@@ -111,6 +111,12 @@ export function Header() {
           icon: FileText,
           key: 'templates',
         },
+        {
+          title: 'Invited Events',
+          path: '/invited-events',
+          icon: Mail,
+          key: 'invited-events',
+        },
       ];
     }
 

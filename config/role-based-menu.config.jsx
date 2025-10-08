@@ -54,6 +54,11 @@ const ADMIN_MENU_ITEMS = [
     path: '/templates',
   },
   {
+    title: 'Invited Events',
+    icon: Mail,
+    path: '/invited-events',
+  },
+  {
     title: 'App Settings',
     icon: Settings,
     path: '/settings',
