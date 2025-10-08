@@ -119,7 +119,7 @@ export function SimplePagination({
               size="sm"
               onClick={() => handlePageChange(1)}
               disabled={currentPage === 1}
-              className="h-8 w-8 p-0 text-gray-600 hover:bg-gray-100"
+              className="h-8 w-8 p-0 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               <span className="sr-only">Go to first page</span>
               <ChevronsLeft className="h-4 w-4" />
@@ -131,7 +131,7 @@ export function SimplePagination({
             size="sm"
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            className="h-8 w-8 p-0 text-gray-600 hover:bg-gray-100"
+            className="h-8 w-8 p-0 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             <span className="sr-only">Go to previous page</span>
             <ChevronLeft className="h-4 w-4" />
@@ -141,7 +141,7 @@ export function SimplePagination({
             page === '...' ? (
               <span
                 key={`ellipsis-${currentPage}-${index}`}
-                className="flex h-8 w-8 items-center justify-center text-sm text-gray-600"
+                className="flex h-8 w-8 items-center justify-center text-sm text-gray-600 dark:text-gray-400"
               >
                 ...
               </span>
@@ -155,7 +155,7 @@ export function SimplePagination({
                   'h-8 w-8 p-0 text-sm font-medium',
                   currentPage === page 
                     ? 'bg-blue-600 text-white hover:bg-blue-700 rounded-full' 
-                    : 'text-gray-600 hover:bg-gray-100'
+                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                 )}
               >
                 {page}
@@ -168,7 +168,7 @@ export function SimplePagination({
             size="sm"
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="h-8 w-8 p-0 text-gray-600 hover:bg-gray-100"
+            className="h-8 w-8 p-0 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             <span className="sr-only">Go to next page</span>
             <ChevronRight className="h-4 w-4" />
@@ -180,7 +180,7 @@ export function SimplePagination({
               size="sm"
               onClick={() => handlePageChange(totalPages)}
               disabled={currentPage === totalPages}
-              className="h-8 w-8 p-0 text-gray-600 hover:bg-gray-100"
+              className="h-8 w-8 p-0 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               <span className="sr-only">Go to last page</span>
               <ChevronsRight className="h-4 w-4" />
@@ -191,7 +191,7 @@ export function SimplePagination({
 
       {/* Item count info */}
       {totalItems > 0 && (
-        <div className="text-sm text-gray-600 text-right">
+        <div className="text-sm text-gray-600 dark:text-gray-400 text-right">
           {from} - {to} of {totalItems} items
         </div>
       )}
@@ -199,23 +199,27 @@ export function SimplePagination({
       {/* Page size selector */}
       {showPageSizeSelector && (
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600">Show</span>
+          <span className="text-sm text-gray-600 dark:text-gray-400">Show</span>
           <Select
             value={String(pageSize)}
             onValueChange={handlePageSizeChange}
           >
-            <SelectTrigger className="w-[60px] h-8 border border-gray-300 bg-white text-sm">
+            <SelectTrigger className="w-[60px] h-8 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
               {pageSizeOptions.map((size) => (
-                <SelectItem key={size} value={String(size)}>
+                <SelectItem 
+                  key={size} 
+                  value={String(size)}
+                  className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
                   {size}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <span className="text-sm text-gray-600">per page</span>
+          <span className="text-sm text-gray-600 dark:text-gray-400">per page</span>
         </div>
       )}
     </div>
