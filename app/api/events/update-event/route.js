@@ -82,13 +82,10 @@ export async function PUT(request) {
       );
     }
 
-    // Check if user has access to manage this event
-    const hasAccess = await checkEventManagementAccess(session.user.id, id);
-    if (!hasAccess) {
-      return NextResponse.json(
-        { success: false, error: 'Access denied' },
-        { status: 403 },
-      );
+    // Check if user has access to manage events
+    const accessCheck = await checkEventManagementAccess('update events');
+    if (accessCheck.error) {
+      return accessCheck.error;
     }
 
     // Get existing event
@@ -110,6 +107,18 @@ export async function PUT(request) {
       return NextResponse.json(
         { success: false, error: 'Event not found' },
         { status: 404 },
+      );
+    }
+
+    // Allow event creator, super-admin, and application-admin to update
+    const isSuperAdmin = session.user.roleSlug === 'super-admin';
+    const isApplicationAdmin = session.user.roleSlug === 'application-admin';
+    const isEventCreator = existingEvent.createdByUserId === session.user.id;
+
+    if (!isEventCreator && !isSuperAdmin && !isApplicationAdmin) {
+      return NextResponse.json(
+        { success: false, error: 'You do not have permission to update this event' },
+        { status: 403 },
       );
     }
 

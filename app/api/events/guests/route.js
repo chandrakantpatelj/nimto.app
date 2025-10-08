@@ -6,6 +6,12 @@ import { sendEventInvitation } from '@/services/send-event-invitation';
 // GET /api/events/guests - Get all guests (with optional filtering)
 export async function GET(request) {
     try {
+        // Check role-based access - super-admin, application-admin, and host can view guests
+        const accessCheck = await checkGuestManagementAccess('view guests');
+        if (accessCheck.error) {
+            return accessCheck.error;
+        }
+
         const { searchParams } = new URL(request.url);
         const eventId = searchParams.get('eventId');
         const status = searchParams.get('status');
