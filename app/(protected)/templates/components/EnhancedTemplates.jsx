@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -10,6 +11,7 @@ import {
   useTemplateActions,
   useTemplateError,
   useTemplateLoading,
+  useTemplatePagination,
 } from '@/store/hooks';
 import { Crown, Loader2, Sparkles, Star, Trash2, Zap } from 'lucide-react';
 import { useToast } from '@/providers/toast-provider';
@@ -27,6 +29,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { SimplePagination } from '@/components/ui/simple-pagination';
 import TemplateImageDisplay from '@/components/template-image-display';
 import LazyImage from './LazyImage';
 
@@ -43,11 +46,13 @@ const EnhancedTemplates = ({
   const loading = useTemplateLoading();
   const error = useTemplateError();
   const activeFilters = useActiveFilters();
+  const pagination = useTemplatePagination();
   const {
     fetchTemplates,
     deleteTemplate,
     setActiveFilters,
     setSelectedTemplate,
+    setPagination,
   } = useTemplateActions();
 
   const { setSelectedEvent } = useEventActions();
@@ -80,7 +85,7 @@ const EnhancedTemplates = ({
   }, [searchQuery, selectedCategory, filters, activeFilters, setActiveFilters]);
 
   // Load templates using Redux with server-side filtering (keep original API logic)
-  const loadTemplates = async () => {
+  const loadTemplates = async (page = null) => {
     try {
       // Build query parameters for server-side filtering (keep original logic)
       const params = new URLSearchParams();
@@ -94,6 +99,12 @@ const EnhancedTemplates = ({
       if (filters.featured) params.append('featured', 'true');
       if (filters.new) params.append('new', 'true');
 
+      // Add pagination parameters
+      const currentPage = page !== null ? page : pagination.currentPage;
+      const offset = (currentPage - 1) * pagination.limit;
+      params.append('limit', pagination.limit.toString());
+      params.append('offset', offset.toString());
+
       // Call Redux action with query parameters (API response will be stored in Redux)
       await fetchTemplates(params.toString());
     } catch (err) {
@@ -101,9 +112,10 @@ const EnhancedTemplates = ({
     }
   };
 
-  // Load templates when filters change
+  // Load templates when filters change (reset to page 1)
   useEffect(() => {
-    loadTemplates();
+    setPagination({ currentPage: 1 });
+    loadTemplates(1);
   }, [searchQuery, selectedCategory, filters]);
 
   // Load templates on component mount based on stored filters
@@ -144,10 +156,55 @@ const EnhancedTemplates = ({
       if (activeFilters.featured) params.append('featured', 'true');
       if (activeFilters.new) params.append('new', 'true');
 
+      // Add pagination parameters
+      const offset = (pagination.currentPage - 1) * pagination.limit;
+      params.append('limit', pagination.limit.toString());
+      params.append('offset', offset.toString());
+
       // Call Redux action with stored filter parameters
       await fetchTemplates(params.toString());
     } catch (err) {
       console.error('Error loading templates from stored filters:', err);
+    }
+  };
+
+  // Handle page change
+  const handlePageChange = (newPage) => {
+    setPagination({ currentPage: newPage });
+    loadTemplates(newPage);
+  };
+
+  // Handle page size change
+  const handlePageSizeChange = async (newPageSize) => {
+    console.log('🔄 Page size changing to:', newPageSize);
+    
+    // Update pagination state first
+    setPagination({ limit: newPageSize, currentPage: 1 });
+    
+    // Build query parameters with new page size
+    const params = new URLSearchParams();
+    if (searchQuery) params.append('search', searchQuery);
+    if (selectedCategory) params.append('category', selectedCategory);
+    if (filters.orientation)
+      params.append('orientation', filters.orientation);
+    if (filters.premium === 'premium') params.append('isPremium', 'true');
+    if (filters.premium === 'free') params.append('isPremium', 'false');
+    if (filters.trending) params.append('trending', 'true');
+    if (filters.featured) params.append('featured', 'true');
+    if (filters.new) params.append('new', 'true');
+
+    // Add pagination parameters with new page size
+    const offset = 0; // Reset to first page
+    params.append('limit', newPageSize.toString());
+    params.append('offset', offset.toString());
+
+    console.log('📡 API call with params:', params.toString());
+
+    // Call Redux action with updated parameters
+    try {
+      await fetchTemplates(params.toString());
+    } catch (err) {
+      console.error('❌ Component: Error fetching templates after page size change:', err);
     }
   };
 
@@ -464,6 +521,24 @@ const EnhancedTemplates = ({
               </Card>
             ))}
           </div>
+
+          {/* Pagination - positioned at bottom right */}
+          {pagination.total > 0 && (
+            <div className="flex justify-end mt-6">
+              <SimplePagination
+                currentPage={pagination.currentPage}
+                totalPages={pagination.pageCount}
+                pageSize={pagination.limit}
+                totalItems={pagination.total}
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
+                pageSizeOptions={[6, 12, 24, 36, 48]}
+                showPageSizeSelector={true}
+                showFirstLast={true}
+                className=""
+              />
+            </div>
+          )}
         </>
       )}
 
@@ -500,6 +575,12 @@ const EnhancedTemplates = ({
       </AlertDialog>
     </div>
   );
+};
+
+EnhancedTemplates.propTypes = {
+  searchQuery: PropTypes.string,
+  selectedCategory: PropTypes.string,
+  filters: PropTypes.object,
 };
 
 export { EnhancedTemplates };

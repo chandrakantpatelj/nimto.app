@@ -17,6 +17,14 @@ const initialState = {
   featuredTemplatesLoading: false,
   featuredTemplatesError: null,
   featuredTemplatesLastFetched: null,
+  // Pagination state
+  pagination: {
+    total: 0,
+    limit: 12,
+    offset: 0,
+    pageCount: 0,
+    currentPage: 1,
+  },
   // Active filters state for persistence
   activeFilters: {
     searchQuery: '',
@@ -88,7 +96,18 @@ export const fetchTemplates = createAsyncThunk(
       const result = await response.json();
 
       if (result.success) {
-        return result.data; // Return only the templates array
+        console.log('📦 Redux: API response:', result);
+        // Return both templates and pagination data
+        return {
+          templates: result.data || [],
+          pagination: result.pagination || {
+            total: result.data?.length || 0,
+            limit: 12,
+            offset: 0,
+            pageCount: 1,
+            currentPage: 1,
+          },
+        };
       } else {
         throw new Error(result.error || 'Failed to fetch templates');
       }
@@ -284,6 +303,12 @@ const templatesSlice = createSlice({
       // This would be handled by selectors in a real app
       // For now, we'll just store the filter criteria
     },
+    // Set pagination state
+    setPagination: (state, action) => {
+      console.log('🔄 Redux: Updating pagination state:', action.payload);
+      state.pagination = { ...state.pagination, ...action.payload };
+      console.log('✅ Redux: New pagination state:', state.pagination);
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -295,12 +320,14 @@ const templatesSlice = createSlice({
       .addCase(fetchTemplates.fulfilled, (state, action) => {
         state.isLoading = false;
 
-        // Store API response in Redux templates store (accumulate instead of replace)
-
-        // Add only new templates to avoid duplicates
-
-        // Accumulate templates from all API calls
-        state.templates = action.payload || [];
+        // Store API response in Redux templates store
+        state.templates = action.payload?.templates || [];
+        
+        // Store pagination data
+        if (action.payload?.pagination) {
+          state.pagination = action.payload.pagination;
+        }
+        
         state.error = null;
       })
       .addCase(fetchTemplates.rejected, (state, action) => {
@@ -429,6 +456,7 @@ export const {
   clearActiveFilters,
   clearAllTemplates,
   filterTemplates,
+  setPagination,
 } = templatesSlice.actions;
 
 export default templatesSlice.reducer;

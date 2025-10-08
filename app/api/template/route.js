@@ -19,6 +19,8 @@ export async function GET(request) {
     const newTemplates = searchParams.get('new');
     const limit = parseInt(searchParams.get('limit')) || 50;
     const offset = parseInt(searchParams.get('offset')) || 0;
+    
+    console.log('🔍 API: Received pagination params:', { limit, offset });
 
     const where = {
       isTrashed: false,
@@ -68,6 +70,9 @@ export async function GET(request) {
       ];
     }
 
+    // Get total count for pagination
+    const totalCount = await prisma.template.count({ where });
+
     const templates = await prisma.template.findMany({
       where,
       orderBy: [
@@ -109,6 +114,13 @@ export async function GET(request) {
     return NextResponse.json({
       success: true,
       data: templatesWithUrls,
+      pagination: {
+        total: totalCount,
+        limit,
+        offset,
+        pageCount: Math.ceil(totalCount / limit),
+        currentPage: Math.floor(offset / limit) + 1,
+      },
     });
   } catch (error) {
     console.error('Error fetching templates:', error);

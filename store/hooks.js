@@ -119,6 +119,8 @@ export const useTemplateError = () =>
   useAppSelector((state) => state.templates.error);
 export const useActiveFilters = () =>
   useAppSelector((state) => state.templates.activeFilters);
+export const useTemplatePagination = () =>
+  useAppSelector((state) => state.templates.pagination);
 
 // Featured templates hooks
 export const useFeaturedTemplates = () =>
@@ -399,6 +401,14 @@ export const useTemplateActions = () => {
     clearAllTemplates: useCallback(() => {
       dispatch(clearAllTemplates());
     }, [dispatch]),
+
+    // Pagination actions
+    setPagination: useCallback(
+      (pagination) => {
+        dispatch({ type: 'templates/setPagination', payload: pagination });
+      },
+      [dispatch],
+    ),
 
     // Featured templates actions
     fetchFeaturedTemplates: useCallback(() => {
