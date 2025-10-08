@@ -92,7 +92,7 @@ export function DropdownMenuUser({ trigger }) {
 
             <div className="flex flex-col">
               <Link
-                href="/account/home/get-started"
+                href="/my-profile"
                 className="text-sm text-mono hover:text-primary font-semibold"
               >
                 {session?.user?.name || 'User'}
@@ -123,10 +123,7 @@ export function DropdownMenuUser({ trigger }) {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link
-            href="/account/home/user-profile"
-            className="flex items-center gap-2"
-          >
+          <Link href="/my-profile" className="flex items-center gap-2">
             <User />
             My Profile
           </Link>
@@ -140,19 +137,13 @@ export function DropdownMenuUser({ trigger }) {
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent className="w-48">
             <DropdownMenuItem asChild>
-              <Link
-                href="/account/home/get-started"
-                className="flex items-center gap-2"
-              >
+              <Link href="/my-profile" className="flex items-center gap-2">
                 <Coffee />
                 Get Started
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link
-                href="/account/home/user-profile"
-                className="flex items-center gap-2"
-              >
+              <Link href="/my-profile" className="flex items-center gap-2">
                 <FileText />
                 My Profile
               </Link>
