@@ -8,7 +8,7 @@ import { PrismaClient } from '@prisma/client';
 import { checkEventManagementAccess } from '@/lib/auth-utils';
 import { uid } from '@/lib/helpers';
 import { createS3Client } from '@/lib/s3-utils';
-import { sendEmail } from '@/services/send-email';
+import { sendEventInvitation } from '@/services/send-event-invitation';
 
 // Create a singleton Prisma client
 const globalForPrisma = global;
@@ -368,30 +368,35 @@ export async function POST(request) {
           // Create personalized RSVP URL for each guest
           const rsvpUrl = `${baseUrl}/invitation/${event.id}/${guest.id}`;
 
-          await sendEmail({
-            to: guest.email,
-            subject: `You're invited to ${title}`,
-            content: {
-              title: `You're invited to ${title}`,
-              subtitle: `Join us for this special event`,
-              description: `
-                <p><strong>Event Details:</strong></p>
-                <p><strong>Date:</strong> ${eventDate.toLocaleDateString()}</p>
-                <p><strong>Time:</strong> ${eventDate.toLocaleTimeString()}</p>
-                <p><strong>Location:</strong> ${locationAddress || 'TBD'}</p>
-                ${description ? `<p><strong>Description:</strong> ${description}</p>` : ''}
-                <p>Please click the button below to view the full invitation and respond.</p>
-              `,
-              buttonLabel: 'View Invitation & RSVP',
-              buttonUrl: rsvpUrl,
+          const invitationResult = await sendEventInvitation({
+            guest: {
+              name: guest.name,
+              email: guest.email,
+              phone: guest.phone,
             },
+            event: {
+              title: title,
+              description: description,
+              startDateTime: eventDate,
+              timezone: eventTimezone,
+              location: locationAddress
+                ? `${locationAddress}${locationUnit ? `, ${locationUnit}` : ''}`
+                : null,
+              User: {
+                name: user.name,
+                email: user.email,
+              },
+            },
+            invitationUrl: rsvpUrl,
+            channels: ['email'], // Only send email for now
           });
 
           invitationResults.push({
             guest: guest.name,
             email: guest.email,
-            status: 'sent',
+            status: invitationResult.success ? 'sent' : 'failed',
             rsvpUrl: rsvpUrl,
+            error: invitationResult.success ? null : invitationResult.message,
           });
         } catch (emailError) {
           console.error(
