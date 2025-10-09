@@ -6,7 +6,7 @@ import { useEventActions, useEvents, useTemplateLoading } from '@/store/hooks';
 import { useSession } from 'next-auth/react';
 import AdvancedProcessingLoader from '@/components/common/advanced-processing-loader';
 import { showCustomToast } from '@/components/common/custom-toast';
-import { TemplateHeader } from '../../components';
+import { TemplateHeader, PublishOptionsPopup } from '../../components';
 import InvitationConfirmationPopup from '../../components/InvitationConfirmationPopup';
 import Step1 from '../../components/Step1';
 import Step2 from '../../components/Step2';
@@ -25,6 +25,7 @@ function NewEventFromTemplateContent() {
   const isTemplateLoading = useTemplateLoading();
 
   const [activeStep, setActiveStep] = useState(0);
+  const [showPublishOptionsPopup, setShowPublishOptionsPopup] = useState(false);
   const [showInvitationPopup, setShowInvitationPopup] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
@@ -69,7 +70,7 @@ function NewEventFromTemplateContent() {
           locationAddress: '',
           locationUnit: '',
           showMap: true,
-          status: 'DRAFT',
+          status: 'PUBLISHED', // Default to PUBLISHED
           guests: [],
           jsonContent: templateData.jsonContent,
           imagePath: templateData.imagePath,
@@ -158,22 +159,64 @@ function NewEventFromTemplateContent() {
       return;
     }
 
-    setShowInvitationPopup(true);
+    // Show publish options popup first
+    setShowPublishOptionsPopup(true);
   };
 
-  const handleConfirmPublish = async () => {
+  const handleSaveAsDraft = async () => {
+    try {
+      setIsCreating(true);
+      setShowPublishOptionsPopup(false);
+
+      const eventDataToSave = {
+        ...eventData,
+        status: 'DRAFT',
+        createdByUserId: session.user.id,
+      };
+
+      await addEventToStore(eventDataToSave);
+      showCustomToast('Event saved as draft!', 'success');
+
+      // Reset event creation state
+      resetEventCreation();
+
+      // Redirect to events page
+      router.push('/events');
+    } catch (error) {
+      showCustomToast(`Failed to save event: ${error.message}`, 'error');
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handlePublishConfirm = () => {
+    // Update event status to PUBLISHED
+    updateSelectedEvent({ status: 'PUBLISHED' });
+    setShowPublishOptionsPopup(false);
+    
+    // Show invitation popup if there are guests
+    if (eventData.guests && eventData.guests.length > 0) {
+      setShowInvitationPopup(true);
+    } else {
+      // Publish event without invitations
+      handleConfirmPublish('PUBLISHED');
+    }
+  };
+
+  const handleConfirmPublish = async (status = 'PUBLISHED') => {
     try {
       setIsCreating(true);
 
       const eventDataToSave = {
         ...eventData,
-        status: 'PUBLISHED',
+        status: status,
         createdByUserId: session.user.id,
       };
 
       await addEventToStore(eventDataToSave);
       setShowInvitationPopup(false);
-      showCustomToast('Event created successfully!', 'success');
+      const statusMessage = status === 'DRAFT' ? 'Event saved as draft!' : 'Event created successfully!';
+      showCustomToast(statusMessage, 'success');
 
       // Reset event creation state
       resetEventCreation();
@@ -209,11 +252,10 @@ function NewEventFromTemplateContent() {
         activeStep={activeStep}
         onBack={handleBack}
         onNext={handleNext}
-        onPublish={handlePublishEvent}
+        onPublishEvent={handlePublishEvent}
         isCreating={isCreating}
-        showNext={activeStep < 2}
-        showPublish={activeStep === 2}
-        showBack={activeStep > 0}
+        hasGuests={eventData?.guests?.length > 0}
+        eventStatus={eventData?.status}
       />
 
       <div
@@ -236,16 +278,24 @@ function NewEventFromTemplateContent() {
         )}
       </div>
 
+      <PublishOptionsPopup
+        isOpen={showPublishOptionsPopup}
+        onClose={() => setShowPublishOptionsPopup(false)}
+        onSaveAsDraft={handleSaveAsDraft}
+        onPublish={handlePublishConfirm}
+        hasGuests={eventData?.guests && eventData.guests.length > 0}
+      />
+
       <InvitationConfirmationPopup
         isOpen={showInvitationPopup}
         onClose={handleCancelPublish}
-        onConfirm={handleConfirmPublish}
+        onConfirm={() => handleConfirmPublish('PUBLISHED')}
         isCreating={isCreating}
         eventData={eventData}
       />
 
       <AdvancedProcessingLoader
-        isVisible={isCreating && !showInvitationPopup}
+        isVisible={isCreating && !showInvitationPopup && !showPublishOptionsPopup}
         title="Creating Event"
         description="Please wait while we process your event..."
         tasks={[

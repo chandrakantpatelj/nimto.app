@@ -422,6 +422,54 @@ function Step3() {
                       </h2>
                     </div>
 
+                    {/* Event Status Selector */}
+                    <div className="mb-6 p-4 bg-card border border-border rounded-lg">
+                      <label className="block text-sm font-medium text-foreground mb-3">
+                        Event Status
+                      </label>
+                      <div className="flex gap-4">
+                        <label className="flex items-center cursor-pointer">
+                          <input
+                            type="radio"
+                            name="eventStatus"
+                            value="DRAFT"
+                            checked={eventData?.status === 'DRAFT'}
+                            onChange={(e) =>
+                              updateSelectedEvent({ status: e.target.value })
+                            }
+                            className="w-4 h-4 text-purple-600 border-gray-300 focus:ring-purple-500"
+                          />
+                          <span className="ml-2 text-sm text-foreground">
+                            <span className="font-semibold">Save as Draft</span>
+                            <span className="block text-xs text-muted-foreground">
+                              Save event without publishing
+                            </span>
+                          </span>
+                        </label>
+                        <label className="flex items-center cursor-pointer">
+                          <input
+                            type="radio"
+                            name="eventStatus"
+                            value="PUBLISHED"
+                            checked={
+                              eventData?.status === 'PUBLISHED' ||
+                              !eventData?.status
+                            }
+                            onChange={(e) =>
+                              updateSelectedEvent({ status: e.target.value })
+                            }
+                            className="w-4 h-4 text-purple-600 border-gray-300 focus:ring-purple-500"
+                          />
+                          <span className="ml-2 text-sm text-foreground">
+                            <span className="font-semibold">Publish Event</span>
+                            <span className="block text-xs text-muted-foreground">
+                              Make event live and send invitations
+                            </span>
+                          </span>
+                        </label>
+                      </div>
+                    </div>
+
                     {/* Guest Requirement Notice */}
                     {(eventData?.guests || []).length === 0 && (
                       <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/50 rounded-lg">

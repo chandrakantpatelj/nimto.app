@@ -20,6 +20,7 @@ export function TemplateHeader({
   title = 'Create Event', // Add title prop for edit mode
   publishButtonText = 'Publish Event', // Add button text prop for edit mode
   isEditMode = false, // Add this prop to distinguish edit mode
+  eventStatus, // Add eventStatus prop to determine button text
 
   // Template editor props
   onSave,
@@ -34,6 +35,21 @@ export function TemplateHeader({
 
   // Check if this is template editor mode
   const isTemplateEditor = onSave !== undefined;
+
+  // Determine button text based on status
+  const getPublishButtonText = () => {
+    if (isEditMode) {
+      return eventStatus === 'DRAFT' ? 'Save as Draft' : 'Update Event';
+    }
+    return eventStatus === 'DRAFT' ? 'Save as Draft' : 'Publish Event';
+  };
+
+  const getLoadingText = () => {
+    if (isEditMode) {
+      return eventStatus === 'DRAFT' ? 'Saving Draft...' : 'Updating...';
+    }
+    return eventStatus === 'DRAFT' ? 'Saving Draft...' : 'Creating...';
+  };
 
   const handleCancel = () => {
     if (isEditMode) {
@@ -107,7 +123,7 @@ export function TemplateHeader({
                 disabled={isCreating || !hasGuests}
                 className="px-3 py-1 text-xs font-medium text-white bg-purple-600 border border-transparent rounded hover:bg-purple-700 disabled:opacity-50 whitespace-nowrap"
               >
-                {isCreating ? 'Creating...' : 'Publish Event'}
+                {isCreating ? getLoadingText() : getPublishButtonText()}
               </button>
             ) : (
               <button
@@ -249,10 +265,10 @@ export function TemplateHeader({
                       {isCreating ? (
                         <>
                           <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-white mr-1 sm:mr-2"></div>
-                          Creating Event...
+                          {getLoadingText()}
                         </>
                       ) : (
-                        <>Publish Event</>
+                        <>{getPublishButtonText()}</>
                       )}
                     </button>
                   </div>
