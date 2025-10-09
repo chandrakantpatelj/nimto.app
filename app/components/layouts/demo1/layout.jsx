@@ -54,7 +54,7 @@ export function Demo1Layout({ children }) {
     <div className="min-h-screen bg-white dark:bg-gray-900 w-full flex flex-col">
       <Header />
 
-      <main className="grow pt-18" role="main">
+      <main className="grow pt-16" role="main">
         {children}
       </main>
       

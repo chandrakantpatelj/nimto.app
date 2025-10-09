@@ -24,7 +24,6 @@ export function ColorPicker({
   const presets: string[] = colorPresets || DefaultPresets;
 
   const style = getInputFieldClassNames({size: 'sm'});
-
   return (
     <div>
       <HexColorPicker
@@ -50,7 +49,7 @@ export function ColorPicker({
           />
         )}
         {showInput && (
-          <div className="pt-20">
+            <div className="pt-20">
             <HexColorInput
               autoComplete="off"
               role="textbox"

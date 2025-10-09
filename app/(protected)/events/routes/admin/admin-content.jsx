@@ -404,12 +404,12 @@ export function AdminEventContent() {
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            router.push(`/events/${event.id}`);
+                            router.push(`/events/${event.id}/preview`);
                           }}
                           className="flex-1 h-8 bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm text-xs font-medium"
                         >
                           <Earth className="w-3 h-3 mr-1" />
-                          Public Page
+                          Preview
                         </Button>
                       </div>
                     </div>

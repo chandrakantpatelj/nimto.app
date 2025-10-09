@@ -710,7 +710,7 @@ export const DEFAULT_CONFIG: PixieConfig = {
       ],
     },
     nav: {
-      position: NavPosition.BOTTOM,
+      position: NavPosition.LEFT,
       items: [...DEFAULT_NAV_ITEMS],
     },
     openImageDialog: {

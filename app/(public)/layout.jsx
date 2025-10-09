@@ -1,12 +1,12 @@
-import { CommonFooter } from '@/components/common/footer';
 import PropTypes from 'prop-types';
+import { CommonFooter } from '@/components/common/footer';
+import { Header } from '@/app/components/layouts/demo1/components/header';
 
 export default function PublicLayout({ children }) {
   return (
     <div className="min-h-screen bg-background w-full flex flex-col">
-      <main className="flex-1">
-        {children}
-      </main>
+      <Header />
+      <main className="flex-1 pt-16">{children}</main>
       {/* <CommonFooter /> */}
     </div>
   );

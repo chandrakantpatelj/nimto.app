@@ -154,10 +154,8 @@ export function AttendeeEventContent() {
       {/* Events Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">Public Events</h2>
-          <p className="text-sm text-gray-600">
-            Browse published events in the system
-          </p>
+          <h2 className="text-lg font-semibold text-gray-900">Your Events</h2>
+          <p className="text-sm text-gray-600">Events you have access to</p>
         </div>
       </div>
 

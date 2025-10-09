@@ -514,7 +514,7 @@ const PixieEditor = forwardRef(
               </div>
               <div className="space-y-2">
                 <h3 className="text-lg font-semibold text-gray-800">
-                  Loading Image Editor
+                  Loading Event Canvas
                 </h3>
                 <p className="text-sm text-gray-600">
                   Initializing Nimto editor...
