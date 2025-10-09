@@ -6,7 +6,7 @@ export default function PublicLayout({ children }) {
   return (
     <div className="min-h-screen bg-background w-full flex flex-col">
       <Header />
-      <main className="flex-1 pt-18">{children}</main>
+      <main className="flex-1 pt-16">{children}</main>
       {/* <CommonFooter /> */}
     </div>
   );

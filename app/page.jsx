@@ -151,9 +151,9 @@ export default function HomePage() {
       {(!isAuthenticated || !roles.isAttendee) && (
         <section
           id="search-section"
-          className="w-full sm:py-16 md:py-20  bg-gray-50 dark:bg-gray-800"
+                  className="w-full sm:py-16 md:py-16 lg:pb-0 lg:pt-5  bg-gray-50 dark:bg-gray-800"
         >
-          <div className="max-w-4xl mx-auto px-6 text-center lg:pt-10 pt-20">
+          <div className="max-w-4xl mx-auto px-6 text-center pt-20">
             {/* Search Bar */}
             <div className="relative max-w-2xl mx-auto mb-4 sm:mb-6 md:mb-8">
               <div className="relative">
@@ -318,7 +318,7 @@ export default function HomePage() {
       {(!isAuthenticated || !roles.isAttendee) &&
         !searchQuery &&
         !selectedCategory && (
-          <section className="w-full py-20 bg-white dark:bg-gray-900">
+          <section className="w-full py-10 bg-white dark:bg-gray-900">
             <div className="mx-auto px-6">
               <HomeTemplatesPreview />
             </div>
@@ -327,7 +327,7 @@ export default function HomePage() {
 
       {/* Invitation Categories Section */}
       {(!isAuthenticated || !roles.isAttendee) && (
-        <section className="w-full py-20 bg-gray-50 dark:bg-gray-800">
+        <section className="w-full py-10 bg-gray-50 dark:bg-gray-800">
           <div className="mx-auto px-6">
             <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
@@ -468,7 +468,7 @@ export default function HomePage() {
         )}
 
       {/* Why Choose Our Platform? Section */}
-      <section className="w-full py-20 bg-white dark:bg-gray-900">
+      <section className="w-full py-10 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
@@ -535,7 +535,7 @@ export default function HomePage() {
 
       {/* Invited Events Section for Attendees */}
       {isAuthenticated && invitedEvents.length > 0 && (
-        <section className="w-full py-20 bg-white dark:bg-gray-900">
+        <section className="w-full py-10 bg-white dark:bg-gray-900">
           <div className="max-w-7xl mx-auto px-6">
             <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">

@@ -85,6 +85,7 @@ export async function POST(req) {
                     });
                 } catch (error) {
                     // Continue with creating new token
+                    console.error('Error deleting old verification tokens:', error);
                 }
                 await sendVerificationEmail(existingUser);
                 return NextResponse.json(
@@ -142,6 +143,7 @@ export async function POST(req) {
             { status: 200 },
         );
     } catch (e) {
+        console.error('Error during user registration:', e);
         return NextResponse.json(
             { message: 'Registration failed. Please try again later.' },
             { status: 500 },
