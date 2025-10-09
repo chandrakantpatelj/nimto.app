@@ -10,286 +10,289 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
 function dedupeEvents(events) {
-  const seen = new Set();
-  return events.filter((event) => {
-    if (seen.has(event.id)) return false;
-    seen.add(event.id);
-    return true;
-  });
+    const seen = new Set();
+    return events.filter((event) => {
+        if (seen.has(event.id)) return false;
+        seen.add(event.id);
+        return true;
+    });
 }
 
 function splitEvents(events) {
-  const now = new Date();
-  const upcoming = [];
-  const past = [];
-  events.forEach((event) => {
-    const eventDate = new Date(event.startDateTime);
-    if (eventDate >= now) {
-      upcoming.push(event);
-    } else {
-      past.push(event);
-    }
-  });
-  upcoming.sort(
-    (a, b) => new Date(a.startDateTime) - new Date(b.startDateTime),
-  );
-  past.sort((a, b) => new Date(b.startDateTime) - new Date(a.startDateTime));
-  return { upcoming, past };
+    const now = new Date();
+    const upcoming = [];
+    const past = [];
+    events.forEach((event) => {
+        const eventDate = new Date(event.startDateTime);
+        if (eventDate >= now) {
+            upcoming.push(event);
+        } else {
+            past.push(event);
+        }
+    });
+    upcoming.sort(
+        (a, b) => new Date(a.startDateTime) - new Date(b.startDateTime),
+    );
+    past.sort((a, b) => new Date(b.startDateTime) - new Date(a.startDateTime));
+    return { upcoming, past };
 }
 
 const FILTERS = [
-  { key: 'all', label: 'All' },
-  { key: 'upcoming', label: 'Upcoming' },
-  { key: 'past', label: 'Past/Canceled' },
+    { key: 'all', label: 'All' },
+    { key: 'upcoming', label: 'Upcoming' },
+    { key: 'past', label: 'Past/Canceled' },
 ];
 
 export default function InvitedEventsPage() {
-  const router = useRouter();
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState('all');
-  const [visibleCount, setVisibleCount] = useState(5);
-  const { data: session } = useSession();
-  const searchParams = useSearchParams();
+    const router = useRouter();
+    const [events, setEvents] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [search, setSearch] = useState('');
+    const [filter, setFilter] = useState('all');
+    const [visibleCount, setVisibleCount] = useState(5);
+    const { data: session } = useSession();
+    const searchParams = useSearchParams();
 
-  const email = searchParams.get('email');
-  const userId = searchParams.get('userId');
+    const email = searchParams.get('email');
+    const userId = searchParams.get('userId');
 
-  useEffect(() => {
-    fetchInvitedEvents();
-  }, [session?.user?.email, email, userId]);
+    useEffect(() => {
+        fetchInvitedEvents();
+    }, [session?.user?.email, email, userId]);
 
-  const fetchInvitedEvents = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const params = new URLSearchParams();
-      if (session?.user?.email) {
-        params.append('email', session.user.email);
-      } else if (email) {
-        params.append('email', email);
-      } else if (userId) {
-        params.append('userId', userId);
-      }
-      const queryString = params.toString();
-      const url = queryString
-        ? `/api/attendee/events?${queryString}`
-        : '/api/attendee/events';
-      const response = await apiFetch(url);
-      if (!response.ok)
-        throw new Error(
-          `API request failed: ${response.status} ${response.statusText}`,
-        );
-      const data = await response.json();
-      setEvents(data?.data || []);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const fetchInvitedEvents = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const params = new URLSearchParams();
+            if (session?.user?.email) {
+                params.append('email', session.user.email);
+            } else if (email) {
+                params.append('email', email);
+            } else if (userId) {
+                params.append('userId', userId);
+            }
+            const queryString = params.toString();
+            const url = queryString
+                ? `/api/attendee/events?${queryString}`
+                : '/api/attendee/events';
+            const response = await apiFetch(url);
+            if (!response.ok)
+                throw new Error(
+                    `API request failed: ${response.status} ${response.statusText}`,
+                );
+            const data = await response.json();
+            setEvents(data?.data || []);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  // Deduplicate events before splitting
-  const dedupedEvents = useMemo(() => dedupeEvents(events), [events]);
-  const { upcoming, past } = useMemo(
-    () => splitEvents(dedupedEvents),
-    [dedupedEvents],
-  );
+    // Deduplicate events before splitting
+    const dedupedEvents = useMemo(() => dedupeEvents(events), [events]);
+    const { upcoming, past } = useMemo(
+        () => splitEvents(dedupedEvents),
+        [dedupedEvents],
+    );
 
-  // Filter and search logic
-  const filteredEvents = useMemo(() => {
-    let list = [];
-    if (filter === 'upcoming') list = upcoming;
-    else if (filter === 'past') list = past;
-    else list = [...upcoming, ...past];
+    // Filter and search logic
+    const filteredEvents = useMemo(() => {
+        let list = [];
+        if (filter === 'upcoming') list = upcoming;
+        else if (filter === 'past') list = past;
+        else list = [...upcoming, ...past];
 
-    if (search.trim()) {
-      const lower = search.toLowerCase();
-      list = list.filter(
-        (event) =>
-          event.title?.toLowerCase().includes(lower) ||
-          event.User?.name?.toLowerCase().includes(lower) ||
-          event.User?.email?.toLowerCase().includes(lower),
-      );
-    }
-    return list;
-  }, [upcoming, past, filter, search]);
+        if (search.trim()) {
+            const lower = search.toLowerCase();
+            list = list.filter(
+                (event) =>
+                    event.title?.toLowerCase().includes(lower) ||
+                    event.User?.name?.toLowerCase().includes(lower) ||
+                    event.User?.email?.toLowerCase().includes(lower),
+            );
+        }
+        return list;
+    }, [upcoming, past, filter, search]);
 
-  // Pagination logic
-  const visibleEvents = filteredEvents.slice(0, visibleCount);
-  const canLoadMore = visibleCount < filteredEvents.length;
+    // Pagination logic
+    const visibleEvents = filteredEvents.slice(0, visibleCount);
+    const canLoadMore = visibleCount < filteredEvents.length;
 
-  const renderEventCard = (event, isPast) => {
-    const userGuest = event.guests?.[0];
-    return (
-      <div
-        key={event.id}
-        className="flex bg-gray-50 rounded-lg p-6 mb-6 shadow-sm items-center"
-      >
-        <div className="w-40 h-56 flex-shrink-0 relative">
-          <img
-            src={event.eventThumbnailUrl || event.s3ImageUrl}
-            alt={event.title}
-            className="w-full h-full object-cover rounded-md border"
-            onError={(e) => {
-              e.target.style.display = 'none';
-            }}
-          />
-          {isPast && (
-            <Badge className="absolute bottom-2 left-2 bg-indigo-600 text-white px-3 py-1 rounded">
-              PAST
-            </Badge>
-          )}
-        </div>
-        <div className="flex-1 ml-8">
-          <div className="text-xl font-semibold mb-1">{event.title}</div>
-          <div className="text-gray-700 mb-1">
-            {formatEventDate(event.startDateTime)}
-            {event.startDateTime && <> {formatTime(event.startDateTime)} ET</>}
-          </div>
-          <div className="text-gray-500 mb-2">
-            Hosted by {event.User?.name || event.User?.email}
-          </div>
-          {isPast && userGuest?.status && (
+    const renderEventCard = (event, isPast) => {
+        const userGuest = event.guests?.[0];
+        return (
             <div
-              className={`font-medium mb-2 ${
-                userGuest.status === 'CONFIRMED'
-                  ? 'text-green-600'
-                  : userGuest.status === 'DECLINED'
-                    ? 'text-red-600'
-                    : userGuest.status === 'MAYBE'
-                      ? 'text-yellow-600'
-                      : 'text-gray-600'
-              }`}
+                key={event.id}
+                className="flex flex-col sm:flex-row bg-gray-50 dark:bg-gray-900 rounded-lg p-4 sm:p-6 mb-6 shadow-sm items-center"
             >
-              {userGuest.status === 'CONFIRMED'
-                ? 'You attended'
-                : userGuest.status === 'DECLINED'
-                  ? 'You declined'
-                  : userGuest.status === 'MAYBE'
-                    ? 'Maybe'
-                    : 'No Response from you'}
+                <div className="w-full sm:w-40 h-48 sm:h-56 flex-shrink-0 relative mb-4 sm:mb-0">
+                    <img
+                        src={event.eventThumbnailUrl || event.s3ImageUrl}
+                        alt={event.title}
+                        className="w-full h-full object-contain rounded-md border dark:border-gray-700"
+                        onError={(e) => {
+                            e.target.style.display = 'none';
+                        }}
+                    />
+                    {isPast && (
+                        <Badge className="absolute bottom-2 left-2 bg-indigo-600 text-white px-3 py-1 rounded">
+                            PAST
+                        </Badge>
+                    )}
+                </div>
+                <div className="flex-1 sm:ml-8 w-full">
+                    <div className="text-lg sm:text-xl font-semibold mb-1 dark:text-white">{event.title}</div>
+                    <div className="text-gray-700 dark:text-gray-300 mb-1">
+                        {formatEventDate(event.startDateTime)}
+                        {event.startDateTime && <> {formatTime(event.startDateTime)} ET</>}
+                    </div>
+                    <div className="text-gray-500 dark:text-gray-400 mb-2">
+                        Hosted by {event.User?.name || event.User?.email}
+                    </div>
+                    {isPast && userGuest?.status && (
+                        <div
+                            className={`font-medium mb-2 ${userGuest.status === 'CONFIRMED'
+                                ? 'text-green-600 dark:text-green-400'
+                                : userGuest.status === 'DECLINED'
+                                    ? 'text-red-600 dark:text-red-400'
+                                    : userGuest.status === 'MAYBE'
+                                        ? 'text-yellow-600 dark:text-yellow-400'
+                                        : 'text-gray-600 dark:text-gray-400'
+                                }`}
+                        >
+                            {userGuest.status === 'CONFIRMED'
+                                ? 'You attended'
+                                : userGuest.status === 'DECLINED'
+                                    ? 'You declined'
+                                    : userGuest.status === 'MAYBE'
+                                        ? 'Maybe'
+                                        : 'No Response from you'}
+                        </div>
+                    )}
+                </div>
+                <div className="flex flex-row sm:flex-col items-end gap-2 w-full sm:w-auto mt-4 sm:mt-0">
+                    <Button
+                        variant="outline"
+                        onClick={() => {
+                            const guestId = userGuest?.id;
+                            if (guestId) {
+                                router.push(`/invitation/${event.id}/${guestId}`);
+                            }
+                        }}
+                        className="w-full sm:w-auto"
+                    >
+                        View invitation
+                    </Button>
+                    <Button variant="ghost" className="px-2 w-full sm:w-auto">
+                        ...
+                    </Button>
+                </div>
             </div>
-          )}
-        </div>
-        <div className="flex flex-col items-end gap-2">
-          <Button
-            variant="outline"
-            onClick={() => {
-              const guestId = userGuest?.id;
-              if (guestId) {
-                router.push(`/invitation/${event.id}/${guestId}`);
-              }
-            }}
-          >
-            View invitation
-          </Button>
-          <Button variant="ghost" className="px-2">
-            ...
-          </Button>
-        </div>
-      </div>
-    );
-  };
+        );
+    };
 
-  if (loading) {
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400"></div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <div className="text-center">
+                    <h2 className="text-xl font-semibold mb-2 text-red-600 dark:text-red-400">Error</h2>
+                    <p className="text-muted-foreground dark:text-gray-400">{error}</p>
+                    <Button
+                        onClick={fetchInvitedEvents}
+                        className="mt-4"
+                        variant="outline"
+                    >
+                        Try Again
+                    </Button>
+                </div>
+            </div>
+        );
+    }
+
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold mb-2 text-red-600">Error</h2>
-          <p className="text-muted-foreground">{error}</p>
-          <Button
-            onClick={fetchInvitedEvents}
-            className="mt-4"
-            variant="outline"
-          >
-            Try Again
-          </Button>
+        <div className="bg-white-100 dark:bg-gray-950 py-8">
+            <div className="container mx-auto px-2 sm:px-4">
+                <h1 className="text-2xl font-bold mb-8 dark:text-white">Invited Events</h1>
+                {/* Filter Bar */}
+                <div className="mb-8">
+                    <div className="flex flex-col gap-4">
+                        <div className="relative">
+                            <input
+                                type="text"
+                                className="w-full rounded-lg border-2 border-blue-500 dark:border-blue-400 bg-white dark:bg-gray-800 px-4 py-3 pl-12 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 text-base font-semibold shadow focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-600 transition"
+                                placeholder="Search invitations"
+                                value={search}
+                                onChange={(e) => {
+                                    setSearch(e.target.value);
+                                    setVisibleCount(5);
+                                }}
+                            />
+                            <Search className="absolute left-4 top-3 h-5 w-5 text-blue-500 dark:text-blue-400" />
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+                            <span className="font-medium text-gray-700 dark:text-gray-300">Status</span>
+                            {FILTERS.map((f) => (
+                                <Button
+                                    key={f.key}
+                                    variant={filter === f.key ? 'outline' : 'ghost'}
+                                    className={`rounded-full px-4 py-1 ${filter === f.key
+                                        ? 'border-green-500 text-green-700 bg-green-50 dark:border-green-400 dark:text-green-300 dark:bg-green-950'
+                                        : ''
+                                        }`}
+                                    onClick={() => {
+                                        setFilter(f.key);
+                                        setVisibleCount(5);
+                                    }}
+                                >
+                                    {f.label}
+                                </Button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+                {/* Event List */}
+                {visibleEvents.length > 0 ? (
+                    <div>
+                        {visibleEvents.map((event) => {
+                            const isPast = new Date(event.startDateTime) < new Date();
+                            return renderEventCard(event, isPast);
+                        })}
+                        {canLoadMore && (
+                            <div className="flex justify-center mt-4">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setVisibleCount((c) => c + 5)}
+                                >
+                                    Load More
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    <div className="flex flex-col items-center justify-center py-20">
+                        <div className="w-16 h-16 bg-gray-100 dark:bg-gray-900 rounded-full flex items-center justify-center mb-4">
+                            <CalendarDays className="h-8 w-8 text-gray-400 dark:text-gray-500" />
+                        </div>
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                            No invitations found
+                        </h3>
+                        <p className="text-gray-500 dark:text-gray-400 text-center max-w-sm">
+                            Try adjusting your search or filters.
+                        </p>
+                    </div>
+                )}
+            </div>
         </div>
-      </div>
     );
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-100 py-8">
-      <div className="container mx-auto px-4">
-        <h1 className="text-2xl font-bold mb-8">Invited Events</h1>
-        {/* Filter Bar */}
-        <div className="mb-8">
-          <div className="flex flex-col gap-4">
-            <div className="relative">
-              <input
-                type="text"
-                className="w-full rounded-lg border px-4 py-2 pl-10 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                placeholder="Search invitations"
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setVisibleCount(5);
-                }}
-              />
-              <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-            </div>
-            <div className="flex items-center gap-4">
-              <span className="font-medium text-gray-700">Status</span>
-              {FILTERS.map((f) => (
-                <Button
-                  key={f.key}
-                  variant={filter === f.key ? 'outline' : 'ghost'}
-                  className={`rounded-full px-4 py-1 ${filter === f.key ? 'border-green-500 text-green-700 bg-green-50' : ''}`}
-                  onClick={() => {
-                    setFilter(f.key);
-                    setVisibleCount(5);
-                  }}
-                >
-                  {f.label}
-                </Button>
-              ))}
-            </div>
-          </div>
-        </div>
-        {/* Event List */}
-        {visibleEvents.length > 0 ? (
-          <div>
-            {visibleEvents.map((event) => {
-              const isPast = new Date(event.startDateTime) < new Date();
-              return renderEventCard(event, isPast);
-            })}
-            {canLoadMore && (
-              <div className="flex justify-center mt-4">
-                <Button
-                  variant="outline"
-                  onClick={() => setVisibleCount((c) => c + 5)}
-                >
-                  Load More
-                </Button>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-              <CalendarDays className="h-8 w-8 text-gray-400" />
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No invitations found
-            </h3>
-            <p className="text-gray-500 text-center max-w-sm">
-              Try adjusting your search or filters.
-            </p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
 }
