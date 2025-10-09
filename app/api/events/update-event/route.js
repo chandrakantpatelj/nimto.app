@@ -117,7 +117,10 @@ export async function PUT(request) {
 
     if (!isEventCreator && !isSuperAdmin && !isApplicationAdmin) {
       return NextResponse.json(
-        { success: false, error: 'You do not have permission to update this event' },
+        {
+          success: false,
+          error: 'You do not have permission to update this event',
+        },
         { status: 403 },
       );
     }
@@ -395,9 +398,18 @@ export async function PUT(request) {
 
           // Send bulk invitations
           const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+
+          // Transform event data to match sendEventInvitation expectations
+          const eventForInvitation = {
+            ...updatedEvent,
+            location: updatedEvent.locationAddress
+              ? `${updatedEvent.locationAddress}${updatedEvent.locationUnit ? `, ${updatedEvent.locationUnit}` : ''}`
+              : null,
+          };
+
           const invitationResults = await sendBulkEventInvitations({
             guests: guestsToInvite,
-            event: updatedEvent,
+            event: eventForInvitation,
             baseUrl: baseUrl,
           });
 

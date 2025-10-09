@@ -96,6 +96,7 @@ export async function POST(request, { params }) {
             title: event.title,
             description: event.description,
             startDateTime: event.startDateTime,
+            timezone: event.timezone,
             location: event.locationAddress
               ? `${event.locationAddress}${event.locationUnit ? `, ${event.locationUnit}` : ''}`
               : null,

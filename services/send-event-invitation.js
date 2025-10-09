@@ -21,7 +21,7 @@ export async function sendEventInvitation({
     return { success: false, error: 'No contact information available' };
   }
 
-  // Get event timezone (default to UTC if not set)
+  // Get event timezone (default to UTC if not set) - using same logic as invitation route
   const eventTimezone = timezone || 'UTC';
 
   // Use our comprehensive timezone utilities for consistent formatting
@@ -31,12 +31,13 @@ export async function sendEventInvitation({
     true, // Show timezone abbreviation
   );
 
-  // Use our smart timezone utilities for separate date and time
-  const eventDate = formatDateInTimezone(startDateTime, eventTimezone, {
-    weekday: 'long',
-  });
+  // Use same timezone logic as invitation route for consistency
+  const eventDate = formatDateInTimezone(startDateTime, eventTimezone);
   const eventTime = formatTimeInTimezone(startDateTime, eventTimezone);
   const timezoneAbbr = getTimezoneAbbreviation(eventTimezone);
+
+  // Format time exactly like invitation route: "12:00 PM GMT+5:30"
+  const eventTimeWithTimezone = `${eventTime} ${timezoneAbbr}`;
 
   // Get host name
   const hostName = User?.name || User?.email || 'The event host';
@@ -55,7 +56,7 @@ export async function sendEventInvitation({
         subtitle: `<strong>${hostName}</strong> has invited you to attend <strong>${title}</strong>`,
         eventDetails: {
           date: eventDate,
-          time: eventTime,
+          time: eventTimeWithTimezone,
           location: location || null,
           eventDescription: description || null,
         },
