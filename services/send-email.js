@@ -1,7 +1,8 @@
 import nodemailer from 'nodemailer';
 
 export async function sendEmail({ to, subject, text, html, content = {} }) {
-  const { title, subtitle, description, buttonLabel, buttonUrl, eventDetails } = content;
+  const { title, subtitle, description, buttonLabel, buttonUrl, eventDetails } =
+    content;
 
   // Build the email HTML template with inline conditions for each section.
   const emailHtml =
@@ -23,11 +24,11 @@ export async function sendEmail({ to, subject, text, html, content = {} }) {
                 <!-- Main Container -->
                 <table role="presentation" width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; max-width: 600px; border: 1px solid #e8e8e8;">
                   
-                  <!-- Simple Header -->
+                  <!-- Branded Header with Logo -->
                   <tr>
-                    <td style="padding: 40px 50px 30px 50px; text-align: center; border-bottom: 3px solid #e8e8e8;">
+                    <td style="padding: 40px 50px 30px 50px; text-align: center; border-bottom: 3px solid #e8e8e8; background-color: #ffffff;">
                       <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://nimto.app'}" style="display: inline-block; text-decoration: none;">
-                        <h1 style="margin: 0; font-size: 28px; font-weight: 600; color: #000000; letter-spacing: 4px;">
+                        <h1 style="margin: 0; font-size: 28px; font-weight: 600; color: #dc2626; letter-spacing: 4px; font-family: Arial, sans-serif;">
                           NIMTO
                         </h1>
                       </a>
@@ -43,7 +44,11 @@ export async function sendEmail({ to, subject, text, html, content = {} }) {
                       ${subtitle ? `<p style="margin: 0 0 30px 0; font-size: 16px; color: #4a4a4a; line-height: 1.6; font-weight: 400;">${subtitle}</p>` : ''}
                       
                       ${
-                        eventDetails && (eventDetails.date || eventDetails.time || eventDetails.location || eventDetails.eventDescription)
+                        eventDetails &&
+                        (eventDetails.date ||
+                          eventDetails.time ||
+                          eventDetails.location ||
+                          eventDetails.eventDescription)
                           ? `
                         <!-- Event Details Box -->
                         <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 32px 0; border: 1px solid #e0e0e0; background-color: #fafafa;">
@@ -121,11 +126,11 @@ export async function sendEmail({ to, subject, text, html, content = {} }) {
                       ${
                         buttonLabel && buttonUrl
                           ? `
-                        <!-- CTA Button -->
+                        <!-- CTA Button with Branded Background -->
                         <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 36px 0 28px 0;">
                           <tr>
                             <td align="center" style="padding: 0;">
-                              <a href="${buttonUrl}" style="display: inline-block; background-color: #000000; color: #ffffff; padding: 16px 48px; text-decoration: none; font-size: 15px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;">
+                              <a href="${buttonUrl}" style="display: inline-block; background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); color: #ffffff; padding: 16px 48px; text-decoration: none; font-size: 15px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; border-radius: 8px; box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4);">
                                 ${buttonLabel}
                               </a>
                             </td>
@@ -134,7 +139,7 @@ export async function sendEmail({ to, subject, text, html, content = {} }) {
                         
                         <p style="margin: 24px 0 0 0; font-size: 13px; color: #888888; text-align: center; line-height: 1.6;">
                           Or copy this link:<br/>
-                          <a href="${buttonUrl}" style="color: #000000; text-decoration: underline; word-break: break-all;">${buttonUrl}</a>
+                          <a href="${buttonUrl}" style="color: #dc2626; text-decoration: underline; word-break: break-all;">${buttonUrl}</a>
                         </p>`
                           : ''
                       }
@@ -164,7 +169,7 @@ export async function sendEmail({ to, subject, text, html, content = {} }) {
                   <tr>
                     <td style="padding: 30px 50px; background-color: #fafafa; border-top: 1px solid #e8e8e8;">
                       <p style="margin: 0; font-size: 12px; color: #888888; line-height: 1.6; text-align: center;">
-                        © ${new Date().getFullYear()} Nimto. All rights reserved.
+                        © ${new Date().getFullYear()} <span style="color: #dc2626; font-weight: 600;">Nimto</span>. All rights reserved.
                       </p>
                     </td>
                   </tr>
@@ -200,12 +205,16 @@ export async function sendEmail({ to, subject, text, html, content = {} }) {
     console.log(`Email sent to ${to}`);
   } catch (error) {
     console.error(`Error sending email to ${to}:`, error);
-    
+
     // Provide more specific error messages
     if (error.code === 'EAUTH') {
-      throw new Error('Email authentication failed. Please check SMTP credentials.');
+      throw new Error(
+        'Email authentication failed. Please check SMTP credentials.',
+      );
     } else if (error.code === 'ECONNECTION') {
-      throw new Error('Failed to connect to email server. Please check SMTP settings.');
+      throw new Error(
+        'Failed to connect to email server. Please check SMTP settings.',
+      );
     } else if (error.code === 'ETIMEDOUT') {
       throw new Error('Email server connection timed out.');
     } else {
