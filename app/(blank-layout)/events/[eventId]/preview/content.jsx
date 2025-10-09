@@ -593,19 +593,21 @@ function EventPreviewContent() {
                                   <p className="font-semibold text-slate-900 dark:text-white truncate">
                                     {guest.name || 'Guest'}
                                   </p>
-                                  <div className="flex items-center space-x-4 text-sm text-slate-500 dark:text-slate-400">
+                                  <div className="space-y-1 text-sm text-slate-500 dark:text-slate-400">
                                     {guest.email && (
                                       <div className="flex items-center space-x-1">
-                                        <Mail className="w-4 h-4" />
-                                        <span className="truncate">
+                                        <Mail className="w-4 h-4 flex-shrink-0" />
+                                        <span className="truncate min-w-0">
                                           {guest.email}
                                         </span>
                                       </div>
                                     )}
                                     {guest.phone && (
                                       <div className="flex items-center space-x-1">
-                                        <Phone className="w-4 h-4" />
-                                        <span>{guest.phone}</span>
+                                        <Phone className="w-4 h-4 flex-shrink-0" />
+                                        <span className="truncate min-w-0">
+                                          {guest.phone}
+                                        </span>
                                       </div>
                                     )}
                                   </div>
