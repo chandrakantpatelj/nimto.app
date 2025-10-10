@@ -1,13 +1,13 @@
 import nodemailer from 'nodemailer';
+import path from 'path';
 
 export async function sendEmail({ to, subject, text, html, content = {} }) {
-  const { title, subtitle, description, buttonLabel, buttonUrl, eventDetails } =
-    content;
+    const { title, subtitle, description, buttonLabel, buttonUrl, eventDetails } = content;
 
-  // Build the email HTML template with inline conditions for each section.
-  const emailHtml =
-    html ??
-    `
+    // Build the email HTML template with inline conditions for each section.
+    const emailHtml =
+        html ??
+        `
       <!DOCTYPE html>
       <html lang="en">
         <head>
@@ -20,7 +20,6 @@ export async function sendEmail({ to, subject, text, html, content = {} }) {
           <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f8f9fa;">
             <tr>
               <td align="center" style="padding: 50px 20px;">
-                
                 <!-- Main Container -->
                 <table role="presentation" width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; max-width: 600px; border: 1px solid #e8e8e8;">
                   
@@ -28,9 +27,11 @@ export async function sendEmail({ to, subject, text, html, content = {} }) {
                   <tr>
                     <td style="padding: 40px 50px 30px 50px; text-align: center; border-bottom: 3px solid #e8e8e8; background-color: #ffffff;">
                       <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://nimto.app'}" style="display: inline-block; text-decoration: none;">
-                        <h1 style="margin: 0; font-size: 28px; font-weight: 600; color: #dc2626; letter-spacing: 4px; font-family: Arial, sans-serif;">
-                          NIMTO
-                        </h1>
+                        <img
+                          src="cid:nimto-logo"
+                          alt="Nimto Logo"
+                          style="display: block;"
+                        />
                       </a>
                     </td>
                   </tr>
@@ -38,9 +39,7 @@ export async function sendEmail({ to, subject, text, html, content = {} }) {
                   <!-- Content Section -->
                   <tr>
                     <td style="padding: 50px 50px 40px 50px;">
-                      
                       ${title ? `<h2 style="margin: 0 0 16px 0; font-size: 24px; font-weight: 600; color: #1a1a1a; line-height: 1.4;">${title}</h2>` : ''}
-                      
                       ${subtitle ? `<p style="margin: 0 0 30px 0; font-size: 16px; color: #4a4a4a; line-height: 1.6; font-weight: 400;">${subtitle}</p>` : ''}
                       
                       ${
@@ -54,10 +53,8 @@ export async function sendEmail({ to, subject, text, html, content = {} }) {
                         <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 32px 0; border: 1px solid #e0e0e0; background-color: #fafafa;">
                           <tr>
                             <td style="padding: 30px;">
-                              
-                              ${
-                                eventDetails.date
-                                  ? `
+                              ${eventDetails.date
+                ? `
                               <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 16px;">
                                 <tr>
                                   <td style="padding: 0;">
@@ -66,12 +63,10 @@ export async function sendEmail({ to, subject, text, html, content = {} }) {
                                   </td>
                                 </tr>
                               </table>`
-                                  : ''
-                              }
-                              
-                              ${
-                                eventDetails.time
-                                  ? `
+                : ''
+            }
+                              ${eventDetails.time
+                ? `
                               <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 16px;">
                                 <tr>
                                   <td style="padding: 0;">
@@ -80,12 +75,10 @@ export async function sendEmail({ to, subject, text, html, content = {} }) {
                                   </td>
                                 </tr>
                               </table>`
-                                  : ''
-                              }
-                              
-                              ${
-                                eventDetails.location
-                                  ? `
+                : ''
+            }
+                              ${eventDetails.location
+                ? `
                               <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 16px;">
                                 <tr>
                                   <td style="padding: 0;">
@@ -94,12 +87,10 @@ export async function sendEmail({ to, subject, text, html, content = {} }) {
                                   </td>
                                 </tr>
                               </table>`
-                                  : ''
-                              }
-                              
-                              ${
-                                eventDetails.eventDescription
-                                  ? `
+                : ''
+            }
+                              ${eventDetails.eventDescription
+                ? `
                               <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
                                 <tr>
                                   <td style="padding: 0;">
@@ -108,9 +99,8 @@ export async function sendEmail({ to, subject, text, html, content = {} }) {
                                   </td>
                                 </tr>
                               </table>`
-                                  : ''
-                              }
-                              
+                : ''
+            }
                             </td>
                           </tr>
                         </table>`
@@ -130,20 +120,18 @@ export async function sendEmail({ to, subject, text, html, content = {} }) {
                         <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 36px 0 28px 0;">
                           <tr>
                             <td align="center" style="padding: 0;">
-                              <a href="${buttonUrl}" style="display: inline-block; background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); color: #ffffff; padding: 16px 48px; text-decoration: none; font-size: 15px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; border-radius: 8px; box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4);">
+                              <a href="${buttonUrl}" style="display: inline-block; background: #222222; color: #ffffff; padding: 16px 48px; text-decoration: none; font-size: 15px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; border-radius: 8px; box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4);">
                                 ${buttonLabel}
                               </a>
                             </td>
                           </tr>
                         </table>
-                        
                         <p style="margin: 24px 0 0 0; font-size: 13px; color: #888888; text-align: center; line-height: 1.6;">
                           Or copy this link:<br/>
                           <a href="${buttonUrl}" style="color: #dc2626; text-decoration: underline; word-break: break-all;">${buttonUrl}</a>
                         </p>`
-                          : ''
-                      }
-                      
+            : ''
+        }
                     </td>
                   </tr>
 
@@ -173,32 +161,37 @@ export async function sendEmail({ to, subject, text, html, content = {} }) {
                       </p>
                     </td>
                   </tr>
-                  
                 </table>
-                
               </td>
             </tr>
           </table>
         </body>
       </html>`;
 
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: 587,
-    secure: false, // true for port 465, false for other ports
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
+    const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: 587,
+        secure: false, // true for port 465, false for other ports
+        auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS,
+        },
+    });
 
-  const mailOptions = {
-    from: `${process.env.SMTP_SENDER} <${process.env.SMTP_FROM}>`,
-    to,
-    subject,
-    text,
-    html: emailHtml,
-  };
+    const mailOptions = {
+        from: `${process.env.SMTP_SENDER} <${process.env.SMTP_FROM}>`,
+        to,
+        subject,
+        text,
+        html: emailHtml,
+        attachments: [
+            {
+                filename: 'nimto_main_logo_png.png',
+                path: path.join(process.cwd(), 'public', 'media', 'app', 'nimto_main_logo_png.png'),
+                cid: 'nimto-logo', // referenced in the HTML img src above
+            },
+        ],
+    };
 
   try {
     await transporter.sendMail(mailOptions);
