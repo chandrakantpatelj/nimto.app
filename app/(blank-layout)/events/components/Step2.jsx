@@ -3,8 +3,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useEventActions, useEvents } from '@/store/hooks';
 import { format } from 'date-fns';
-import { CalendarDays, Info, MapPin, User } from 'lucide-react';
+import { CalendarDays, Clock, Info, MapPin, User } from 'lucide-react';
 import { DEFAULT_MAP_CENTER } from '@/lib/constants';
+import {
+  formatTimeInTimezone,
+  getTimezoneAbbreviation,
+  getUserTimezone,
+} from '@/lib/date-utils';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +23,16 @@ function Step2({ thumbnailData, session }) {
   const { selectedEvent: eventData } = useEvents();
   const { updateSelectedEvent: updateEventData } = useEventActions();
   const [isGeocoding, setIsGeocoding] = useState(false);
+
+  // Set default timezone automatically using smart logic
+  useEffect(() => {
+    if (!eventData?.timezone) {
+      // Smart timezone logic: User timezone > Browser timezone > UTC
+      const smartTimezone =
+        session?.user?.timezone || getUserTimezone() || 'UTC';
+      updateEventData({ timezone: smartTimezone });
+    }
+  }, [eventData?.timezone, session?.user?.timezone, updateEventData]);
 
   // Geocode address when component loads or when address changes
   useEffect(() => {
@@ -37,10 +52,7 @@ function Step2({ thumbnailData, session }) {
                     lat: location.lat(),
                     lng: location.lng(),
                   };
-                  console.log(
-                    'Geocoding successful, new mapCenter:',
-                    mapCenter,
-                  );
+
                   updateEventData({ mapCenter });
                 } else {
                   console.warn('Geocoding failed:', status);
@@ -286,6 +298,16 @@ function Step2({ thumbnailData, session }) {
                               </span>
                             </p>
                           )}
+                          {/* Timezone Information */}
+                          {eventData.timezone && (
+                            <div className="flex items-center gap-2 mt-2">
+                              <Clock className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                              <p className="text-sm text-slate-600 dark:text-slate-300 font-medium">
+                                {getTimezoneAbbreviation(eventData.timezone)} •{' '}
+                                {eventData.timezone.replace(/_/g, ' ')}
+                              </p>
+                            </div>
+                          )}
                         </div>
                       ) : (
                         <p className="text-base text-foreground font-medium">
@@ -341,7 +363,7 @@ function Step2({ thumbnailData, session }) {
                 </div>
 
                 {/* Who's Coming */}
-                <div className="mt-6 pt-6 border-t border-border">
+                {/* <div className="mt-6 pt-6 border-t border-border">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <div className="p-2 bg-muted rounded-lg">
@@ -355,7 +377,7 @@ function Step2({ thumbnailData, session }) {
                       See all guests
                     </button>
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>

@@ -17,14 +17,14 @@ export async function POST(request, { params }) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.roleName || !hasAdminRole(session.user.roleName)) {
+    if (!session?.user?.roleSlug || !hasAdminRole(session.user.roleSlug)) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized - Admin access required' },
         { status: 403 },
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
     const { imageData, imageFormat = 'png' } = await request.json();
 
     if (!imageData) {

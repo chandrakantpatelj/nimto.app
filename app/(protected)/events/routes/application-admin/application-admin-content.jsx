@@ -6,6 +6,7 @@ import { useEventActions, useEvents } from '@/store/hooks';
 import {
   CalendarDays,
   Clock,
+  Earth,
   MapPin,
   Pencil,
   Plus,
@@ -356,8 +357,12 @@ export function ApplicationAdminEventContent() {
                         <div className="flex items-center gap-2 text-white/90 text-sm">
                           <Users className="w-4 h-4" />
                           <span className="font-medium">
-                            {event.guests.length} guest
-                            {event.guests.length !== 1 ? 's' : ''}
+                            {
+                              (event.guests || []).filter(
+                                (guest) => guest.status === 'CONFIRMED',
+                              ).length
+                            }{' '}
+                            / {(event.guests || []).length} guests
                           </span>
                         </div>
                       )}
@@ -367,6 +372,36 @@ export function ApplicationAdminEventContent() {
                           <span>by {event.User.name}</span>
                         </div>
                       )}
+
+                      {/* Action Buttons - Bottom */}
+                      <div className="flex gap-2 pt-3">
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            router.push(`/events/${event.id}/guest`);
+                          }}
+                          className="flex-1 h-8 bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm text-xs font-medium"
+                        >
+                          <Users className="w-3 h-3 mr-1" />
+                          Manage Guests
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            router.push(`/events/${event.id}/preview`);
+                          }}
+                          className="flex-1 h-8 bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm text-xs font-medium"
+                        >
+                          <Earth className="w-3 h-3 mr-1" />
+                          Preview
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>

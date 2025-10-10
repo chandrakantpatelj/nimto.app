@@ -56,11 +56,6 @@ export function RoleBasedEventContent() {
 
   // Route mapping based on user role - only supporting the four specified roles
   const getRoleComponent = () => {
-    // If not authenticated, show public events view (same as attendee view)
-    // if (!isAuthenticated) {
-    //   return <AttendeeEventContent />;
-    // }
-
     if (roles.isSuperAdmin) {
       return <AdminEventContent />;
     }

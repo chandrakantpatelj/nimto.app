@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { Container } from '@/components/common/container';
 import { Toolbar, ToolbarHeading } from '@/components/common/toolbar';
@@ -13,19 +13,33 @@ import { MyProfile } from './content';
 
 function MyProfilePage() {
     const { data: session, status } = useSession();
+    const [userProfile, setUserProfile] = useState(null);
+    const [loadingProfile, setLoadingProfile] = useState(true);
 
-    // Optionally handle loading state
-    if (status === 'loading') {
+    useEffect(() => {
+        if (status === 'authenticated' && session?.user?.id) {
+            // Fetch user profile from API
+            fetch(`/api/user-management/users/${session.user.id}`)
+                .then(res => res.ok ? res.json() : Promise.reject(res))
+                .then(data => {
+                    setUserProfile(data);
+                    setLoadingProfile(false);
+                })
+                .catch(() => setLoadingProfile(false));
+        }
+    }, [status, session]);
+
+    if (status === 'loading' || loadingProfile) {
         return <div>Loading...</div>;
     }
 
-    // Optionally handle unauthenticated state
     if (!session) {
         return <div>Unauthorized</div>;
     }
 
-    const user = session.user;
-    console.log('user profile page', session);
+    if (!userProfile) {
+        return <div>User not found</div>;
+    }
 
     return (
         <Fragment>
@@ -35,13 +49,13 @@ function MyProfilePage() {
                     <ToolbarHeading>
                         <ToolbarPageTitle />
                         <ToolbarDescription>
-                            {user ? `${user.name} (${user.roleName || user.role || ''})` : 'Loading...'}
+                            {userProfile ? `${userProfile.name} (${userProfile.role?.name || userProfile.role?.slug || ''})` : 'Loading...'}
                         </ToolbarDescription>
                     </ToolbarHeading>
                 </Toolbar>
             </Container>
             <Container>
-                <MyProfile user={user} />
+                <MyProfile user={userProfile} />
             </Container>
         </Fragment>
     );

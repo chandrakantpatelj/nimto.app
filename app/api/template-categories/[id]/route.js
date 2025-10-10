@@ -5,7 +5,7 @@ import authOptions from '@/app/api/auth/[...nextauth]/auth-options';
 
 export async function GET(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const category = await prisma.templateCategory.findUnique({
       where: { id },
@@ -42,8 +42,8 @@ export async function PUT(request, { params }) {
     // Check if user is super admin
     const session = await getServerSession(authOptions);
     if (
-      !session?.user?.roleName ||
-      session.user.roleName.toLowerCase() !== 'super-admin'
+      !session?.user?.roleSlug ||
+      session.user.roleSlug.toLowerCase() !== 'super-admin'
     ) {
       return NextResponse.json(
         {
@@ -54,7 +54,7 @@ export async function PUT(request, { params }) {
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const {
       name,
@@ -133,8 +133,8 @@ export async function DELETE(request, { params }) {
     // Check if user is super admin
     const session = await getServerSession(authOptions);
     if (
-      !session?.user?.roleName ||
-      session.user.roleName.toLowerCase() !== 'super-admin'
+      !session?.user?.roleSlug ||
+      session.user.roleSlug.toLowerCase() !== 'super-admin'
     ) {
       return NextResponse.json(
         {
@@ -145,7 +145,7 @@ export async function DELETE(request, { params }) {
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     // Check if category exists
     const existingCategory = await prisma.templateCategory.findUnique({

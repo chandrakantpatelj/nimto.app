@@ -1,99 +1,175 @@
+import {
+  formatDateInTimezone,
+  formatEventDateWithTimezone,
+  formatTimeInTimezone,
+  getTimezoneAbbreviation,
+} from '@/lib/date-utils.js';
 import { sendEmail } from './send-email.js';
+import { sendMessage } from './send-sms.js';
 
-export async function sendEventInvitation({ guest, event, invitationUrl }) {
-    const { name, email, phone } = guest;
-    const { title, description, startDateTime, location, User } = event;
+export async function sendEventInvitation({
+  guest,
+  event,
+  invitationUrl,
+  channels = ['email', 'sms'],
+}) {
+  const { name, email, phone } = guest;
+  const { title, description, startDateTime, timezone, location, User } = event;
 
-    // Use email if available, otherwise use phone
-    const contactInfo = email || phone;
-    if (!contactInfo) {
-        console.warn(`No contact info for guest ${name}`);
-        return false;
-    }
+  if (!email && !phone) {
+    console.warn(`No contact info for guest ${name}`);
+    return { success: false, error: 'No contact information available' };
+  }
 
-    // Format the event date and time
-    const eventDateTime = new Date(startDateTime);
-    const eventDate = eventDateTime.toLocaleDateString('en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-    });
-    const eventTime = eventDateTime.toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-    });
-    //const eventTime = extractHourMinute(startDateTime);
+  // Get event timezone (default to UTC if not set) - using same logic as invitation route
+  const eventTimezone = timezone || 'UTC';
 
-    // Get host name
-    const hostName = User?.name || User?.email || 'The event host';
+  // Use our comprehensive timezone utilities for consistent formatting
+  const formattedDateTime = formatEventDateWithTimezone(
+    startDateTime,
+    eventTimezone,
+    true, // Show timezone abbreviation
+  );
 
-    const subject = `You're invited to ${title}!`;
+  // Use same timezone logic as invitation route for consistency
+  const eventDate = formatDateInTimezone(startDateTime, eventTimezone);
+  const eventTime = formatTimeInTimezone(startDateTime, eventTimezone);
+  const timezoneAbbr = getTimezoneAbbreviation(eventTimezone);
 
-    const content = {
+  // Format time exactly like invitation route: "12:00 PM GMT+5:30"
+  const eventTimeWithTimezone = `${eventTime} ${timezoneAbbr}`;
+
+  // Get host name
+  const hostName = User?.name || User?.email || 'The event host';
+
+  const results = {
+    email: { sent: false, error: null },
+    sms: { sent: false, error: null },
+  };
+
+  // Send email if email is available and email channel is requested
+  if (email && channels.includes('email')) {
+    try {
+      const subject = `You're invited to ${title}!`;
+      const content = {
         title: `You're Invited!`,
         subtitle: `<strong>${hostName}</strong> has invited you to attend <strong>${title}</strong>`,
         eventDetails: {
-            date: eventDate,
-            time: eventTime,
-            location: location || null,
-            eventDescription: description || null,
+          date: eventDate,
+          time: eventTimeWithTimezone,
+          location: location || null,
+          eventDescription: description || null,
         },
-        description: 'Please click the button below to view the full invitation and RSVP to this event.',
+        description:
+          'Please click the button below to view the full invitation and RSVP to this event.',
         buttonLabel: 'View Invitation & RSVP',
         buttonUrl: invitationUrl,
-    };
+      };
 
-    try {
-        await sendEmail({
-            to: contactInfo,
-            subject,
-            content,
-        });
+      await sendEmail({
+        to: email,
+        subject,
+        content,
+      });
 
-        console.log(`Event invitation sent to ${name} (${contactInfo})`);
-        return true;
+      results.email.sent = true;
+      console.log(`Event invitation email sent to ${name} (${email})`);
     } catch (error) {
-        console.error(
-            `Failed to send invitation to ${name} (${contactInfo}):`,
-            error,
-        );
-        return false;
+      results.email.error = error.message;
+      console.error(
+        `Failed to send email invitation to ${name} (${email}):`,
+        error,
+      );
     }
+  }
+
+  // Send SMS/WhatsApp if phone is available and sms channel is requested
+  if (phone && channels.includes('sms')) {
+    try {
+      // Use formatted date/time with timezone for SMS
+      const smsMessage = `Hi ${name}! You're invited to "${title}" on ${formattedDateTime}${location ? ` at ${location}` : ''}. View details and RSVP: ${invitationUrl}`;
+
+      const smsResult = await sendMessage({
+        to: phone,
+        message: smsMessage,
+      });
+
+      if (smsResult.success) {
+        results.sms.sent = true;
+        console.log(
+          `Event invitation SMS sent to ${name} (${phone}) via ${smsResult.channel}`,
+        );
+      } else {
+        results.sms.error = smsResult.error;
+        console.error(
+          `Failed to send SMS invitation to ${name} (${phone}):`,
+          smsResult.error,
+        );
+      }
+    } catch (error) {
+      results.sms.error = error.message;
+      console.error(
+        `Failed to send SMS invitation to ${name} (${phone}):`,
+        error,
+      );
+    }
+  }
+
+  // Return success if at least one channel succeeded
+  const success = results.email.sent || results.sms.sent;
+  return {
+    success,
+    results,
+    message: success
+      ? 'Invitation sent successfully'
+      : 'Failed to send invitation',
+  };
 }
 
-export async function sendBulkEventInvitations({ guests, event, baseUrl }) {
-    const results = [];
+export async function sendBulkEventInvitations({
+  guests,
+  event,
+  baseUrl,
+  channels = ['email', 'sms'],
+}) {
+  const results = [];
 
-    for (const guest of guests) {
-        const invitationUrl = `${baseUrl}/invitation/${event.id}/${guest.id}`;
+  for (const guest of guests) {
+    const invitationUrl = `${baseUrl}/invitation/${event.id}/${guest.id}`;
 
-        const success = await sendEventInvitation({
-            guest,
-            event,
-            invitationUrl,
-        });
+    const invitationResult = await sendEventInvitation({
+      guest,
+      event,
+      invitationUrl,
+      channels,
+    });
 
-        results.push({
-            guestId: guest.id,
-            guestName: guest.name,
-            contact: guest.email || guest.phone,
-            success,
-        });
-    }
+    results.push({
+      guestId: guest.id,
+      guestName: guest.name,
+      contact: guest.email || guest.phone,
+      success: invitationResult.success,
+      emailSent: invitationResult.results?.email?.sent || false,
+      smsSent: invitationResult.results?.sms?.sent || false,
+      errors: {
+        email: invitationResult.results?.email?.error || null,
+        sms: invitationResult.results?.sms?.error || null,
+      },
+    });
+  }
 
-    return results;
+  return results;
 }
 
 export function extractHourMinute(dateString) {
-    if (!dateString) return { hour: null, minute: null };
-    const str = typeof dateString === 'string' ? dateString : dateString.toISOString();
-    const match = str.match(/T(\d{2}):(\d{2})/);
-    if (match) {
-        let hour = match[1];
-        let minute = match[2];
-        return { hour, minute };
-    }
-    return { hour: null, minute: null };
+  if (!dateString) return { hour: null, minute: null };
+  const str =
+    typeof dateString === 'string' ? dateString : dateString.toISOString();
+  const match = str.match(/T(\d{2}):(\d{2})/);
+  if (match) {
+    let hour = match[1];
+    let minute = match[2];
+    return { hour, minute };
+  }
+  return { hour: null, minute: null };
 }

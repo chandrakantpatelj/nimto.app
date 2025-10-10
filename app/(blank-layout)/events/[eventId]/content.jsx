@@ -8,7 +8,7 @@ import { DEFAULT_MAP_CENTER } from '@/lib/constants';
 import { useToast } from '@/providers/toast-provider';
 import AdvancedProcessingLoader from '@/components/common/advanced-processing-loader';
 import { AuthModal } from '@/components/common/auth-modal';
-import { TemplateHeader } from '../components';
+import { TemplateHeader, PublishOptionsPopup } from '../components';
 import InvitationPopup from '../components/InvitationPopup';
 import Step1 from '../components/Step1';
 import Step2 from '../components/Step2';
@@ -31,6 +31,7 @@ function EditEventContent() {
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showPublishOptionsPopup, setShowPublishOptionsPopup] = useState(false);
   const [showInvitationPopup, setShowInvitationPopup] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -168,24 +169,42 @@ function EditEventContent() {
   };
 
   const handleUpdateEvent = async () => {
-    const newGuestsCount = getNewGuestsCount();
+    // Check if guests exist
+    const hasGuests = eventData.guests && eventData.guests.length > 0;
 
-    // Always show the popup if there are any guests
-    if (eventData.guests && eventData.guests.length > 0) {
-      setShowInvitationPopup(true);
-      return;
-    }
-
-    // No guests, proceed with normal update
-    await performEventUpdate();
+    // Show publish options popup first
+    setShowPublishOptionsPopup(true);
   };
 
-  const performEventUpdate = async (invitationType = null) => {
+  const handleSaveAsDraft = () => {
+    // Update event status to DRAFT
+    updateSelectedEvent({ status: 'DRAFT' });
+    setShowPublishOptionsPopup(false);
+    // Update event without sending invitations
+    performEventUpdate(null, 'DRAFT');
+  };
+
+  const handlePublishConfirm = () => {
+    // Update event status to PUBLISHED
+    updateSelectedEvent({ status: 'PUBLISHED' });
+    setShowPublishOptionsPopup(false);
+    
+    // Show invitation popup if there are guests
+    if (eventData.guests && eventData.guests.length > 0) {
+      setShowInvitationPopup(true);
+    } else {
+      // Update event without invitations
+      performEventUpdate(null, 'PUBLISHED');
+    }
+  };
+
+  const performEventUpdate = async (invitationType = null, status = null) => {
     try {
       setIsUpdating(true);
 
       const requestBody = {
         ...eventData,
+        status: status || eventData.status || 'PUBLISHED', // Use provided status or current status
         invitationType,
         guests: eventData.guests || [],
       };
@@ -220,9 +239,7 @@ function EditEventContent() {
 
             if (thumbnailResponse.ok) {
               const thumbnailResult = await thumbnailResponse.json();
-              if (thumbnailResult.success) {
-                toastSuccess('Thumbnail uploaded successfully');
-              } else {
+              if (!thumbnailResult.success) {
                 toastWarning('Event created but thumbnail upload failed');
               }
             } else {
@@ -232,14 +249,19 @@ function EditEventContent() {
             console.error('Thumbnail upload failed:', thumbnailError);
             toastWarning('Event created but thumbnail upload failed');
           }
-        } else {
         }
-        let message = 'Event updated successfully';
-        if (invitationType === 'all') {
+        
+        // Determine success message
+        let message;
+        if (status === 'DRAFT') {
+          message = 'Event saved as draft!';
+        } else if (invitationType === 'all') {
           message = `Event updated successfully and invitations sent to all ${eventData.guests?.length || 0} guests`;
         } else if (invitationType === 'new') {
           const newGuestsCount = getNewGuestsCount();
           message = `Event updated successfully and invitations sent to ${newGuestsCount} new guests`;
+        } else {
+          message = 'Event updated successfully';
         }
 
         // Update the Redux store with the latest event data from API response
@@ -307,6 +329,7 @@ function EditEventContent() {
         title="Edit Event"
         publishButtonText="Update Event"
         isEditMode={true}
+        eventStatus={eventData.status}
       />
 
       {activeStep === 0 && (
@@ -314,6 +337,14 @@ function EditEventContent() {
       )}
       {activeStep === 1 && <Step2 mode="edit" thumbnailData={thumbnailData} />}
       {activeStep === 2 && <Step3 mode="edit" />}
+
+      <PublishOptionsPopup
+        isOpen={showPublishOptionsPopup}
+        onClose={() => setShowPublishOptionsPopup(false)}
+        onSaveAsDraft={handleSaveAsDraft}
+        onPublish={handlePublishConfirm}
+        hasGuests={eventData.guests && eventData.guests.length > 0}
+      />
 
       <InvitationPopup
         isOpen={showInvitationPopup}

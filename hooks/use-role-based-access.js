@@ -4,7 +4,7 @@ import { useSession } from 'next-auth/react';
 
 export function useRoleBasedAccess() {
   const { data: session } = useSession();
-  const userRole = session?.user?.roleName?.toLowerCase();
+  const userRole = session?.user?.roleSlug?.toLowerCase();
 
   // Role definitions - only supporting the four specified roles
   const roles = {
@@ -59,6 +59,7 @@ export function useRoleBasedAccess() {
     canAccessAccount: true, // All authenticated users
     canAccessMyProfile: true, // All authenticated users
     canAccessEvents: true, // All authenticated users
+    canAccessInvitedEvents: true, // All authenticated users
     canAccessDashboard: true, // All authenticated users
   };
 
@@ -70,6 +71,7 @@ export function useRoleBasedAccess() {
     '/templates': permissions.canAccessTemplates,
     '/messaging': permissions.canAccessMessaging,
     '/store-admin': permissions.canAccessStoreAdmin,
+    '/invited-events': permissions.canAccessInvitedEvents,
     '/network': permissions.canAccessNetwork,
     '/public-profile': permissions.canAccessPublicProfile,
     '/account': permissions.canAccessAccount,

@@ -26,8 +26,16 @@ const authOptions = {
           );
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
+        // Normalize email to lowercase for case-insensitive comparison
+        const normalizedEmail = credentials.email.toLowerCase();
+
+        const user = await prisma.user.findFirst({
+          where: {
+            email: {
+              equals: normalizedEmail,
+              mode: 'insensitive',
+            },
+          },
         });
 
         if (!user) {
@@ -85,8 +93,16 @@ const authOptions = {
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
             allowDangerousEmailAccountLinking: true,
             async profile(profile) {
-              const existingUser = await prisma.user.findUnique({
-                where: { email: profile.email },
+              // Normalize email to lowercase for case-insensitive comparison
+              const normalizedEmail = profile.email.toLowerCase();
+
+              const existingUser = await prisma.user.findFirst({
+                where: {
+                  email: {
+                    equals: normalizedEmail,
+                    mode: 'insensitive',
+                  },
+                },
                 include: {
                   role: {
                     select: {
@@ -98,24 +114,53 @@ const authOptions = {
               });
 
               if (existingUser) {
-                // Update `lastSignInAt` field for existing users
-                await prisma.user.update({
+                // If user exists but is inactive (unverified email), activate them via Google OAuth
+                const isActivatingInactiveUser =
+                  existingUser.status === 'INACTIVE';
+
+                // Update existing user with Google data and activate if needed
+                const updatedUser = await prisma.user.update({
                   where: { id: existingUser.id },
                   data: {
                     name: profile.name,
-                    avatar: profile.picture || null,
+                    avatar: existingUser.avatar
+                      ? existingUser.avatar
+                      : profile.picture || null,
                     lastSignInAt: new Date(),
+                    // If user was inactive (unverified), activate them since Google has verified the email
+                    status: isActivatingInactiveUser
+                      ? 'ACTIVE'
+                      : existingUser.status,
+                    emailVerifiedAt: isActivatingInactiveUser
+                      ? new Date()
+                      : existingUser.emailVerifiedAt,
                   },
                 });
 
+                // If we activated an inactive user, clean up any pending verification tokens
+                if (isActivatingInactiveUser) {
+                  try {
+                    await prisma.verificationToken.deleteMany({
+                      where: { identifier: existingUser.id },
+                    });
+                  } catch (error) {
+                    // Continue even if token cleanup fails
+                    console.log(
+                      'Note: Could not clean up verification tokens for activated user:',
+                      error.message,
+                    );
+                  }
+                }
+
                 return {
-                  id: existingUser.id,
-                  email: existingUser.email,
-                  name: existingUser.name || 'Anonymous',
-                  status: existingUser.status,
-                  roleId: existingUser.roleId,
-                  roleName: existingUser.role.slug,
-                  avatar: existingUser.avatar,
+                  id: updatedUser.id,
+                  email: updatedUser.email,
+                  name: updatedUser.name || 'Anonymous',
+                  status: updatedUser.status,
+                  roleId: updatedUser.roleId,
+                  roleSlug: existingUser.role.slug,
+                  roleName: existingUser.role.name,
+                  avatar: updatedUser.avatar,
                 };
               }
 
@@ -132,7 +177,7 @@ const authOptions = {
               // Create a new user and account
               const newUser = await prisma.user.create({
                 data: {
-                  email: profile.email,
+                  email: normalizedEmail, // Store normalized email
                   name: profile.name,
                   password: null, // No password for OAuth users
                   avatar: profile.picture || null,
@@ -149,7 +194,8 @@ const authOptions = {
                 status: newUser.status,
                 avatar: newUser.avatar,
                 roleId: newUser.roleId,
-                roleName: defaultRole.slug,
+                roleSlug: defaultRole.slug,
+                roleName: defaultRole.name,
               };
             },
           }),
@@ -177,7 +223,8 @@ const authOptions = {
           token.avatar = user.avatar;
           token.status = user.status;
           token.roleId = user.roleId;
-          token.roleName = role?.slug;
+          token.roleSlug = role?.slug;
+          token.roleName = role?.name;
         } else if (token.id) {
           // Performance-optimized strategy: Smart caching with intelligent refresh
           const now = Date.now();
@@ -218,7 +265,8 @@ const authOptions = {
 
               // Update token with fresh data and cache timestamp
               token.roleId = currentUser.roleId;
-              token.roleName = currentUser.role?.slug;
+              token.roleSlug = currentUser.role?.slug;
+              token.roleName = currentUser.role?.name;
               token.status = currentUser.status;
               token.email = currentUser.email;
               token.name = currentUser.name;
@@ -251,6 +299,7 @@ const authOptions = {
         session.user.avatar = token.avatar;
         session.user.status = token.status;
         session.user.roleId = token.roleId;
+        session.user.roleSlug = token.roleSlug;
         session.user.roleName = token.roleName;
       }
       return session;
