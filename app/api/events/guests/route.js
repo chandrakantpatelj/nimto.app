@@ -46,6 +46,13 @@ export async function GET(request) {
             timezone: true,
             locationAddress: true,
             locationUnit: true,
+            User: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
           },
         },
       },
@@ -155,6 +162,13 @@ export async function POST(request) {
             locationAddress: true,
             locationUnit: true,
             description: true,
+            User: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
           },
         },
       },
@@ -180,6 +194,7 @@ export async function POST(request) {
             location: guest.event.locationAddress
               ? `${guest.event.locationAddress}${guest.event.locationUnit ? `, ${guest.event.locationUnit}` : ''}`
               : null,
+            User: guest.event.User,
           },
           invitationUrl,
         });
@@ -280,6 +295,13 @@ export async function PUT(request) {
             locationAddress: true,
             locationUnit: true,
             description: true,
+            User: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
           },
         },
       },

@@ -26,14 +26,14 @@ export async function POST(request, { params }) {
         startDateTime: true,
         timezone: true, // Include timezone for proper invitation formatting
         locationAddress: true,
-          locationUnit: true,
-          User: {
-              select: {
-                  id: true,
-                  name: true,
-                  email: true,
-              },
+        locationUnit: true,
+        User: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
           },
+        },
       },
     });
 
@@ -107,7 +107,7 @@ export async function POST(request, { params }) {
             location: event.locationAddress
               ? `${event.locationAddress}${event.locationUnit ? `, ${event.locationUnit}` : ''}`
               : null,
-            User: event.User, // Add empty User object to match expected structure
+            User: event.User,
           },
           invitationUrl,
           channels,
