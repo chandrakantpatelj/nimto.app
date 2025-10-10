@@ -10,18 +10,6 @@ import { ConfirmationDialog } from './confirmation-dialog';
 import AdvancedProcessingLoader from '@/components/common/advanced-processing-loader';
 import * as XLSX from 'xlsx';
 
-// Simple spinner for loading indication
-function Spinner() {
-    return (
-        <div className="flex items-center justify-center w-full h-full">
-            <svg className="animate-spin h-6 w-6 text-green-600" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-            </svg>
-        </div>
-    );
-}
-
 function ManageGuestForm({
     event,
     onGuestAdded,
@@ -396,7 +384,7 @@ function ManageGuestForm({
                                 </Label>
                                 <Input
                                     type="tel"
-                                    placeholder="e.g 555-123-4567"
+                                    placeholder="e.g +1 555-123-4567"
                                     value={guestPhone}
                                     onChange={(e) => setGuestPhone(e.target.value)}
                                     className="h-12 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-base"

@@ -13,7 +13,7 @@ import { fetchTemplateById as fetchTemplateByIdThunk } from '@/store/slices/temp
 import { useSession } from 'next-auth/react';
 import { useToast } from '@/providers/toast-provider';
 import { AuthModal } from '@/components/common/auth-modal';
-import { TemplateHeader } from '../../components';
+import { TemplateHeader, PublishOptionsPopup } from '../../components';
 import InvitationConfirmationPopup from '../../components/InvitationConfirmationPopup';
 import Step1 from '../../components/Step1';
 import Step2 from '../../components/Step2';
@@ -37,6 +37,7 @@ function EditEventContent() {
   const dispatch = useAppDispatch();
 
   const [activeStep, setActiveStep] = useState(0);
+  const [showPublishOptionsPopup, setShowPublishOptionsPopup] = useState(false);
   const [showInvitationPopup, setShowInvitationPopup] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
@@ -67,7 +68,7 @@ function EditEventContent() {
           locationAddress: '',
           locationUnit: '',
           showMap: true,
-          status: 'DRAFT',
+          status: 'PUBLISHED', // Default to PUBLISHED
           guests: [],
           jsonContent: templateData.jsonContent,
           imagePath: templateData.imagePath,
@@ -155,16 +156,33 @@ function EditEventContent() {
       return;
     }
 
-    // Show invitation confirmation popup if there are guests
+    // Show publish options popup first
+    setShowPublishOptionsPopup(true);
+  };
+
+  const handleSaveAsDraft = () => {
+    // Update event status to DRAFT
+    updateSelectedEvent({ status: 'DRAFT' });
+    setShowPublishOptionsPopup(false);
+    // Create event as draft without sending invitations
+    createEvent(false, 'DRAFT');
+  };
+
+  const handlePublishConfirm = () => {
+    // Update event status to PUBLISHED
+    updateSelectedEvent({ status: 'PUBLISHED' });
+    setShowPublishOptionsPopup(false);
+    
+    // Show invitation popup if there are guests
     if (eventData.guests && eventData.guests.length > 0) {
       setShowInvitationPopup(true);
     } else {
       // Create event without invitations
-      createEvent(false);
+      createEvent(false, 'PUBLISHED');
     }
   };
 
-  const createEvent = async (sendInvitations = false) => {
+  const createEvent = async (sendInvitations = false, status = 'PUBLISHED') => {
     setIsCreating(true);
 
     try {
@@ -172,6 +190,7 @@ function EditEventContent() {
 
       const requestData = {
         ...eventData,
+        status: status, // Use the provided status
         sendInvitations,
         guests: (eventData.guests || []).map((guest) => ({
           name: guest.name,
@@ -220,14 +239,18 @@ function EditEventContent() {
             console.error('Thumbnail upload failed:', thumbnailError);
             toastWarning('Event created but thumbnail upload failed');
           }
-        } else {
         }
 
-        toastSuccess(
-          sendInvitations
-            ? 'Event created and invitations sent successfully!'
-            : 'Event created successfully!',
-        );
+        // Determine success message based on status and invitation settings
+        let statusMessage;
+        if (status === 'DRAFT') {
+          statusMessage = 'Event saved as draft!';
+        } else if (sendInvitations) {
+          statusMessage = 'Event created and invitations sent successfully!';
+        } else {
+          statusMessage = 'Event created successfully!';
+        }
+        toastSuccess(statusMessage);
 
         addEventToStore(result.data.event);
         resetEventCreation();
@@ -242,11 +265,12 @@ function EditEventContent() {
     } finally {
       setIsCreating(false);
       setShowInvitationPopup(false);
+      setShowPublishOptionsPopup(false);
     }
   };
 
-  const handleInvitationConfirm = () => createEvent(true);
-  const handleInvitationCancel = () => createEvent(false);
+  const handleInvitationConfirm = () => createEvent(true, 'PUBLISHED');
+  const handleInvitationCancel = () => createEvent(false, 'PUBLISHED');
 
   // Loading state
   if (!eventData || isTemplateLoading) {
@@ -273,6 +297,7 @@ function EditEventContent() {
         hasGuests={eventData.guests?.length > 0}
         title="Create Event"
         publishButtonText="Create Event"
+        eventStatus={eventData.status}
       />
 
       {activeStep === 0 && (
@@ -282,6 +307,14 @@ function EditEventContent() {
         <Step2 mode="create" thumbnailData={thumbnailData} session={session} />
       )}
       {activeStep === 2 && <Step3 mode="create" />}
+
+      <PublishOptionsPopup
+        isOpen={showPublishOptionsPopup}
+        onClose={() => setShowPublishOptionsPopup(false)}
+        onSaveAsDraft={handleSaveAsDraft}
+        onPublish={handlePublishConfirm}
+        hasGuests={eventData.guests && eventData.guests.length > 0}
+      />
 
       <InvitationConfirmationPopup
         isOpen={showInvitationPopup}
