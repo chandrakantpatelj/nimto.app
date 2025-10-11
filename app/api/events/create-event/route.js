@@ -76,6 +76,7 @@ export async function POST(request) {
       locationAddress,
       locationUnit,
       showMap,
+      mapCoordinate, // Map coordinates {lat, lng}
       templateId,
       jsonContent,
       templateImagePath, // Original template imagePath to copy
@@ -209,6 +210,7 @@ export async function POST(request) {
         locationAddress,
         locationUnit,
         showMap: showMap !== undefined ? showMap : true,
+        mapCoordinate: mapCoordinate ? JSON.stringify(mapCoordinate) : null,
         templateId,
         jsonContent,
         imagePath: templateImagePath, // Initially use template imagePath

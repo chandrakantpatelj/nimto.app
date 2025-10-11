@@ -1,10 +1,16 @@
 'use client';
 
 import React from 'react';
-import { Save, Send, X, FileText, CheckCircle } from 'lucide-react';
+import { CheckCircle, FileText, Save, Send, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-function PublishOptionsPopup({ isOpen, onClose, onSaveAsDraft, onPublish, hasGuests }) {
+function PublishOptionsPopup({
+  isOpen,
+  onClose,
+  onSaveAsDraft,
+  onPublish,
+  hasGuests,
+}) {
   if (!isOpen) return null;
 
   return (
@@ -38,7 +44,10 @@ function PublishOptionsPopup({ isOpen, onClose, onSaveAsDraft, onPublish, hasGue
         {/* Content */}
         <div className="p-6 space-y-4">
           {/* Save as Draft Option */}
-          <div className="border border-border rounded-lg p-4 hover:border-gray-400 dark:hover:border-gray-500 transition-colors cursor-pointer group" onClick={onSaveAsDraft}>
+          <div
+            className="border border-border rounded-lg p-4 hover:border-gray-400 dark:hover:border-gray-500 transition-colors cursor-pointer group"
+            onClick={onSaveAsDraft}
+          >
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center flex-shrink-0 group-hover:bg-gray-200 dark:group-hover:bg-gray-700 transition-colors">
                 <FileText className="w-5 h-5 text-gray-600 dark:text-gray-400" />
@@ -48,14 +57,18 @@ function PublishOptionsPopup({ isOpen, onClose, onSaveAsDraft, onPublish, hasGue
                   Save as Draft
                 </h4>
                 <p className="text-xs text-muted-foreground">
-                  Save your event without publishing. You can edit and publish it later. No invitations will be sent.
+                  Save your event without publishing. You can edit and publish
+                  it later. No invitations will be sent.
                 </p>
               </div>
             </div>
           </div>
 
           {/* Publish Event Option */}
-          <div className="border border-border rounded-lg p-4 hover:border-purple-400 dark:hover:border-purple-500 transition-colors cursor-pointer group" onClick={onPublish}>
+          <div
+            className="border border-border rounded-lg p-4 hover:border-purple-400 dark:hover:border-purple-500 transition-colors cursor-pointer group"
+            onClick={onPublish}
+          >
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/50 rounded-full flex items-center justify-center flex-shrink-0 group-hover:bg-purple-200 dark:group-hover:bg-purple-800 transition-colors">
                 <Send className="w-5 h-5 text-purple-600 dark:text-purple-400" />
@@ -65,9 +78,9 @@ function PublishOptionsPopup({ isOpen, onClose, onSaveAsDraft, onPublish, hasGue
                   Publish Event
                 </h4>
                 <p className="text-xs text-muted-foreground">
-                  {hasGuests 
-                    ? "Make your event live and optionally send invitations to your guests."
-                    : "Make your event live. You can add guests later."}
+                  {hasGuests
+                    ? 'Make your event live and optionally send invitations to your guests.'
+                    : 'Make your event live. You can add guests later.'}
                 </p>
               </div>
             </div>
@@ -79,10 +92,10 @@ function PublishOptionsPopup({ isOpen, onClose, onSaveAsDraft, onPublish, hasGue
           <Button variant="outline" onClick={onClose} className="flex-1">
             Cancel
           </Button>
-          <Button 
-            variant="default" 
-            onClick={onSaveAsDraft} 
-            className="flex-1 bg-gray-600 hover:bg-gray-700"
+          <Button
+            variant="default"
+            onClick={onSaveAsDraft}
+            className="flex-1 bg-slate-500 hover:bg-slate-600 text-white border-slate-400"
           >
             <Save className="w-4 h-4 mr-2" />
             Save as Draft
@@ -98,4 +111,3 @@ function PublishOptionsPopup({ isOpen, onClose, onSaveAsDraft, onPublish, hasGue
 }
 
 export default PublishOptionsPopup;
-
