@@ -156,79 +156,88 @@ export function CategoryForm({ category, onClose, onSuccess }) {
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
+      <DialogContent className="w-[95vw] max-w-2xl max-h-[85vh] overflow-y-auto mx-2 sm:mx-0 p-4 sm:p-6">
+        <DialogHeader className="pb-2 sm:pb-4">
+          <DialogTitle className="text-lg sm:text-xl font-semibold">
             {category ? 'Edit Category' : 'Create New Category'}
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             {/* Name */}
-            <div className="space-y-2">
-              <Label htmlFor="name">Name *</Label>
+            <div className="space-y-1 sm:space-y-2">
+              <Label htmlFor="name" className="text-sm sm:text-base">
+                Name *
+              </Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => handleInputChange('name', e.target.value)}
                 placeholder="Category name"
                 required
+                className="text-sm sm:text-base"
               />
             </div>
 
             {/* Slug */}
-            <div className="space-y-2">
-              <Label htmlFor="slug">Slug *</Label>
+            <div className="space-y-1 sm:space-y-2">
+              <Label htmlFor="slug" className="text-sm sm:text-base">
+                Slug *
+              </Label>
               <Input
                 id="slug"
                 value={formData.slug}
                 onChange={(e) => handleInputChange('slug', e.target.value)}
                 placeholder="category-slug"
                 required
+                className="text-sm sm:text-base"
               />
             </div>
           </div>
 
           {/* Description */}
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+          <div className="space-y-1 sm:space-y-2">
+            <Label htmlFor="description" className="text-sm sm:text-base">
+              Description
+            </Label>
             <Textarea
               id="description"
               value={formData.description}
               onChange={(e) => handleInputChange('description', e.target.value)}
               placeholder="Category description"
               rows={3}
+              className="text-sm sm:text-base resize-none"
             />
           </div>
 
           {/* Image Upload Section */}
-          <div className="space-y-4">
-            <Label>Category Thumbnail</Label>
-            <div className="flex items-center gap-4">
+          <div className="space-y-2">
+            <Label className="text-sm sm:text-base">Category Thumbnail</Label>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
               {formData.thumbnailUrl ? (
                 <div className="relative">
                   <img
                     src={formData.thumbnailUrl}
                     alt="Category thumbnail"
-                    className="w-20 h-20 object-cover rounded-lg border border-gray-200"
+                    className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg border border-gray-200"
                   />
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     onClick={removeImage}
-                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0 bg-red-500 text-white hover:bg-red-600"
+                    className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 h-5 w-5 sm:h-6 sm:w-6 rounded-full p-0 bg-red-500 text-white hover:bg-red-600"
                   >
-                    <X className="h-3 w-3" />
+                    <X className="h-2 w-2 sm:h-3 sm:w-3" />
                   </Button>
                 </div>
               ) : (
-                <div className="w-20 h-20 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
-                  <ImageIcon className="h-8 w-8 text-gray-400" />
+                <div className="w-16 h-16 sm:w-20 sm:h-20 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
+                  <ImageIcon className="h-6 w-6 sm:h-8 sm:w-8 text-gray-400" />
                 </div>
               )}
-              <div className="flex-1">
+              <div className="flex-1 w-full sm:w-auto">
                 <input
                   type="file"
                   accept="image/*"
@@ -239,34 +248,39 @@ export function CategoryForm({ category, onClose, onSuccess }) {
                 />
                 <Label
                   htmlFor="thumbnail-upload"
-                  className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="cursor-pointer inline-flex items-center gap-2 px-3 py-2 sm:px-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm sm:text-base w-full sm:w-auto justify-center"
                 >
                   <Upload className="h-4 w-4" />
                   {uploadingImage ? 'Uploading...' : 'Upload Image'}
                 </Label>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 mt-1 text-center sm:text-left">
                   Recommended: 200x200px, max 5MB
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             {/* Color */}
-            <div className="space-y-2">
-              <Label htmlFor="color">Color</Label>
+            <div className="space-y-1 sm:space-y-2">
+              <Label htmlFor="color" className="text-sm sm:text-base">
+                Color
+              </Label>
               <Input
                 id="color"
                 value={formData.color}
                 onChange={(e) => handleInputChange('color', e.target.value)}
                 placeholder="#FF6B6B"
                 type="color"
+                className="h-10 sm:h-11"
               />
             </div>
 
             {/* Sort Order */}
-            <div className="space-y-2">
-              <Label htmlFor="sortOrder">Sort Order</Label>
+            <div className="space-y-1 sm:space-y-2">
+              <Label htmlFor="sortOrder" className="text-sm sm:text-base">
+                Sort Order
+              </Label>
               <Input
                 id="sortOrder"
                 type="number"
@@ -275,6 +289,7 @@ export function CategoryForm({ category, onClose, onSuccess }) {
                   handleInputChange('sortOrder', parseInt(e.target.value) || 0)
                 }
                 min="0"
+                className="text-sm sm:text-base"
               />
             </div>
           </div>
@@ -286,18 +301,25 @@ export function CategoryForm({ category, onClose, onSuccess }) {
               id="isActive"
               checked={formData.isActive}
               onChange={(e) => handleInputChange('isActive', e.target.checked)}
-              className="rounded"
+              className="rounded h-4 w-4"
             />
-            <Label htmlFor="isActive">Active</Label>
+            <Label htmlFor="isActive" className="text-sm sm:text-base">
+              Active
+            </Label>
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end gap-3 pt-4 border-t">
-            <Button type="button" variant="outline" onClick={onClose}>
+          <div className="flex flex-row justify-between gap-3 pt-4 border-t">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              className="flex-1"
+            >
               <X className="h-4 w-4 mr-2" />
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading} className="flex-1">
               <Save className="h-4 w-4 mr-2" />
               {loading ? 'Saving...' : category ? 'Update' : 'Create'}
             </Button>
