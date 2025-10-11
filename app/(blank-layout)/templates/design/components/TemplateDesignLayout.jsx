@@ -245,7 +245,7 @@ const TemplateDesignLayout = ({
   };
 
   return (
-    <div className="h-screen max-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex flex-col relative overflow-hidden">
+    <div className="h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex flex-col overflow-hidden relative">
       {/* Advanced Loading Overlay */}
       <AdvancedProcessingLoader
         isVisible={loading || internalLoading}
@@ -262,7 +262,7 @@ const TemplateDesignLayout = ({
         ]}
       />
       {/* Fixed Header */}
-      <div className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-4 py-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-white/20 dark:border-slate-700/20 shadow-lg h-14">
+      <div className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center p-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-white/20 dark:border-slate-700/20 shadow-lg h-14">
         <Button
           variant="outline"
           size="sm"
@@ -327,7 +327,7 @@ const TemplateDesignLayout = ({
       </div>
 
       {/* Main Content Area with Sidebar */}
-      <div className="flex flex-1 relative bg-white/90 dark:bg-slate-900/90 backdrop-blur-md">
+      <div className="flex flex-1 pt-16">
         {/* Collapsible Sidebar */}
         <div
           className={`fixed left-0 top-14 bottom-0 z-40 transition-all duration-300 ease-in-out ${
