@@ -32,6 +32,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { SimplePagination } from '@/components/ui/simple-pagination';
 import TemplateImageDisplay from '@/components/template-image-display';
 import LazyImage from './LazyImage';
+import { useRoleBasedAccess } from '@/hooks/use-role-based-access';
+import { useSession } from 'next-auth/react';
 
 const EnhancedTemplates = ({
   searchQuery = '',
@@ -40,7 +42,11 @@ const EnhancedTemplates = ({
 }) => {
   const router = useRouter();
   const { toastSuccess, toastError } = useToast();
-
+    const { data: session } = useSession();
+    const { roles } = useRoleBasedAccess();
+    const isSuperAdmin = roles.isSuperAdmin;
+    const isAdmin = roles.isAdmin;
+    const isAuthenticated = !!session;
   // Redux state and actions
   const allTemplates = useAllTemplates();
   const loading = useTemplateLoading();
@@ -229,11 +235,11 @@ const EnhancedTemplates = ({
 
       await deleteTemplate(template.id);
 
-      toastSuccess('Template deleted successfully');
+      toastSuccess('Design deleted successfully');
       setShowDeleteDialog(false);
       setTemplateToDelete(null);
     } catch (err) {
-      toastError(`Failed to delete template: ${err.message}`);
+      toastError(`Failed to delete design: ${err.message}`);
     } finally {
       setDeleteLoading(false);
       setDeletingTemplateId(null);
@@ -314,17 +320,11 @@ const EnhancedTemplates = ({
             No templates found.
           </p>
           <Button asChild className="w-full sm:w-auto">
-            <Link href="/templates/design">Create Your First Template</Link>
+            <Link href="/templates/design">Create Your First Design</Link>
           </Button>
         </div>
       ) : (
         <>
-          <div className="flex justify-between items-center mb-6 sm:mb-8 px-4 sm:px-0">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
-              Templates ({allTemplates.length})
-            </h2>
-          </div>
-
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4 lg:gap-5 px-2 sm:px-4 md:px-0">
             {allTemplates.map((template) => (
               <Card
@@ -484,36 +484,40 @@ const EnhancedTemplates = ({
                           handleTemplateSelect(template);
                         }}
                       >
-                        Use Template
+                        Use Design
                       </Button>
                       <div className="flex gap-1">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 border border-gray-200 dark:border-slate-600 hover:border-purple-500 hover:text-purple-600 dark:hover:text-purple-400 text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-700 font-semibold py-1 rounded-md transition-all duration-300 text-xs"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEdit(template);
-                          }}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-300 dark:hover:border-red-700 bg-white dark:bg-slate-700 font-semibold py-1 rounded-md transition-all duration-300 text-xs"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            confirmDelete(template);
-                          }}
-                          disabled={deletingTemplateId === template.id}
-                        >
-                          {deletingTemplateId === template.id ? (
-                            <Loader2 className="h-3 w-3 animate-spin" />
-                          ) : (
-                            <Trash2 className="h-3 w-3" />
-                          )}
-                        </Button>
+                        {isAuthenticated && isSuperAdmin && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1 border border-gray-200 dark:border-slate-600 hover:border-purple-500 hover:text-purple-600 dark:hover:text-purple-400 text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-700 font-semibold py-1 rounded-md transition-all duration-300 text-xs"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEdit(template);
+                              }}
+                            >
+                              Edit
+                            </Button>
+                        )}
+                        {isAuthenticated && isSuperAdmin && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="flex-1 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-300 dark:hover:border-red-700 bg-white dark:bg-slate-700 font-semibold py-1 rounded-md transition-all duration-300 text-xs"
+                                onClick={(e) => {
+                                e.stopPropagation();
+                                confirmDelete(template);
+                                }}
+                                disabled={deletingTemplateId === template.id}
+                            >
+                                {deletingTemplateId === template.id ? (
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                                ) : (
+                                <Trash2 className="h-3 w-3" />
+                                )}
+                            </Button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -546,7 +550,7 @@ const EnhancedTemplates = ({
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Template</AlertDialogTitle>
+            <AlertDialogTitle>Delete Design</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to delete "{templateToDelete?.name}"? This
               action cannot be undone.
