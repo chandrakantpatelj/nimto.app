@@ -105,6 +105,16 @@ export async function GET(request) {
         );
       }
 
+      // Parse mapCoordinate from JSON string to object
+      if (result.mapCoordinate && typeof result.mapCoordinate === 'string') {
+        try {
+          result.mapCoordinate = JSON.parse(result.mapCoordinate);
+        } catch (error) {
+          console.error('Error parsing mapCoordinate:', error);
+          result.mapCoordinate = null;
+        }
+      }
+
       return result;
     });
 

@@ -33,6 +33,7 @@ export async function PUT(request) {
       locationAddress,
       locationUnit,
       showMap,
+      mapCoordinate,
       templateId,
       jsonContent,
       newImageData,
@@ -324,6 +325,9 @@ export async function PUT(request) {
         ...(locationAddress !== undefined && { locationAddress }),
         ...(locationUnit !== undefined && { locationUnit }),
         ...(showMap !== undefined && { showMap }),
+        ...(mapCoordinate !== undefined && {
+          mapCoordinate: mapCoordinate ? JSON.stringify(mapCoordinate) : null,
+        }),
         ...(templateId !== undefined && { templateId }),
         ...(jsonContent !== undefined && { jsonContent }),
         ...(finalImagePath && { imagePath: finalImagePath }),
