@@ -48,14 +48,12 @@ function Step2({ thumbnailData, session }) {
               (results, status) => {
                 if (status === 'OK' && results[0]) {
                   const location = results[0].geometry.location;
-                  const mapCenter = {
+                  const mapCoordinate = {
                     lat: location.lat(),
                     lng: location.lng(),
                   };
 
-                  updateEventData({ mapCenter });
-                } else {
-                  console.warn('Geocoding failed:', status);
+                  updateEventData({ mapCoordinate });
                 }
                 setIsGeocoding(false);
               },
@@ -72,7 +70,6 @@ function Step2({ thumbnailData, session }) {
             checkGoogleMaps();
           }
         } catch (error) {
-          console.warn('Error geocoding address:', error);
           setIsGeocoding(false);
         }
       }
@@ -81,21 +78,21 @@ function Step2({ thumbnailData, session }) {
     geocodeAddress();
   }, [
     eventData?.locationAddress,
-    eventData?.mapCenter,
+    eventData?.mapCoordinate,
     isGeocoding,
     updateEventData,
   ]);
 
-  // Map center logic - use saved mapCenter or geocode the address
+  // Map center logic - use saved mapCoordinate or geocode the address
   const getMapCenter = () => {
-    // If we have a saved mapCenter, use it
-    if (eventData?.mapCenter) {
-      return eventData.mapCenter;
+    // If we have a saved mapCoordinate, use it
+    if (eventData?.mapCoordinate) {
+      return eventData.mapCoordinate;
     }
 
-    // If we have a locationAddress but no mapCenter, return default for now
-    // The geocoding will happen in the useEffect and update the mapCenter
-    if (eventData?.locationAddress && !eventData?.mapCenter) {
+    // If we have a locationAddress but no mapCoordinate, return default for now
+    // The geocoding will happen in the useEffect and update the mapCoordinate
+    if (eventData?.locationAddress && !eventData?.mapCoordinate) {
       return DEFAULT_MAP_CENTER;
     }
 
@@ -449,17 +446,17 @@ function Step2({ thumbnailData, session }) {
                 locationAddress={eventData.locationAddress || ''}
                 locationUnit={eventData.locationUnit || ''}
                 onChange={(locationData) => {
-                  // If the address changed, clear the mapCenter to trigger geocoding
-                  const shouldClearMapCenter =
+                  // If the address changed, clear the mapCoordinate to trigger geocoding
+                  const shouldClearMapCoordinate =
                     locationData.address !== eventData.locationAddress;
 
                   updateEventData({
                     locationAddress: locationData.address,
                     locationUnit: locationData.unit,
                     showMap: locationData.showMap,
-                    mapCenter: shouldClearMapCenter
+                    mapCoordinate: shouldClearMapCoordinate
                       ? null
-                      : locationData.mapCenter,
+                      : locationData.mapCoordinate,
                   });
                   setTimeout(() => scrollToEventDetails(), 100);
                 }}

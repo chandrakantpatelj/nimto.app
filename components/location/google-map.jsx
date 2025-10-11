@@ -3,12 +3,45 @@
 import React, { useEffect, useState } from 'react';
 import { APIProvider, Map, Marker } from '@vis.gl/react-google-maps';
 import { AlertTriangle, MapPin } from 'lucide-react';
+import { DEFAULT_MAP_CENTER } from '@/lib/constants';
 import { FallbackMap } from './fallback-map';
 
 export function GoogleMap({ center, className = '' }) {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
   const [isBlocked, setIsBlocked] = useState(false);
   const [error, setError] = useState(null);
+
+  // Parse center if it's a JSON string
+  const parseCenter = (centerValue) => {
+    if (!centerValue) return null;
+    if (typeof centerValue === 'string') {
+      try {
+        return JSON.parse(centerValue);
+      } catch (error) {
+        console.warn('Failed to parse center JSON:', error);
+        return null;
+      }
+    }
+    return centerValue;
+  };
+
+  const parsedCenter = parseCenter(center);
+
+  // Validate center object has required lat/lng properties
+  const isValidCenter = (centerObj) => {
+    return (
+      centerObj &&
+      typeof centerObj === 'object' &&
+      typeof centerObj.lat === 'number' &&
+      typeof centerObj.lng === 'number' &&
+      !isNaN(centerObj.lat) &&
+      !isNaN(centerObj.lng)
+    );
+  };
+
+  const validCenter = isValidCenter(parsedCenter)
+    ? parsedCenter
+    : DEFAULT_MAP_CENTER;
 
   useEffect(() => {
     // Check if Google Maps is blocked by ad blockers
@@ -40,7 +73,7 @@ export function GoogleMap({ center, className = '' }) {
   }
 
   if (isBlocked || error) {
-    return <FallbackMap center={center} className={className} />;
+    return <FallbackMap center={validCenter} className={className} />;
   }
 
   return (
@@ -48,7 +81,7 @@ export function GoogleMap({ center, className = '' }) {
       <APIProvider apiKey={apiKey}>
         <Map
           style={{ width: '100%', height: '100%' }}
-          center={center}
+          center={validCenter}
           defaultZoom={15}
           gestureHandling="greedy"
           disableDefaultUI={false}
@@ -59,7 +92,7 @@ export function GoogleMap({ center, className = '' }) {
           fullscreenControl={false}
           zoomControl={false}
         >
-          <Marker position={center} />
+          <Marker position={validCenter} />
         </Map>
       </APIProvider>
     </div>

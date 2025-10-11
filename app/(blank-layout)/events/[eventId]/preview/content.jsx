@@ -22,9 +22,9 @@ import {
 import { useSession } from 'next-auth/react';
 import { DEFAULT_MAP_CENTER } from '@/lib/constants';
 import { formatTimeInTimezone, getTimezoneOffset } from '@/lib/date-utils';
+import { geocodeAddressIfNeeded } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { GoogleMap } from '@/components/location/google-map';
-import { geocodeAddressIfNeeded } from '@/lib/utils';
 
 function EventPreviewContent() {
   const params = useParams();
@@ -52,15 +52,14 @@ function EventPreviewContent() {
     try {
       setLoading(true);
       setError(null);
-        const event = await fetchEventById(eventId).unwrap();
+      const event = await fetchEventById(eventId).unwrap();
 
-        let eventWithMapCenter = event;
-        if (event.showMap && event.locationAddress) {
-            eventWithMapCenter = await geocodeAddressIfNeeded(event);
-            console.log('Geocoded event:', eventWithMapCenter);
-        }
+      let eventWithMapCenter = event;
+      if (event.showMap && event.locationAddress) {
+        eventWithMapCenter = await geocodeAddressIfNeeded(event);
+      }
 
-        setSelectedEvent(eventWithMapCenter);
+      setSelectedEvent(eventWithMapCenter);
     } catch (err) {
       const errorMessage = err.message || 'Error loading event data';
       setError(errorMessage);
@@ -126,12 +125,11 @@ function EventPreviewContent() {
   };
 
   // Map center logic
-    const getMapCenter = () => {
-        console.log('Event Data for Map Center:', eventData);
-    if (eventData?.mapCenter) {
-      return eventData.mapCenter;
+  const getMapCenter = () => {
+    if (eventData?.mapCoordinate) {
+      return eventData.mapCoordinate;
     }
-    if (eventData?.locationAddress && !eventData?.mapCenter) {
+    if (eventData?.locationAddress && !eventData?.mapCoordinate) {
       return DEFAULT_MAP_CENTER;
     }
     return DEFAULT_MAP_CENTER;
