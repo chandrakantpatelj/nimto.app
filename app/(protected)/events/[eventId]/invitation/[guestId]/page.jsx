@@ -6,7 +6,11 @@ import { useParams } from 'next/navigation';
 import { ArrowLeft, CalendarDays, Clock, MapPin, User } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { apiFetch } from '@/lib/api';
-import { formatEventDate } from '@/lib/date-utils';
+import {
+  formatDateInTimezone,
+  formatTimeInTimezone,
+  getTimezoneAbbreviation,
+} from '@/lib/date-utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import RSVPForm from '@/components/rsvp/rsvp-form';
@@ -71,22 +75,6 @@ export default function EventInvitationPage() {
     }
   };
 
-  const formatDate = (dateString) => {
-    try {
-      if (!dateString) return 'N/A';
-      return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } catch (error) {
-      console.warn('Invalid date format:', dateString);
-      return 'Invalid Date';
-    }
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -145,65 +133,6 @@ export default function EventInvitationPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
-      {/* Enhanced Header with Better Layout */}
-      <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-xl relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/20 via-purple-600/20 to-pink-600/20"></div>
-        <div className="relative z-10 px-6 py-4">
-          <div className="flex items-center justify-between max-w-7xl mx-auto">
-            {/* Left Side - Back Button */}
-            <div className="flex items-center">
-              <Link href="/invited-events">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-white hover:bg-white/20 border border-white/20 hover:border-white/40 transition-all duration-200 backdrop-blur-sm bg-white/10"
-                >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  <span className="hidden sm:inline">
-                    Back to Invited Events
-                  </span>
-                  <span className="sm:hidden">Back</span>
-                </Button>
-              </Link>
-            </div>
-
-            {/* Center - Title */}
-            <div className="flex-1 text-center px-4">
-              <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
-                You're Invited!
-              </h1>
-            </div>
-
-            {/* Right Side - Event Status Badge */}
-            <div className="flex items-center">
-              {userGuest && (
-                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3 py-1.5 border border-white/20">
-                  <div
-                    className={`w-2 h-2 rounded-full ${
-                      userGuest.status === 'CONFIRMED'
-                        ? 'bg-green-400'
-                        : userGuest.status === 'PENDING'
-                          ? 'bg-yellow-400'
-                          : userGuest.status === 'DECLINED'
-                            ? 'bg-red-400'
-                            : 'bg-gray-400'
-                    }`}
-                  ></div>
-                  <span className="text-white text-xs font-medium capitalize">
-                    {userGuest.status || 'Pending'}
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-        {/* Enhanced Decorative Elements */}
-        <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-12 translate-x-12"></div>
-        <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/5 rounded-full translate-y-10 -translate-x-10"></div>
-        <div className="absolute top-1/2 left-1/4 w-2 h-2 bg-white/20 rounded-full"></div>
-        <div className="absolute top-1/3 right-1/3 w-1 h-1 bg-white/30 rounded-full"></div>
-      </div>
-
       {/* Main Content */}
       <div className="p-4 sm:p-6 max-w-7xl mx-auto">
         {/* Main Content Grid */}
@@ -211,30 +140,30 @@ export default function EventInvitationPage() {
           {/* Left Column - Event Image Only */}
           <div className="order-1 lg:order-1">
             <div className="relative lg:sticky lg:top-6">
-                <div className="border-2  rounded-lg bg-white dark:bg-gray-800 shadow-lg">
-                    {event?.eventThumbnailUrl || event?.s3ImageUrl ? (
-                        <div className="relative w-full bg-gray-50 dark:bg-gray-900 flex items-center justify-center rounded-lg overflow-hidden">
-                            <img
-                                src={event?.eventThumbnailUrl || event?.s3ImageUrl}
-                                alt={event?.title}
-                                className="w-full h-full object-cover rounded-lg"
-                            />
-                        </div>
-                    ) : (
-                        /* Fallback when no image */
-                        <div
-                            className={`relative w-full aspect-[3/4] ${getFallbackGradientClasses(category)} flex items-center justify-center rounded-lg`}
-                        >
-                            <div className="text-center text-white p-6">
-                                <div className="mb-4 text-5xl sm:text-6xl drop-shadow-lg">
-                                    {categoryTheme.icon}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
+              <div className="border-2  rounded-lg bg-white dark:bg-gray-800 shadow-lg">
+                {event?.eventThumbnailUrl || event?.s3ImageUrl ? (
+                  <div className="relative w-full bg-gray-50 dark:bg-gray-900 flex items-center justify-center rounded-lg overflow-hidden">
+                    <img
+                      src={event?.eventThumbnailUrl || event?.s3ImageUrl}
+                      alt={event?.title}
+                      className="w-full h-full object-cover rounded-lg"
+                    />
+                  </div>
+                ) : (
+                  /* Fallback when no image */
+                  <div
+                    className={`relative w-full aspect-[3/4] ${getFallbackGradientClasses(category)} flex items-center justify-center rounded-lg`}
+                  >
+                    <div className="text-center text-white p-6">
+                      <div className="mb-4 text-5xl sm:text-6xl drop-shadow-lg">
+                        {categoryTheme.icon}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-        </div>
+          </div>
 
           {/* Right Column - Wedding Invitation & RSVP */}
           <div className="space-y-4">
@@ -246,31 +175,49 @@ export default function EventInvitationPage() {
                     <div className="w-2 h-8 bg-gradient-to-b from-yellow-400 to-orange-500 rounded-full"></div>
                     {event.title}
                   </CardTitle>
-                  {userGuest && (
-                    <div className="text-right flex-shrink-0">
-                      <span className="text-blue-100 text-sm font-medium whitespace-nowrap">
-                        Invited {formatDate(userGuest.invitedAt)}
-                      </span>
-                    </div>
-                  )}
                 </div>
               </CardHeader>
               <CardContent className="p-4">
                 <div className="space-y-3">
                   {/* Event Details - Improved Layout */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                  <div className="grid grid-cols-1 gap-3 text-sm">
                     {event.startDateTime && (
-                      <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100 shadow-sm hover:shadow-md transition-all duration-300 group">
-                        <div className="p-2.5 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg group-hover:scale-110 transition-transform duration-200">
-                          <CalendarDays className="h-4 w-4 text-white" />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {/* Date Card */}
+                        <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100 shadow-sm hover:shadow-md transition-all duration-300 group">
+                          <div className="p-2.5 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg group-hover:scale-110 transition-transform duration-200">
+                            <CalendarDays className="h-4 w-4 text-white" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <span className="font-semibold text-blue-900 text-xs block mb-1">
+                              Date
+                            </span>
+                            <p className="text-blue-700 font-medium text-sm">
+                              {formatDateInTimezone(
+                                event.startDateTime,
+                                event.timezone || 'UTC',
+                              )}
+                            </p>
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <span className="font-semibold text-blue-900 text-xs block mb-1">
-                            Event Date
-                          </span>
-                          <p className="text-blue-700 font-medium text-sm truncate">
-                            {formatEventDate(event.startDateTime)}
-                          </p>
+
+                        {/* Time Card */}
+                        <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-purple-50 to-violet-50 rounded-lg border border-purple-100 shadow-sm hover:shadow-md transition-all duration-300 group">
+                          <div className="p-2.5 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-lg group-hover:scale-110 transition-transform duration-200">
+                            <Clock className="h-4 w-4 text-white" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <span className="font-semibold text-purple-900 text-xs block mb-1">
+                              Time
+                            </span>
+                            <p className="text-purple-700 font-medium text-sm">
+                              {formatTimeInTimezone(
+                                event.startDateTime,
+                                event.timezone || 'UTC',
+                              )}{' '}
+                              {getTimezoneAbbreviation(event.timezone || 'UTC')}
+                            </p>
+                          </div>
                         </div>
                       </div>
                     )}
@@ -303,21 +250,6 @@ export default function EventInvitationPage() {
                           </span>
                           <p className="text-green-700 font-medium text-sm truncate">
                             {event.User.name || event.User.email}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                    {event.time && (
-                      <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-purple-50 to-violet-50 rounded-lg border border-purple-100 shadow-sm hover:shadow-md transition-all duration-300 group">
-                        <div className="p-2.5 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-lg group-hover:scale-110 transition-transform duration-200">
-                          <Clock className="h-4 w-4 text-white" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <span className="font-semibold text-purple-900 text-xs block mb-1">
-                            Time
-                          </span>
-                          <p className="text-purple-700 font-medium text-sm truncate">
-                            {event.time}
                           </p>
                         </div>
                       </div>

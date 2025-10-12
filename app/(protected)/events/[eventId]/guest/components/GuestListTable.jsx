@@ -39,11 +39,15 @@ import {
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { ConfirmationDialog } from './confirmation-dialog';
 import { EditGuestModal } from './edit-guest-modal';
-
-// Import xlsx for Excel export
 import * as XLSX from 'xlsx';
 
-const GuestListTable = ({ event, searchQuery, onGuestsUpdate, selectedGuests, onSelectedGuestsChange }) => {
+const GuestListTable = ({
+    event,
+    searchQuery,
+    onGuestsUpdate,
+    selectedGuests,
+    onSelectedGuestsChange,
+}) => {
     const [pagination, setPagination] = useState({
         pageIndex: 0,
         pageSize: 10,
@@ -67,10 +71,9 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate, selectedGuests, on
         }
     }, [event?.id]);
 
-    // Sync rowSelection with selectedGuests
     useEffect(() => {
         const newRowSelection = {};
-        selectedGuests.forEach(guestId => {
+        selectedGuests.forEach((guestId) => {
             newRowSelection[guestId] = true;
         });
         setRowSelection(newRowSelection);
@@ -80,17 +83,11 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate, selectedGuests, on
         try {
             setLoading(true);
             const response = await apiFetch(`/api/events/guests?eventId=${event.id}`);
-
-            if (!response.ok) {
-                throw new Error(`Failed to fetch guests: ${response.status}`);
-            }
-
+            if (!response.ok) throw new Error(`Failed to fetch guests: ${response.status}`);
             const data = await response.json();
             const guestsData = data.data || [];
             setGuests(guestsData);
-            if (onGuestsUpdate) {
-                onGuestsUpdate(guestsData);
-            }
+            if (onGuestsUpdate) onGuestsUpdate(guestsData);
         } catch (error) {
             console.error('Error fetching guests:', error);
             setGuests([]);
@@ -109,20 +106,14 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate, selectedGuests, on
 
     const confirmDeleteGuest = async () => {
         const { guestId } = deleteConfirmation;
-
         try {
             const response = await apiFetch(`/api/events/guests?guestId=${guestId}`, {
                 method: 'DELETE',
             });
-
-            if (!response.ok) {
-                throw new Error('Failed to delete guest');
-            }
-
+            if (!response.ok) throw new Error('Failed to delete guest');
             const data = await response.json();
             if (data.success) {
                 toastSuccess(data.message);
-                // Refresh guest list
                 fetchGuests();
             } else {
                 toastError(data.error || 'Failed to delete guest');
@@ -147,7 +138,7 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate, selectedGuests, on
     };
 
     const handleGuestUpdated = () => {
-        fetchGuests(); // Refresh the guest list
+        fetchGuests();
     };
 
     const handleCloseEditModal = () => {
@@ -157,13 +148,11 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate, selectedGuests, on
 
     const filteredData = useMemo(() => {
         return guests.filter((guest) => {
-            // Filter by search query (case-insensitive)
             const searchLower = searchQuery.toLowerCase();
             const matchesSearch =
                 !searchQuery ||
                 guest.name?.toLowerCase().includes(searchLower) ||
                 guest.email?.toLowerCase().includes(searchLower);
-
             return matchesSearch;
         });
     }, [guests, searchQuery]);
@@ -194,242 +183,220 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate, selectedGuests, on
         }
     };
 
-    // Export to Excel handler
     const handleExportExcel = () => {
-        // Prepare data for export
-        const exportData = filteredData.map(guest => ({
+        const exportData = filteredData.map((guest) => ({
             Name: guest.name,
             Email: guest.email,
+            Phone: guest.phone || '',
             RSVP: guest.status || 'PENDING',
             'Total Adults': guest.status === 'PENDING' || !guest.status ? '-' : guest.adults ?? '-',
             'Total Kids': guest.status === 'PENDING' || !guest.status ? '-' : guest.children ?? '-',
-            Invitation: guest.invitedAt ? 'Sent' : 'Not Sent',
+            Invitation: guest.status === 'INVITED' ? 'Sent' : 'Not Sent',
             Notes: guest.response ?? '',
         }));
-
         const worksheet = XLSX.utils.json_to_sheet(exportData);
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, 'Guests');
         XLSX.writeFile(workbook, `GuestList_${event?.name || 'Event'}.xlsx`);
     };
 
-    const columns = useMemo(() => [
-        {
-            accessorKey: 'id',
-            accessorFn: (row) => row.id,
-            header: () => <DataGridTableRowSelectAll />,
-            cell: ({ row }) => <DataGridTableRowSelect row={row} />,
-            enableSorting: false,
-            enableHiding: false,
-            enableResizing: false,
-            size: 51,
-            meta: {
-                cellClassName: '',
+    const columns = useMemo(
+        () => [
+            {
+                accessorKey: 'id',
+                accessorFn: (row) => row.id,
+                header: () => <DataGridTableRowSelectAll />,
+                cell: ({ row }) => <DataGridTableRowSelect row={row} />,
+                enableSorting: false,
+                enableHiding: false,
+                enableResizing: false,
+                size: 51,
+                meta: { cellClassName: '' },
             },
-        },
-        {
-            id: 'name',
-            accessorFn: (row) => row.name,
-            header: ({ column }) => (
-                <DataGridColumnHeader title="Guest" column={column} />
-            ),
-
-            cell: ({ row }) => (
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 dark:from-blue-600 dark:to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                        {row.original.name?.charAt(0)?.toUpperCase() || '?'}
-                    </div>
-                    <div className="flex flex-col">
-                        <span className="font-medium text-gray-900 dark:text-white">
-                            {row.original.name}
-                        </span>
-                        <span className="text-sm text-gray-500 dark:text-gray-400">{row.original.email}</span>
-                    </div>
-                </div>
-            ),
-
-            enableSorting: true,
-            size: 360,
-            meta: {
-                cellClassName: '',
-            },
-        },
-        {
-            id: 'status',
-            accessorFn: (row) => row.status,
-            header: ({ column }) => (
-                <DataGridColumnHeader title="RSVP" column={column} />
-            ),
-
-            cell: ({ row }) => (
-                <div className="flex items-center gap-2">
-                    {getStatusIcon(row.original.status)}
-                    <Badge
-                        className={`${getStatusColor(row.original.status)} border font-medium px-3 py-1`}
-                    >
-                        {row.original.status || 'PENDING'}
-                    </Badge>
-                </div>
-            ),
-
-            enableSorting: true,
-            size: 200,
-            meta: {
-                cellClassName: '',
-            },
-        },
-        {
-            id: 'adults',
-            accessorFn: (row) => row.adults,
-            header: ({ column }) => (
-                <DataGridColumnHeader title="Total Adults" column={column} />
-            ),
-            cell: ({ row }) => (
-                row.original.status === 'PENDING' || !row.original.status
-                    ? <span>-</span>
-                    : <span>{row.original.adults ?? '-'}</span>
-            ),
-            enableSorting: true,
-            size: 120,
-            meta: {
-                cellClassName: '',
-            },
-        },
-        {
-            id: 'children',
-            accessorFn: (row) => row.children,
-            header: ({ column }) => (
-                <DataGridColumnHeader title="Total Kids" column={column} />
-            ),
-            cell: ({ row }) => (
-                row.original.status === 'PENDING' || !row.original.status
-                    ? <span>-</span>
-                    : <span>{row.original.children ?? '-'}</span>
-            ),
-            enableSorting: true,
-            size: 120,
-            meta: {
-                cellClassName: '',
-            },
-        },
-        {
-            id: 'invitation',
-            accessorFn: (row) => row.invitation,
-            header: ({ column }) => (
-                <DataGridColumnHeader title="Invitation" column={column} />
-            ),
-
-            cell: ({ row }) => {
-                const isSent = row.original.invitedAt;
-                return (
-                    <div className="flex items-center gap-2">
-                        <div
-                            className={`w-2 h-2 rounded-full ${isSent ? 'bg-green-500 dark:bg-green-400' : 'bg-gray-400 dark:bg-gray-500'}`}
-                        ></div>
-                        <span
-                            className={`font-medium ${isSent ? 'text-green-700 dark:text-green-300' : 'text-gray-600 dark:text-gray-400'}`}
-                        >
-                            {isSent ? 'Sent' : 'Not Sent'}
-                        </span>
-                    </div>
-                );
-            },
-
-            enableSorting: true,
-            size: 200,
-            meta: {
-                cellClassName: '',
-            },
-        },
-        {
-            id: 'notes',
-            accessorFn: (row) => row.notes,
-            header: ({ column }) => (
-                <DataGridColumnHeader title="Notes" column={column} />
-            ),
-
-            cell: ({ row }) => (
-                <div className="max-w-xs">
-                    {row.original.response ? (
-                        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-2">
-                            <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
-                                {row.original.response}
-                            </p>
+            {
+                id: 'name',
+                accessorFn: (row) => row.name,
+                header: ({ column }) => <DataGridColumnHeader title="Guest" column={column} />,
+                cell: ({ row }) => (
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 dark:from-blue-600 dark:to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                            {row.original.name?.charAt(0)?.toUpperCase() || '?'}
                         </div>
+                        <div className="flex flex-col">
+                            <span className="font-medium text-gray-900 dark:text-white">
+                                {row.original.name}
+                            </span>
+                            <span className="text-sm text-gray-500 dark:text-gray-400">
+                                {row.original.email}
+                            </span>
+                            <span className="text-sm text-gray-500 dark:text-gray-400">
+                                {row.original.phone}
+                            </span>
+                        </div>
+                    </div>
+                ),
+                enableSorting: true,
+                size: 360,
+                meta: { cellClassName: '' },
+            },
+            {
+                id: 'status',
+                accessorFn: (row) => row.status,
+                header: ({ column }) => <DataGridColumnHeader title="RSVP" column={column} />,
+                cell: ({ row }) => (
+                    <div className="flex items-center gap-2">
+                        {getStatusIcon(row.original.status)}
+                        <Badge
+                            className={`${getStatusColor(row.original.status)} border font-medium px-3 py-1`}
+                        >
+                            {row.original.status || 'PENDING'}
+                        </Badge>
+                    </div>
+                ),
+                enableSorting: true,
+                size: 200,
+                meta: { cellClassName: '' },
+            },
+            {
+                id: 'adults',
+                accessorFn: (row) => row.adults,
+                header: ({ column }) => <DataGridColumnHeader title="Total Adults" column={column} />,
+                cell: ({ row }) =>
+                    row.original.status === 'PENDING' || !row.original.status ? (
+                        <span>-</span>
                     ) : (
-                        <span className="text-gray-400 dark:text-gray-500 italic">No response</span>
-                    )}
-                </div>
-            ),
-
-            enableSorting: true,
-            size: 200,
-            meta: {
-                cellClassName: '',
+                        <span>{row.original.adults ?? '-'}</span>
+                    ),
+                enableSorting: true,
+                size: 120,
+                meta: { cellClassName: '' },
             },
-        },
-        {
-            id: 'actions',
-            accessorFn: (row) => row.id,
-            header: () => (
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Actions</span>
-            ),
-            cell: ({ row }) => (
-                <div className="flex items-center gap-2">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
+            {
+                id: 'children',
+                accessorFn: (row) => row.children,
+                header: ({ column }) => <DataGridColumnHeader title="Total Kids" column={column} />,
+                cell: ({ row }) =>
+                    row.original.status === 'PENDING' || !row.original.status ? (
+                        <span>-</span>
+                    ) : (
+                        <span>{row.original.children ?? '-'}</span>
+                    ),
+                enableSorting: true,
+                size: 120,
+                meta: { cellClassName: '' },
+            },
+            {
+                id: 'invitation',
+                accessorFn: (row) => row.invitation,
+                header: ({ column }) => <DataGridColumnHeader title="Invitation" column={column} />,
+                cell: ({ row }) => {
+                    const isSent = row.original.status === 'INVITED';
+                    return (
+                        <div className="flex items-center gap-2">
+                            <div
+                                className={`w-2 h-2 rounded-full ${isSent
+                                        ? 'bg-green-500 dark:bg-green-400'
+                                        : 'bg-gray-400 dark:bg-gray-500'
+                                    }`}
+                            ></div>
+                            <span
+                                className={`font-medium ${isSent
+                                        ? 'text-green-700 dark:text-green-300'
+                                        : 'text-gray-600 dark:text-gray-400'
+                                    }`}
                             >
-                                <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                                onClick={() => handleEditGuest(row.original)}
-                                className="cursor-pointer"
-                            >
-                                <Edit className="mr-2 h-4 w-4" />
-                                Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={() =>
-                                    handleDeleteGuest(row.original.id, row.original.name)
-                                }
-                                className="cursor-pointer text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400"
-                            >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={async () => {
-                                    const link = `${window.location.origin}/invitation/${event.id}/${row.original.id}`;
-                                    try {
-                                        await navigator.clipboard.writeText(link);
-                                        toastSuccess('Invitation link copied!');
-                                    } catch {
-                                        toastError('Failed to copy link');
+                                {isSent ? 'Sent' : 'Not Sent'}
+                            </span>
+                        </div>
+                    );
+                },
+                enableSorting: true,
+                size: 200,
+                meta: { cellClassName: '' },
+            },
+            {
+                id: 'notes',
+                accessorFn: (row) => row.notes,
+                header: ({ column }) => <DataGridColumnHeader title="Notes" column={column} />,
+                cell: ({ row }) => (
+                    <div className="max-w-xs">
+                        {row.original.response ? (
+                            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-2">
+                                <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
+                                    {row.original.response}
+                                </p>
+                            </div>
+                        ) : (
+                            <span className="text-gray-400 dark:text-gray-500 italic">No response</span>
+                        )}
+                    </div>
+                ),
+                enableSorting: true,
+                size: 200,
+                meta: { cellClassName: '' },
+            },
+            {
+                id: 'actions',
+                accessorFn: (row) => row.id,
+                header: () => (
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Actions</span>
+                ),
+                cell: ({ row }) => (
+                    <div className="flex items-center gap-2">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                >
+                                    <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem
+                                    onClick={() => handleEditGuest(row.original)}
+                                    className="cursor-pointer"
+                                >
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={() =>
+                                        handleDeleteGuest(row.original.id, row.original.name)
                                     }
-                                }}
-                                className="cursor-pointer"
-                            >
-                                <HelpCircle className="mr-2 h-4 w-4" />
-                                Copy Invitation Link
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-            ),
-            enableSorting: false,
-            enableHiding: false,
-            size: 100,
-            meta: {
-                cellClassName: '',
+                                    className="cursor-pointer text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400"
+                                >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Delete
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={async () => {
+                                        const link = `${window.location.origin}/invitation/${event.id}/${row.original.id}`;
+                                        try {
+                                            await navigator.clipboard.writeText(link);
+                                            toastSuccess('Invitation link copied!');
+                                        } catch {
+                                            toastError('Failed to copy link');
+                                        }
+                                    }}
+                                    className="cursor-pointer"
+                                >
+                                    <HelpCircle className="mr-2 h-4 w-4" />
+                                    Copy Invitation Link
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                ),
+                enableSorting: false,
+                enableHiding: false,
+                size: 100,
+                meta: { cellClassName: '' },
             },
-        },
-    ]);
+        ],
+        [event]
+    );
 
     const table = useReactTable({
         columns,
@@ -446,13 +413,12 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate, selectedGuests, on
         onSortingChange: setSorting,
         enableRowSelection: true,
         onRowSelectionChange: (updaterOrValue) => {
-            const newSelection = typeof updaterOrValue === 'function'
-                ? updaterOrValue(rowSelection)
-                : updaterOrValue;
+            const newSelection =
+                typeof updaterOrValue === 'function'
+                    ? updaterOrValue(rowSelection)
+                    : updaterOrValue;
             setRowSelection(newSelection);
-
-            // Convert row selection to array of selected guest IDs
-            const selectedIds = Object.keys(newSelection).filter(key => newSelection[key]);
+            const selectedIds = Object.keys(newSelection).filter((key) => newSelection[key]);
             onSelectedGuestsChange(selectedIds);
         },
         getCoreRowModel: getCoreRowModel(),
@@ -463,7 +429,7 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate, selectedGuests, on
 
     if (loading) {
         return (
-            <Card className="p-6 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+            <Card className="p-6 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 w-full">
                 <div className="flex flex-col items-center justify-center h-48 space-y-4">
                     <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 dark:border-blue-800 border-t-blue-600 dark:border-t-blue-400"></div>
                     <p className="text-gray-600 dark:text-gray-300 text-lg">Loading guests...</p>
@@ -474,9 +440,9 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate, selectedGuests, on
 
     return (
         <>
-            <Card className="p-6 bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-800 dark:to-slate-800 border-gray-200 dark:border-gray-700">
+            <Card className="p-4 md:p-6 bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-800 dark:to-slate-800 border-gray-200 dark:border-gray-700 w-full">
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
                             <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
                                 <svg
@@ -497,7 +463,7 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate, selectedGuests, on
                                 Guest List
                             </h3>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 mt-2 md:mt-0">
                             <Badge
                                 variant="outline"
                                 className="bg-blue-50 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700"
@@ -505,7 +471,6 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate, selectedGuests, on
                                 {filteredData.length}{' '}
                                 {filteredData.length === 1 ? 'Guest' : 'Guests'}
                             </Badge>
-                            {/* Export Button */}
                             <Button
                                 variant="outline"
                                 size="sm"
@@ -528,15 +493,24 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate, selectedGuests, on
                             cellBorder: false,
                         }}
                     >
-                        <Card className="border-0 shadow-sm bg-white dark:bg-gray-800">
+                        <Card className="border-0 shadow-sm bg-white dark:bg-gray-800 w-full">
                             <CardTable>
-                                {/* Set a fixed height for the table area and enable vertical scrolling */}
-                                <ScrollArea style={{ height: '480px', minHeight: '480px', maxHeight: '480px', overflowY: 'auto' }}>
-                                    <DataGridTable />
-                                    <ScrollBar orientation="horizontal" />
-                                </ScrollArea>
-                                {/* Pagination Controls */}
-                                <div className="flex items-center justify-between px-4 py-2 border-t bg-gray-50 dark:bg-gray-900">
+                                <div className="overflow-x-auto w-full">
+                                    <ScrollArea
+                                        style={{
+                                            height: '480px',
+                                            minHeight: '320px',
+                                            maxHeight: '480px',
+                                            overflowY: 'auto',
+                                        }}
+                                    >
+                                        <div className="min-w-full">
+                                            <DataGridTable />
+                                        </div>
+                                        <ScrollBar orientation="horizontal" />
+                                    </ScrollArea>
+                                </div>
+                                <div className="flex flex-col md:flex-row items-center justify-between px-4 py-2 border-t bg-gray-50 dark:bg-gray-900 gap-2">
                                     <div>
                                         Page {pagination.pageIndex + 1} of {table.getPageCount()}
                                     </div>
@@ -577,10 +551,15 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate, selectedGuests, on
                                     <div>
                                         <select
                                             value={pagination.pageSize}
-                                            onChange={e => setPagination({ ...pagination, pageSize: Number(e.target.value) })}
+                                            onChange={(e) =>
+                                                setPagination({
+                                                    ...pagination,
+                                                    pageSize: Number(e.target.value),
+                                                })
+                                            }
                                             className="border rounded px-2 py-1 bg-white dark:bg-gray-800"
                                         >
-                                            {[10, 20, 50, 100].map(size => (
+                                            {[10, 20, 50, 100].map((size) => (
                                                 <option key={size} value={size}>
                                                     Show {size}
                                                 </option>
@@ -594,7 +573,6 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate, selectedGuests, on
                 </div>
             </Card>
 
-            {/* Edit Guest Modal */}
             <EditGuestModal
                 guest={editingGuest}
                 isOpen={isEditModalOpen}
@@ -602,7 +580,6 @@ const GuestListTable = ({ event, searchQuery, onGuestsUpdate, selectedGuests, on
                 onGuestUpdated={handleGuestUpdated}
             />
 
-            {/* Delete Confirmation Dialog */}
             <ConfirmationDialog
                 isOpen={deleteConfirmation.isOpen}
                 onClose={closeDeleteConfirmation}

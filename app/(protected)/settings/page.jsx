@@ -1,4 +1,7 @@
+'use client';
+
 import { Fragment } from 'react';
+import { useSession } from 'next-auth/react';
 import { Container } from '@/components/common/container';
 import { Toolbar, ToolbarHeading } from '@/components/common/toolbar';
 import {
@@ -9,6 +12,12 @@ import { PageNavbar } from '../account/page-navbar';
 import { Settings } from './content';
 
 function SettingsPage() {
+  const { data: session, status } = useSession();
+
+  // Get user name and role from session
+  const userName = session?.user?.name || 'User';
+  const userRole = session?.user?.roleName || 'User';
+
   return (
     <Fragment>
       <PageNavbar />
@@ -16,7 +25,9 @@ function SettingsPage() {
         <Toolbar>
           <ToolbarHeading>
             <ToolbarPageTitle />
-            <ToolbarDescription>Super Admin (Super Admin)</ToolbarDescription>
+            <ToolbarDescription>
+              {userName} ({userRole})
+            </ToolbarDescription>
           </ToolbarHeading>
         </Toolbar>
       </Container>

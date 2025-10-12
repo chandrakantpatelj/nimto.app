@@ -16,7 +16,7 @@ import {
   Users,
 } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
-import { formatDate, formatTime } from '@/lib/date-utils';
+import { formatDateForUser } from '@/lib/date-utils';
 import { toAbsoluteUrl } from '@/lib/helpers';
 import {
   AlertDialog,
@@ -333,22 +333,19 @@ const Events = () => {
                 <CardContent className="space-y-3">
                   {/* Event Details */}
                   <div className="space-y-2">
-                    <div className="flex items-center text-sm text-gray-600">
-                      <CalendarDays className="w-4 h-4 mr-2 flex-shrink-0" />
-                      <span>
-                        {formatDate(event.startDateTime, {
-                          weekday: 'long',
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                        })}
-                      </span>
-                    </div>
-
                     {event.startDateTime && (
-                      <div className="flex items-center text-sm text-gray-600">
-                        <Clock className="w-4 h-4 mr-2 flex-shrink-0" />
-                        <span>{formatTime(event.startDateTime)}</span>
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center text-sm text-gray-600">
+                          <CalendarDays className="w-4 h-4 mr-2 flex-shrink-0" />
+                          <Clock className="w-4 h-4 mr-2 flex-shrink-0" />
+                          <span className="flex-1">
+                            {formatDateForUser(
+                              event.startDateTime,
+                              event.timezone || 'UTC',
+                              false,
+                            )}
+                          </span>
+                        </div>
                       </div>
                     )}
 

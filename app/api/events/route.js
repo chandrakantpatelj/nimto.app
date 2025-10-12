@@ -40,8 +40,8 @@ export async function GET(request) {
     // Super Admin and Application Admin can see all events, others see only their own
     if (
       !admin ||
-      (session.user.roleName !== 'super-admin' &&
-        session.user.roleName !== 'application-admin')
+      (session.user.roleSlug !== 'super-admin' &&
+        session.user.roleSlug !== 'application-admin')
     ) {
       where.createdByUserId = session.user.id;
     }
@@ -103,6 +103,16 @@ export async function GET(request) {
         result.eventThumbnailUrl = generateDirectS3Url(
           event.eventThumbnailPath,
         );
+      }
+
+      // Parse mapCoordinate from JSON string to object
+      if (result.mapCoordinate && typeof result.mapCoordinate === 'string') {
+        try {
+          result.mapCoordinate = JSON.parse(result.mapCoordinate);
+        } catch (error) {
+          console.error('Error parsing mapCoordinate:', error);
+          result.mapCoordinate = null;
+        }
       }
 
       return result;

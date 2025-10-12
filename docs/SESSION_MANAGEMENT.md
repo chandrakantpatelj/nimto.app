@@ -42,7 +42,8 @@ async jwt({ token, user, session, trigger }) {
     }
 
     // Update with fresh data
-    token.roleName = currentUser.role?.slug;
+    token.roleSlug = currentUser.role?.slug;
+    token.roleName = currentUser.role?.name;
     // ... other fields
   }
 }

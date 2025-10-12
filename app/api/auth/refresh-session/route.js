@@ -38,6 +38,7 @@ export async function POST(request) {
           avatar: session.user.avatar,
           status: session.user.status,
           roleId: session.user.roleId,
+          roleSlug: session.user.roleSlug,
           roleName: session.user.roleName,
         },
       });
@@ -90,7 +91,8 @@ export async function POST(request) {
         avatar: user.avatar,
         status: user.status,
         roleId: user.roleId,
-        roleName: user.role?.slug,
+        roleSlug: user.role?.slug,
+        roleName: user.role?.name,
         lastFetch: now,
       },
     });

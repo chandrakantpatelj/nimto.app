@@ -6,6 +6,12 @@ import { sendEventInvitation } from '@/services/send-event-invitation';
 // GET /api/events/guests - Get all guests (with optional filtering)
 export async function GET(request) {
   try {
+    // Check role-based access - super-admin, application-admin, and host can view guests
+    const accessCheck = await checkGuestManagementAccess('view guests');
+    if (accessCheck.error) {
+      return accessCheck.error;
+    }
+
     const { searchParams } = new URL(request.url);
     const eventId = searchParams.get('eventId');
     const status = searchParams.get('status');
@@ -37,8 +43,16 @@ export async function GET(request) {
             id: true,
             title: true,
             startDateTime: true,
+            timezone: true,
             locationAddress: true,
             locationUnit: true,
+            User: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
           },
         },
       },
@@ -83,7 +97,7 @@ export async function POST(request) {
 
     const body = await request.json();
 
-    const { eventId, name, email, phone, status, response } = body;
+    const { eventId, name, email, phone, status, response, sendEmail } = body;
 
     // Validate required fields
     if (!name || !name.trim()) {
@@ -144,37 +158,49 @@ export async function POST(request) {
             id: true,
             title: true,
             startDateTime: true,
+            timezone: true,
             locationAddress: true,
             locationUnit: true,
             description: true,
+            User: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
           },
         },
       },
     });
 
-    // Send email invitation automatically
-    try {
-      const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-      const invitationUrl = `${baseUrl}/invitation/${event.id}/${guest.id}`;
+    // Send email invitation only if sendEmail is true
+    if (sendEmail === true) {
+      try {
+        const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+        const invitationUrl = `${baseUrl}/invitation/${event.id}/${guest.id}`;
 
-      await sendEventInvitation({
-        guest: {
-          name: guest.name,
-          email: guest.email,
-          phone: guest.phone,
-        },
-        event: {
-          title: guest.event.title,
-          description: guest.event.description,
-          startDateTime: guest.event.startDateTime,
-          location: guest.event.locationAddress
-            ? `${guest.event.locationAddress}${guest.event.locationUnit ? `, ${guest.event.locationUnit}` : ''}`
-            : null,
-        },
-        invitationUrl,
-      });
-    } catch (emailError) {
-      console.error('Error sending email invitation:', emailError);
+        await sendEventInvitation({
+          guest: {
+            name: guest.name,
+            email: guest.email,
+            phone: guest.phone,
+          },
+          event: {
+            title: guest.event.title,
+            description: guest.event.description,
+            startDateTime: guest.event.startDateTime,
+            timezone: guest.event.timezone,
+            location: guest.event.locationAddress
+              ? `${guest.event.locationAddress}${guest.event.locationUnit ? `, ${guest.event.locationUnit}` : ''}`
+              : null,
+            User: guest.event.User,
+          },
+          invitationUrl,
+        });
+      } catch (emailError) {
+        console.error('Error sending email invitation:', emailError);
+      }
     }
 
     return NextResponse.json({
@@ -250,22 +276,32 @@ export async function PUT(request) {
     // Update guest
     const updatedGuest = await prisma.guest.update({
       where: { id: guestId },
-    data: {
+      data: {
         ...(name && { name }),
         ...(email && { email }),
         ...(phone && { phone }),
         ...(status && { status }),
-        ...(response !== undefined && { response: response === "" ? null : response }),
-    },
+        ...(response !== undefined && {
+          response: response === '' ? null : response,
+        }),
+      },
       include: {
         event: {
           select: {
             id: true,
             title: true,
             startDateTime: true,
+            timezone: true,
             locationAddress: true,
             locationUnit: true,
             description: true,
+            User: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
           },
         },
       },

@@ -55,6 +55,7 @@
     "i18next-browser-languagedetector": "^8.2.0",
     "input-otp": "^1.4.2",
     "leaflet": "^1.9.4",
+    "libphonenumber-js": "^1.12.23",
     "lightningcss": "^1.26.0",
     "lucide-react": "^0.523.0",
     "motion": "^12.19.1",
@@ -85,6 +86,7 @@
     "sonner": "^2.0.5",
     "tailwind-merge": "^3.3.1",
     "tailwindcss-animate": "^1.0.7",
+    "twilio": "^5.10.2",
     "vaul": "^1.1.2",
     "xlsx": "^0.18.5",
     "zod": "^3.25.67"

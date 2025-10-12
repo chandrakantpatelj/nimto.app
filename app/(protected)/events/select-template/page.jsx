@@ -1,6 +1,9 @@
+'use client';
+
 import { Fragment } from 'react';
 import Link from 'next/link';
 import { CirclePlus } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Container } from '@/components/common/container';
 import {
@@ -18,6 +21,12 @@ import { SelectEventContent } from './content';
 // import { EventManagement } from './content';
 
 function EventManagementPage() {
+  const { data: session, status } = useSession();
+
+  // Get user name and role from session
+  const userName = session?.user?.name || 'User';
+  const userRole = session?.user?.roleName || 'User';
+
   return (
     <Fragment>
       <PageNavbar />
@@ -25,7 +34,9 @@ function EventManagementPage() {
         <Toolbar>
           <ToolbarHeading>
             <ToolbarPageTitle text="Create Event: Select a Template" />
-            <ToolbarDescription>Super Admin (Super Admin)</ToolbarDescription>
+            <ToolbarDescription>
+              {userName} ({userRole})
+            </ToolbarDescription>
           </ToolbarHeading>
           <ToolbarActions>
             <Button variant="outline" asChild>

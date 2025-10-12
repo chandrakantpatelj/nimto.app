@@ -1,6 +1,5 @@
 'use client';
 
-import { toAbsoluteUrl } from '@/lib/helpers';
 import {
   forwardRef,
   useEffect,
@@ -8,6 +7,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { toAbsoluteUrl } from '@/lib/helpers';
 
 let editorInstanceId = 0;
 
@@ -42,7 +42,6 @@ const PixieEditor = forwardRef(
     },
     ref,
   ) => {
-    console.log('initialImageUrl', initialImageUrl);
     const pixieRef = useRef(null);
     const [containerId, setContainerId] = useState('');
     const [isLoading, setIsLoading] = useState(true);
@@ -223,8 +222,6 @@ const PixieEditor = forwardRef(
       // Get thumbnail data for upload (without making API call)
       getThumbnailData: async () => {
         try {
-          console.log('Exporting thumbnail data from Pixie');
-
           // Export the image using the export function defined above
           const exportResult = await (async () => {
             try {
@@ -294,18 +291,13 @@ const PixieEditor = forwardRef(
               return null;
             }
           })();
-          console.log('exportResult', exportResult);
+
           if (!exportResult || !exportResult.blob) {
             console.error('Failed to export image from Pixie:', {
               exportResult,
             });
             throw new Error('Failed to export image from Pixie');
           }
-
-          console.log('Image exported successfully:', {
-            blobSize: exportResult.blob.size,
-            blobType: exportResult.blob.type,
-          });
 
           // Convert blob to base64 for API
           const reader = new FileReader();
@@ -316,9 +308,6 @@ const PixieEditor = forwardRef(
           });
 
           const base64Data = await base64Promise;
-          console.log('Converted blob to base64:', {
-            base64Length: base64Data.length,
-          });
 
           return {
             base64Data,
@@ -379,7 +368,6 @@ const PixieEditor = forwardRef(
             nav: {
               replaceDefault: true,
               items: NAV_ITEMS,
-          
             },
             menubar: {
               replaceDefaultItems: true,
@@ -398,7 +386,6 @@ const PixieEditor = forwardRef(
                   align: 'center',
                   desktopOnly: true,
                 },
-                
               ],
             },
             openImageDialog: { show: false },
@@ -456,10 +443,6 @@ const PixieEditor = forwardRef(
           try {
             // First, load the image if provided
             if (initialImageUrl) {
-              console.log(
-                'PixieEditor: Loading initial image:',
-                initialImageUrl,
-              );
               await loadImageIntoPixie(initialImageUrl);
 
               // Wait a bit for image to load
@@ -468,15 +451,6 @@ const PixieEditor = forwardRef(
 
             // Then, load the content if provided
             if (initialContent) {
-              console.log('PixieEditor: Loading initial content:', {
-                hasContent: !!initialContent,
-                contentType: typeof initialContent,
-                contentPreview:
-                  typeof initialContent === 'string'
-                    ? initialContent.substring(0, 100)
-                    : JSON.stringify(initialContent).substring(0, 100),
-              });
-
               const initialContentJson =
                 typeof initialContent === 'string'
                   ? JSON.parse(initialContent)
@@ -540,10 +514,10 @@ const PixieEditor = forwardRef(
               </div>
               <div className="space-y-2">
                 <h3 className="text-lg font-semibold text-gray-800">
-                  Loading Image Editor
+                  Loading Event Canvas
                 </h3>
                 <p className="text-sm text-gray-600">
-                  Initializing Pixie editor...
+                  Initializing Nimto editor...
                 </p>
               </div>
               <div className="flex justify-center space-x-1">

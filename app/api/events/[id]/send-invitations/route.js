@@ -12,9 +12,9 @@ export async function POST(request, { params }) {
       return accessCheck.error;
     }
 
-    const { id: eventId } = params;
+    const { id: eventId } = await params;
     const body = await request.json();
-    const { guestIds, type = 'invitation' } = body; // type: 'invitation' or 'reminder'
+    const { guestIds, type = 'invitation', channels = ['email', 'sms'] } = body; // type: 'invitation' or 'reminder', channels: ['email', 'sms']
 
     // Validate event exists and user has access
     const event = await prisma.event.findUnique({
@@ -24,8 +24,16 @@ export async function POST(request, { params }) {
         title: true,
         description: true,
         startDateTime: true,
+        timezone: true, // Include timezone for proper invitation formatting
         locationAddress: true,
         locationUnit: true,
+        User: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
       },
     });
 
@@ -51,7 +59,7 @@ export async function POST(request, { params }) {
       guests = await prisma.guest.findMany({
         where: {
           eventId: eventId,
-          invitedAt: null, // Not sent yet
+          status: 'PENDING', // Not sent yet
         },
       });
     } else if (type === 'reminder') {
@@ -59,8 +67,7 @@ export async function POST(request, { params }) {
       guests = await prisma.guest.findMany({
         where: {
           eventId: eventId,
-          invitedAt: { not: null }, // Already sent
-          status: { in: ['PENDING', null] }, // Still pending
+          status: { in: ['PENDING', 'INVITED'] }, // Still pending
         },
       });
     } else {
@@ -86,22 +93,7 @@ export async function POST(request, { params }) {
       try {
         const invitationUrl = `${baseUrl}/invitation/${eventId}/${guest.id}`;
 
-        // Check if email configuration is available
-        const hasEmailConfig = process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS;
-        
-        if (!hasEmailConfig) {
-          console.warn('Email configuration missing. Skipping email sending.');
-          results.push({
-            guestId: guest.id,
-            guestName: guest.name,
-            contact: guest.email || guest.phone,
-            success: false,
-            error: 'Email service not configured',
-          });
-          continue;
-        }
-
-        const emailSent = await sendEventInvitation({
+        const invitationResult = await sendEventInvitation({
           guest: {
             name: guest.name,
             email: guest.email,
@@ -111,25 +103,53 @@ export async function POST(request, { params }) {
             title: event.title,
             description: event.description,
             startDateTime: event.startDateTime,
+            timezone: event.timezone,
             location: event.locationAddress
               ? `${event.locationAddress}${event.locationUnit ? `, ${event.locationUnit}` : ''}`
               : null,
+            User: event.User,
           },
           invitationUrl,
+          channels,
         });
 
-        if (emailSent) {
-          // Update invitedAt timestamp
-          await prisma.guest.update({
-            where: { id: guest.id },
-            data: { invitedAt: new Date() },
-          });
+        if (invitationResult.success) {
+          let currentGuestStatus = guest.status;
+          if (
+            currentGuestStatus === 'PENDING' ||
+            currentGuestStatus === null ||
+            currentGuestStatus === undefined ||
+            currentGuestStatus === ''
+          ) {
+            // Update both status and invitedAt
+            await prisma.guest.update({
+              where: { id: guest.id },
+              data: {
+                status: 'INVITED',
+                invitedAt: new Date(),
+              },
+            });
+          } else {
+            // Only update invitedAt
+            await prisma.guest.update({
+              where: { id: guest.id },
+              data: {
+                invitedAt: new Date(),
+              },
+            });
+          }
 
           results.push({
             guestId: guest.id,
             guestName: guest.name,
             contact: guest.email || guest.phone,
             success: true,
+            emailSent: invitationResult.results?.email?.sent || false,
+            smsSent: invitationResult.results?.sms?.sent || false,
+            errors: {
+              email: invitationResult.results?.email?.error || null,
+              sms: invitationResult.results?.sms?.error || null,
+            },
           });
         } else {
           results.push({
@@ -137,7 +157,13 @@ export async function POST(request, { params }) {
             guestName: guest.name,
             contact: guest.email || guest.phone,
             success: false,
-            error: 'Failed to send email',
+            error: invitationResult.error || 'Failed to send invitation',
+            emailSent: false,
+            smsSent: false,
+            errors: {
+              email: invitationResult.results?.email?.error || null,
+              sms: invitationResult.results?.sms?.error || null,
+            },
           });
         }
       } catch (error) {
@@ -168,10 +194,10 @@ export async function POST(request, { params }) {
   } catch (error) {
     console.error('Error sending invitations:', error);
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         error: 'Failed to send invitations',
-        details: error.message 
+        details: error.message,
       },
       { status: 500 },
     );

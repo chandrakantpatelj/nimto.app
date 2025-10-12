@@ -46,6 +46,16 @@ export async function GET(request, { params }) {
       event.eventThumbnailUrl = generateDirectS3Url(event.eventThumbnailPath);
     }
 
+    // Parse mapCoordinate from JSON string to object
+    if (event.mapCoordinate && typeof event.mapCoordinate === 'string') {
+      try {
+        event.mapCoordinate = JSON.parse(event.mapCoordinate);
+      } catch (error) {
+        console.error('Error parsing mapCoordinate:', error);
+        event.mapCoordinate = null;
+      }
+    }
+
     return NextResponse.json({
       success: true,
       data: event,

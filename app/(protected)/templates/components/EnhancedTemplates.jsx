@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -10,6 +11,7 @@ import {
   useTemplateActions,
   useTemplateError,
   useTemplateLoading,
+  useTemplatePagination,
 } from '@/store/hooks';
 import { Crown, Loader2, Sparkles, Star, Trash2, Zap } from 'lucide-react';
 import { useToast } from '@/providers/toast-provider';
@@ -27,8 +29,11 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { SimplePagination } from '@/components/ui/simple-pagination';
 import TemplateImageDisplay from '@/components/template-image-display';
 import LazyImage from './LazyImage';
+import { useRoleBasedAccess } from '@/hooks/use-role-based-access';
+import { useSession } from 'next-auth/react';
 
 const EnhancedTemplates = ({
   searchQuery = '',
@@ -37,17 +42,23 @@ const EnhancedTemplates = ({
 }) => {
   const router = useRouter();
   const { toastSuccess, toastError } = useToast();
-
+    const { data: session } = useSession();
+    const { roles } = useRoleBasedAccess();
+    const isSuperAdmin = roles.isSuperAdmin;
+    const isAdmin = roles.isAdmin;
+    const isAuthenticated = !!session;
   // Redux state and actions
   const allTemplates = useAllTemplates();
   const loading = useTemplateLoading();
   const error = useTemplateError();
   const activeFilters = useActiveFilters();
+  const pagination = useTemplatePagination();
   const {
     fetchTemplates,
     deleteTemplate,
     setActiveFilters,
     setSelectedTemplate,
+    setPagination,
   } = useTemplateActions();
 
   const { setSelectedEvent } = useEventActions();
@@ -80,7 +91,7 @@ const EnhancedTemplates = ({
   }, [searchQuery, selectedCategory, filters, activeFilters, setActiveFilters]);
 
   // Load templates using Redux with server-side filtering (keep original API logic)
-  const loadTemplates = async () => {
+  const loadTemplates = async (page = null) => {
     try {
       // Build query parameters for server-side filtering (keep original logic)
       const params = new URLSearchParams();
@@ -94,6 +105,12 @@ const EnhancedTemplates = ({
       if (filters.featured) params.append('featured', 'true');
       if (filters.new) params.append('new', 'true');
 
+      // Add pagination parameters
+      const currentPage = page !== null ? page : pagination.currentPage;
+      const offset = (currentPage - 1) * pagination.limit;
+      params.append('limit', pagination.limit.toString());
+      params.append('offset', offset.toString());
+
       // Call Redux action with query parameters (API response will be stored in Redux)
       await fetchTemplates(params.toString());
     } catch (err) {
@@ -101,9 +118,10 @@ const EnhancedTemplates = ({
     }
   };
 
-  // Load templates when filters change
+  // Load templates when filters change (reset to page 1)
   useEffect(() => {
-    loadTemplates();
+    setPagination({ currentPage: 1 });
+    loadTemplates(1);
   }, [searchQuery, selectedCategory, filters]);
 
   // Load templates on component mount based on stored filters
@@ -144,10 +162,55 @@ const EnhancedTemplates = ({
       if (activeFilters.featured) params.append('featured', 'true');
       if (activeFilters.new) params.append('new', 'true');
 
+      // Add pagination parameters
+      const offset = (pagination.currentPage - 1) * pagination.limit;
+      params.append('limit', pagination.limit.toString());
+      params.append('offset', offset.toString());
+
       // Call Redux action with stored filter parameters
       await fetchTemplates(params.toString());
     } catch (err) {
       console.error('Error loading templates from stored filters:', err);
+    }
+  };
+
+  // Handle page change
+  const handlePageChange = (newPage) => {
+    setPagination({ currentPage: newPage });
+    loadTemplates(newPage);
+  };
+
+  // Handle page size change
+  const handlePageSizeChange = async (newPageSize) => {
+    console.log('🔄 Page size changing to:', newPageSize);
+    
+    // Update pagination state first
+    setPagination({ limit: newPageSize, currentPage: 1 });
+    
+    // Build query parameters with new page size
+    const params = new URLSearchParams();
+    if (searchQuery) params.append('search', searchQuery);
+    if (selectedCategory) params.append('category', selectedCategory);
+    if (filters.orientation)
+      params.append('orientation', filters.orientation);
+    if (filters.premium === 'premium') params.append('isPremium', 'true');
+    if (filters.premium === 'free') params.append('isPremium', 'false');
+    if (filters.trending) params.append('trending', 'true');
+    if (filters.featured) params.append('featured', 'true');
+    if (filters.new) params.append('new', 'true');
+
+    // Add pagination parameters with new page size
+    const offset = 0; // Reset to first page
+    params.append('limit', newPageSize.toString());
+    params.append('offset', offset.toString());
+
+    console.log('📡 API call with params:', params.toString());
+
+    // Call Redux action with updated parameters
+    try {
+      await fetchTemplates(params.toString());
+    } catch (err) {
+      console.error('❌ Component: Error fetching templates after page size change:', err);
     }
   };
 
@@ -172,11 +235,11 @@ const EnhancedTemplates = ({
 
       await deleteTemplate(template.id);
 
-      toastSuccess('Template deleted successfully');
+      toastSuccess('Design deleted successfully');
       setShowDeleteDialog(false);
       setTemplateToDelete(null);
     } catch (err) {
-      toastError(`Failed to delete template: ${err.message}`);
+      toastError(`Failed to delete design: ${err.message}`);
     } finally {
       setDeleteLoading(false);
       setDeletingTemplateId(null);
@@ -257,17 +320,11 @@ const EnhancedTemplates = ({
             No templates found.
           </p>
           <Button asChild className="w-full sm:w-auto">
-            <Link href="/templates/design">Create Your First Template</Link>
+            <Link href="/templates/design">Create Your First Design</Link>
           </Button>
         </div>
       ) : (
         <>
-          <div className="flex justify-between items-center mb-6 sm:mb-8 px-4 sm:px-0">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
-              Templates ({allTemplates.length})
-            </h2>
-          </div>
-
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4 lg:gap-5 px-2 sm:px-4 md:px-0">
             {allTemplates.map((template) => (
               <Card
@@ -427,36 +484,40 @@ const EnhancedTemplates = ({
                           handleTemplateSelect(template);
                         }}
                       >
-                        Use Template
+                        Use Design
                       </Button>
                       <div className="flex gap-1">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 border border-gray-200 dark:border-slate-600 hover:border-purple-500 hover:text-purple-600 dark:hover:text-purple-400 text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-700 font-semibold py-1 rounded-md transition-all duration-300 text-xs"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEdit(template);
-                          }}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-300 dark:hover:border-red-700 bg-white dark:bg-slate-700 font-semibold py-1 rounded-md transition-all duration-300 text-xs"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            confirmDelete(template);
-                          }}
-                          disabled={deletingTemplateId === template.id}
-                        >
-                          {deletingTemplateId === template.id ? (
-                            <Loader2 className="h-3 w-3 animate-spin" />
-                          ) : (
-                            <Trash2 className="h-3 w-3" />
-                          )}
-                        </Button>
+                        {isAuthenticated && isSuperAdmin && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1 border border-gray-200 dark:border-slate-600 hover:border-purple-500 hover:text-purple-600 dark:hover:text-purple-400 text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-700 font-semibold py-1 rounded-md transition-all duration-300 text-xs"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEdit(template);
+                              }}
+                            >
+                              Edit
+                            </Button>
+                        )}
+                        {isAuthenticated && isSuperAdmin && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="flex-1 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-300 dark:hover:border-red-700 bg-white dark:bg-slate-700 font-semibold py-1 rounded-md transition-all duration-300 text-xs"
+                                onClick={(e) => {
+                                e.stopPropagation();
+                                confirmDelete(template);
+                                }}
+                                disabled={deletingTemplateId === template.id}
+                            >
+                                {deletingTemplateId === template.id ? (
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                                ) : (
+                                <Trash2 className="h-3 w-3" />
+                                )}
+                            </Button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -464,6 +525,24 @@ const EnhancedTemplates = ({
               </Card>
             ))}
           </div>
+
+          {/* Pagination - positioned at bottom right */}
+          {pagination.total > 0 && (
+            <div className="flex justify-end mt-6">
+              <SimplePagination
+                currentPage={pagination.currentPage}
+                totalPages={pagination.pageCount}
+                pageSize={pagination.limit}
+                totalItems={pagination.total}
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
+                pageSizeOptions={[6, 12, 24, 36, 48]}
+                showPageSizeSelector={true}
+                showFirstLast={true}
+                className=""
+              />
+            </div>
+          )}
         </>
       )}
 
@@ -471,7 +550,7 @@ const EnhancedTemplates = ({
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Template</AlertDialogTitle>
+            <AlertDialogTitle>Delete Design</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to delete "{templateToDelete?.name}"? This
               action cannot be undone.
@@ -500,6 +579,12 @@ const EnhancedTemplates = ({
       </AlertDialog>
     </div>
   );
+};
+
+EnhancedTemplates.propTypes = {
+  searchQuery: PropTypes.string,
+  selectedCategory: PropTypes.string,
+  filters: PropTypes.object,
 };
 
 export { EnhancedTemplates };

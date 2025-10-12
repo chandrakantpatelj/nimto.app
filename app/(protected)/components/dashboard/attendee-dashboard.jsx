@@ -99,7 +99,7 @@ export function AttendeeDashboard() {
             guest.event &&
             isFutureDate(guest.event.startDateTime),
         )
-        .map((guest) => guest.event)
+        .map((guest) => ({ ...guest.event, guestId: guest.id }))
         .slice()
         .sort((a, b) => new Date(a.startDateTime) - new Date(b.startDateTime))
         .slice(0, 5);
@@ -299,7 +299,9 @@ export function AttendeeDashboard() {
                     variant="outline"
                     size="sm"
                     className="w-full sm:w-auto"
-                    onClick={() => router.push(`/events/${event.id}`)}
+                    onClick={() =>
+                      router.push(`/invitation/${event.id}/${event.guestId}`)
+                    }
                   >
                     <Eye className="h-4 w-4 mr-2" />
                     View Event
@@ -375,7 +377,9 @@ export function AttendeeDashboard() {
                       size="sm"
                       className="w-full sm:w-auto"
                       onClick={() =>
-                        router.push(`/events/${invitation.event.id}`)
+                        router.push(
+                          `/invitation/${invitation.event.id}/${invitation.id}`,
+                        )
                       }
                     >
                       <Eye className="h-4 w-4 mr-2" />

@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { withAuth } from 'next-auth/middleware';
 
-function getRoleSlug(roleName) {
-  if (!roleName) return null;
-  return roleName.toLowerCase();
+function getRoleSlug(roleSlug) {
+  if (!roleSlug) return null;
+  return roleSlug.toLowerCase();
 }
 
 function redirect(path, req) {
@@ -49,9 +49,9 @@ export default withAuth(
           console.error('Error decoding callbackUrl:', error);
         }
       }
-      
+
       // Fallback: Redirect based on user role
-      const userRole = getRoleSlug(token.roleName);
+      const userRole = getRoleSlug(token.roleSlug);
       if (userRole === 'attendee') {
         return redirect('/invited-events', req);
       }
@@ -60,7 +60,7 @@ export default withAuth(
 
     if (!token) return redirect('/', req);
 
-    const userRole = getRoleSlug(token.roleName);
+    const userRole = getRoleSlug(token.roleSlug);
     if (!userRole) return redirect('/unauthorized', req);
     if (token.status !== 'ACTIVE') return redirect('/unauthorized', req);
 

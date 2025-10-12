@@ -26,8 +26,13 @@ export async function PATCH(req, { params }) {
       return new NextResponse('Event not found', { status: 404 });
     }
 
-    if (event.createdByUserId !== session.user.id) {
-      console.log('User not authorized. Event creator:', event.createdByUserId, 'Session user:', session.user.id);
+    // Allow event creator, super-admin, and application-admin to update features
+    const isSuperAdmin = session.user.roleSlug === 'super-admin';
+    const isApplicationAdmin = session.user.roleSlug === 'application-admin';
+    const isEventCreator = event.createdByUserId === session.user.id;
+
+    if (!isEventCreator && !isSuperAdmin && !isApplicationAdmin) {
+      console.log('User not authorized. Event creator:', event.createdByUserId, 'Session user:', session.user.id, 'Role:', session.user.roleSlug);
       return new NextResponse('Unauthorized', { status: 401 });
     }
 

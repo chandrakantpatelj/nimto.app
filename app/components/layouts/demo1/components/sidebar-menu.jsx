@@ -46,7 +46,7 @@ export function SidebarMenu() {
 
   // Get role-based menu items
   const getMenuItems = () => {
-    return getRoleBasedMenuItems(user?.roleName);
+    return getRoleBasedMenuItems(user?.roleSlug);
   };
 
   const buildMenu = (items) => {
