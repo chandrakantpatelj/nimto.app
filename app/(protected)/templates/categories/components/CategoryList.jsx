@@ -116,14 +116,6 @@ export function CategoryList({ onEditCategory }) {
             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               Categories ({categories.length})
             </h3>
-            <Button
-              onClick={() => onEditCategory(null)}
-              size="sm"
-              className="bg-purple-600 hover:bg-purple-700 dark:bg-purple-600 dark:hover:bg-purple-700"
-            >
-              <ImageIcon className="h-4 w-4 mr-2" />
-              Add Category
-            </Button>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">

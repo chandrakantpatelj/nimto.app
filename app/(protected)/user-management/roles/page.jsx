@@ -1,20 +1,17 @@
 'use client';
 
 import { Container } from '@/components/common/container';
+import { RouteGuard } from '@/components/common/route-guard';
 import {
   Toolbar,
-  ToolbarActions,
   ToolbarHeading,
   ToolbarTitle,
 } from '@/components/common/toolbar';
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
 import RoleList from './components/role-list';
-import { RouteGuard } from '@/components/common/route-guard';
 
 export default function Page() {
   return (
-    <RouteGuard 
+    <RouteGuard
       requiredRoles={['super-admin', 'application-admin']}
       redirectTo="/unauthorized"
     >
@@ -24,12 +21,6 @@ export default function Page() {
             <ToolbarHeading>
               <ToolbarTitle>Role Management</ToolbarTitle>
             </ToolbarHeading>
-            <ToolbarActions>
-              <Button variant="destructive">
-                <Plus className="mr-2 h-4 w-4" />
-                Create New Role
-              </Button>
-            </ToolbarActions>
           </Toolbar>
         </Container>
         <Container>
