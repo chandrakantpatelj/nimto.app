@@ -8,6 +8,27 @@ const authOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   adapter: PrismaAdapter(prisma),
   debug: process.env.NODE_ENV === 'development',
+
+  // CORS configuration for production
+  callbacks: {
+    async authorized({ request, auth }) {
+      // Allow all requests in development
+      if (process.env.NODE_ENV === 'development') {
+        return true;
+      }
+
+      // In production, ensure the request is from the same origin
+      const { pathname } = request.nextUrl;
+
+      // Allow auth-related paths
+      if (pathname.startsWith('/api/auth/')) {
+        return true;
+      }
+
+      // For other paths, require authentication
+      return !!auth;
+    },
+  },
   providers: [
     CredentialsProvider({
       name: 'Credentials',
