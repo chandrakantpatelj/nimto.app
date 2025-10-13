@@ -11,20 +11,20 @@ import {
 } from '@/store/hooks';
 import { fetchTemplateById as fetchTemplateByIdThunk } from '@/store/slices/templatesSlice';
 import { useSession } from 'next-auth/react';
+import {
+  clearDesignState,
+  hasDesignState,
+  restoreDesignState,
+  saveDesignState,
+  savePixieEditorState,
+} from '@/lib/design-state-persistence';
 import { useToast } from '@/providers/toast-provider';
 import { AuthModal } from '@/components/common/auth-modal';
-import { TemplateHeader, PublishOptionsPopup } from '../../components';
+import { PublishOptionsPopup, TemplateHeader } from '../../components';
 import InvitationConfirmationPopup from '../../components/InvitationConfirmationPopup';
 import Step1 from '../../components/Step1';
 import Step2 from '../../components/Step2';
 import Step3 from '../../components/Step3';
-import {
-  saveDesignState,
-  restoreDesignState,
-  clearDesignState,
-  hasDesignState,
-  savePixieEditorState,
-} from '@/lib/design-state-persistence';
 
 function EditEventContent() {
   const router = useRouter();
@@ -54,56 +54,45 @@ function EditEventContent() {
 
   // Load template data
   useEffect(() => {
-    const loadTemplate = async () => {      
-
+    const loadTemplate = async () => {
       if (isRedirecting || !templateId) {
-         
         return;
       }
 
       // First, check if we're returning from OAuth and have saved design state
       if (session?.user?.id && hasDesignState()) {
-        
         const savedState = restoreDesignState();
-        
-        
-        
+
         if (savedState && savedState.templateId === templateId) {
-          
-          
           // Merge the saved Pixie state into eventData's jsonContent
           const restoredEventData = {
             ...savedState.eventData,
             // Use the saved Pixie state if available, otherwise use original jsonContent
-            jsonContent: savedState.pixieState || savedState.eventData.jsonContent,
+            jsonContent:
+              savedState.pixieState || savedState.eventData.jsonContent,
           };
-          
-          
-          
+
           // Restore event data to Redux
           setSelectedEvent(restoredEventData);
-          
+
           // Restore active step
           if (savedState.activeStep !== undefined) {
             setActiveStep(savedState.activeStep);
           }
-          
+
           // Restore thumbnail if available
           if (savedState.thumbnailData) {
             setThumbnailData(savedState.thumbnailData);
           }
-          
+
           // Clear the saved state after restoring
           clearDesignState();
-          
-          
+
           return;
         } else if (savedState && savedState.templateId !== templateId) {
-         
           clearDesignState();
         }
       } else {
-        
       }
 
       // Only skip loading if we already have data for this specific template
@@ -174,12 +163,12 @@ function EditEventContent() {
             imageThumbnail: pixieState.exportedImage || null,
           });
         }
-        
+
         // Check if user is authenticated AFTER saving design
         if (!session?.user?.id) {
           // Save design state to localStorage before showing auth modal
           const pixieStateStr = await savePixieEditorState(pixieEditorRef);
-          
+
           saveDesignState({
             eventData: {
               ...eventData,
@@ -191,9 +180,9 @@ function EditEventContent() {
             activeStep: activeStep,
             thumbnailData: thumbnailData,
           });
-          
+
           console.log('Design state saved before auth modal OAuth redirect');
-          
+
           // Show auth modal (which will trigger OAuth redirect)
           setShowAuthModal(true);
           return;
@@ -222,7 +211,7 @@ function EditEventContent() {
       try {
         // Save the current Pixie editor state before redirecting
         const pixieState = await savePixieEditorState(pixieEditorRef);
-        
+
         // Save the complete design state to localStorage
         saveDesignState({
           eventData: eventData,
@@ -231,9 +220,9 @@ function EditEventContent() {
           activeStep: activeStep,
           thumbnailData: thumbnailData,
         });
-        
+
         console.log('Design state saved before OAuth redirect');
-        
+
         // Store current path for redirect after sign in
         const currentPath = `/events/design/${templateId}`;
         const returnUrl = encodeURIComponent(currentPath);
@@ -270,7 +259,7 @@ function EditEventContent() {
     // Update event status to PUBLISHED
     updateSelectedEvent({ status: 'PUBLISHED' });
     setShowPublishOptionsPopup(false);
-    
+
     // Show invitation popup if there are guests
     if (eventData.guests && eventData.guests.length > 0) {
       setShowInvitationPopup(true);

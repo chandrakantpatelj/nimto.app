@@ -232,6 +232,7 @@ model Event {
   locationAddress      String?
   locationUnit         String?
   showMap              Boolean     @default(true)
+  mapCoordinate      String?
   timezone             String      @default("UTC")
   User                 User        @relation(fields: [createdByUserId], references: [id])
   guests               Guest[]

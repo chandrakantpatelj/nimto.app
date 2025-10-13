@@ -8,7 +8,7 @@ import { DEFAULT_MAP_CENTER } from '@/lib/constants';
 import { useToast } from '@/providers/toast-provider';
 import AdvancedProcessingLoader from '@/components/common/advanced-processing-loader';
 import { AuthModal } from '@/components/common/auth-modal';
-import { TemplateHeader, PublishOptionsPopup } from '../components';
+import { PublishOptionsPopup, TemplateHeader } from '../components';
 import InvitationPopup from '../components/InvitationPopup';
 import Step1 from '../components/Step1';
 import Step2 from '../components/Step2';
@@ -49,13 +49,13 @@ function EditEventContent() {
 
       const event = await fetchEventById(eventId).unwrap();
 
-      // Ensure mapCenter is set when showMap is true
+      // Ensure mapCoordinate is set when showMap is true
       const eventWithDefaults = {
         ...event,
-        mapCenter:
-          event.showMap && event.locationAddress && !event.mapCenter
+        mapCoordinate:
+          event.showMap && event.locationAddress && !event.mapCoordinate
             ? DEFAULT_MAP_CENTER
-            : event.mapCenter,
+            : event.mapCoordinate,
       };
 
       // Update both the selectedEvent and the events store
@@ -188,7 +188,7 @@ function EditEventContent() {
     // Update event status to PUBLISHED
     updateSelectedEvent({ status: 'PUBLISHED' });
     setShowPublishOptionsPopup(false);
-    
+
     // Show invitation popup if there are guests
     if (eventData.guests && eventData.guests.length > 0) {
       setShowInvitationPopup(true);
@@ -250,7 +250,7 @@ function EditEventContent() {
             toastWarning('Event created but thumbnail upload failed');
           }
         }
-        
+
         // Determine success message
         let message;
         if (status === 'DRAFT') {

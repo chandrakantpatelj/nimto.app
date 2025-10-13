@@ -28,7 +28,7 @@ export default function LocationDrawer({
     unit: locationUnit,
     showMap: initialShowMap,
   });
-  const [mapCenter, setMapCenter] = useState(initialMapCenter);
+  const [mapCoordinate, setMapCoordinate] = useState(initialMapCenter);
   const [isPlaceSelected, setIsPlaceSelected] = useState(false);
 
   // Create display value from address and unit
@@ -48,7 +48,7 @@ export default function LocationDrawer({
   const handlePlaceSelect = (place) => {
     if (place && place.geometry && place.geometry.location) {
       const newAddress = place.formatted_address || place.name || '';
-      const newMapCenter = {
+      const newMapCoordinate = {
         lat: place.geometry.location.lat(),
         lng: place.geometry.location.lng(),
       };
@@ -60,7 +60,7 @@ export default function LocationDrawer({
         ...prev,
         address: newAddress,
       }));
-      setMapCenter(newMapCenter);
+      setMapCoordinate(newMapCoordinate);
 
       // Call the parent onChange with the new values
       if (onChange) {
@@ -68,7 +68,7 @@ export default function LocationDrawer({
           address: newAddress,
           unit: locationDetails.unit,
           showMap: locationDetails.showMap,
-          mapCenter: newMapCenter,
+          mapCoordinate: newMapCoordinate,
         });
       }
 
@@ -91,7 +91,7 @@ export default function LocationDrawer({
           address,
           unit: locationDetails.unit,
           showMap: locationDetails.showMap,
-          mapCenter,
+          mapCoordinate,
         });
       }
     }
@@ -109,7 +109,7 @@ export default function LocationDrawer({
         address: locationDetails.address,
         unit,
         showMap: locationDetails.showMap,
-        mapCenter,
+        mapCoordinate,
       });
     }
   };
@@ -126,7 +126,7 @@ export default function LocationDrawer({
         address: locationDetails.address,
         unit: locationDetails.unit,
         showMap,
-        mapCenter,
+        mapCoordinate,
       });
     }
   };
@@ -141,14 +141,14 @@ export default function LocationDrawer({
       unit: '',
       showMap: initialShowMap,
     });
-    setMapCenter(initialMapCenter);
+    setMapCoordinate(initialMapCenter);
 
     if (onChange) {
       onChange({
         address: '',
         unit: '',
         showMap: initialShowMap,
-        mapCenter: initialMapCenter,
+        mapCoordinate: initialMapCenter,
       });
     }
   };
@@ -268,8 +268,8 @@ export default function LocationDrawer({
               {locationDetails.showMap && locationDetails.address && (
                 <div className="h-64 w-full rounded-lg overflow-hidden border border-gray-300 shadow-sm">
                   <GoogleMap
-                    key={`${mapCenter.lat}-${mapCenter.lng}`}
-                    center={mapCenter}
+                    key={`${mapCoordinate.lat}-${mapCoordinate.lng}`}
+                    center={mapCoordinate}
                     className="h-full w-full"
                   />
                 </div>
