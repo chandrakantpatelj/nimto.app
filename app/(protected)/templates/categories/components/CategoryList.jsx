@@ -26,7 +26,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import LazyImage from '../../components/LazyImage';
 
-export function CategoryList({ onEditCategory }) {
+export function CategoryList({ onEditCategory, refreshKey }) {
   const { toastSuccess, toastError } = useToast();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -37,7 +37,7 @@ export function CategoryList({ onEditCategory }) {
 
   useEffect(() => {
     fetchCategories();
-  }, []);
+  }, [refreshKey]);
 
   const fetchCategories = async () => {
     try {
