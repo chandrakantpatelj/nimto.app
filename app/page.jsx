@@ -534,7 +534,7 @@ export default function HomePage() {
                 </div>
             </section>
 
-            {(!isAuthenticated || !roles.isAttendee) && displayAds && (
+            {displayAds && (
                 <section className="w-full py-10 bg-gray-50 dark:bg-gray-800">
                     <AdSenseAd testBannerLink="https://dhimay.org" />
                 </section>
