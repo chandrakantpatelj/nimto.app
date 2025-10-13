@@ -15,7 +15,7 @@ export async function POST(req) {
       );
     }
 
-    const isValidToken = await verifyRecaptchaToken(recaptchaToken);
+    const isValidToken = await verifyRecaptchaToken(recaptchaToken, true);
 
     if (!isValidToken) {
       return NextResponse.json(
