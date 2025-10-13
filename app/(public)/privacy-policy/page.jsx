@@ -360,7 +360,7 @@ export default function PrivacyPolicyPage() {
                       <Mail className="w-5 h-5 text-blue-600" />
                       <div>
                         <p className="font-medium">Email</p>
-                        <p className="text-sm text-muted-foreground">privacy@nimto.app</p>
+                        <p className="text-sm text-muted-foreground">privacy@nimto.io</p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-3">
@@ -375,8 +375,8 @@ export default function PrivacyPolicyPage() {
                       <div>
                         <p className="font-medium">Address</p>
                         <p className="text-sm text-muted-foreground">
-                          123 Innovation Drive<br />
-                          Tech City, TC 12345
+                          Huntersville, NC 28078<br />
+                          USA
                         </p>
                       </div>
                     </div>
