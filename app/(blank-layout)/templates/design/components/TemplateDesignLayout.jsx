@@ -29,7 +29,7 @@ const TemplateDesignLayout = ({
 }) => {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
-  const { toastSuccess, toastError, toastWarning } = useToast();
+  const { toastSuccess, toastError } = useToast();
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
   const [internalLoading, setInternalLoading] = useState(false);
   const pixieEditorRef = useRef(null);
@@ -44,6 +44,8 @@ const TemplateDesignLayout = ({
     const handleResize = () => {
       if (window.innerWidth < 768) {
         setSidebarExpanded(false);
+      } else {
+        setSidebarExpanded(true);
       }
     };
 
@@ -261,31 +263,56 @@ const TemplateDesignLayout = ({
           { icon: '💾', text: 'Saving to database...' },
         ]}
       />
-      {/* Fixed Header */}
-      <div className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center p-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-white/20 dark:border-slate-700/20 shadow-lg h-14">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => router.back()}
-          className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border-white/20 dark:border-slate-700/20 shadow-lg hover:bg-white/95 dark:hover:bg-slate-800/95 text-slate-700 dark:text-slate-300 h-8 px-3"
-        >
-          <svg
-            className="w-4 h-4 mr-2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+      {/* Fixed Header - Mobile Responsive */}
+      <div className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-2 py-2 sm:px-4 sm:py-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-white/20 dark:border-slate-700/20 shadow-lg h-12 sm:h-14">
+        <div className="flex items-center gap-2">
+          {/* Mobile Menu Toggle */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={toggleSidebar}
+            className="md:hidden bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border-white/20 dark:border-slate-700/20 shadow-lg hover:bg-white/95 dark:hover:bg-slate-800/95 text-slate-700 dark:text-slate-300 h-8 w-8 p-0"
+            title="Toggle menu"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M10 19l-7-7m0 0l7-7m-7 7h18"
-            />
-          </svg>
-          Back
-        </Button>
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+          </Button>
 
-        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.back()}
+            className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border-white/20 dark:border-slate-700/20 shadow-lg hover:bg-white/95 dark:hover:bg-slate-800/95 text-slate-700 dark:text-slate-300 h-8 px-2 sm:px-3"
+          >
+            <svg
+              className="w-4 h-4 sm:mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
+            </svg>
+            <span className="hidden sm:inline">Back</span>
+          </Button>
+        </div>
+
+        <div className="flex items-center gap-2">
           {/* Theme Toggle Button */}
           <Button
             variant="outline"
@@ -297,19 +324,19 @@ const TemplateDesignLayout = ({
             }
           >
             {theme === 'dark' ? (
-              <Sun className="w-4 h-4" />
+              <Sun className="w-3 h-3 sm:w-4 sm:h-4" />
             ) : (
-              <Moon className="w-4 h-4" />
+              <Moon className="w-3 h-3 sm:w-4 sm:h-4" />
             )}
           </Button>
 
           <Button
             onClick={handleSaveTemplate}
             disabled={loading || internalLoading}
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-1.5 rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed h-8 text-sm"
+            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-2 py-1.5 sm:px-4 rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed h-8 text-xs sm:text-sm"
           >
             <svg
-              className="w-4 h-4 mr-2"
+              className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -321,29 +348,47 @@ const TemplateDesignLayout = ({
                 d="M5 13l4 4L19 7"
               />
             </svg>
-            {headerButtonText}
+            <span className="hidden sm:inline">{headerButtonText}</span>
+            <span className="sm:hidden">Save</span>
           </Button>
         </div>
       </div>
 
       {/* Main Content Area with Sidebar */}
-      <div className="flex flex-1 pt-16">
-        {/* Collapsible Sidebar */}
+      <div className="flex flex-1 pt-12 sm:pt-14">
+        {/* Mobile Backdrop Overlay */}
+        {sidebarExpanded && (
+          <div
+            className="fixed inset-0 bg-black/50 z-30 md:hidden"
+            onClick={toggleSidebar}
+            style={{ top: '3rem' }}
+          />
+        )}
+
+        {/* Collapsible Sidebar - Responsive */}
         <div
-          className={`fixed left-0 top-14 bottom-0 z-40 transition-all duration-300 ease-in-out ${
-            sidebarExpanded ? 'w-80' : 'w-20'
-          }`}
+          className={`
+            fixed left-0 bottom-0 z-40 transition-all duration-300 ease-in-out
+            ${sidebarExpanded ? 'translate-x-0' : '-translate-x-full'}
+            md:translate-x-0
+            ${sidebarExpanded ? 'w-80' : 'md:w-20'}
+            top-12 sm:top-14
+          `}
         >
           {/* Vertical Line Indicator */}
           <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-blue-500 to-indigo-500"></div>
 
-          {/* Toggle Button */}
+          {/* Toggle Button - Desktop Only */}
           <button
             onClick={toggleSidebar}
-            className={`absolute top-4 z-50 p-2 rounded-lg bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-800 shadow-lg border border-slate-200 dark:border-slate-700 transition-all duration-200 ${
-              sidebarExpanded ? 'right-4' : 'right-3'
-            }`}
+            className={`
+              hidden md:block absolute top-4 z-50 p-2 rounded-lg 
+              bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-800 
+              shadow-lg border border-slate-200 dark:border-slate-700 transition-all duration-200
+              ${sidebarExpanded ? 'right-4' : 'right-3'}
+            `}
             title={sidebarExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
+            aria-label={sidebarExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
           >
             <svg
               className={`w-4 h-4 text-slate-600 dark:text-slate-300 transition-transform duration-200 ${
@@ -366,6 +411,31 @@ const TemplateDesignLayout = ({
           <div className="h-full w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-r border-white/20 dark:border-slate-700/20 shadow-xl flex flex-col">
             {sidebarExpanded ? (
               <div className="flex flex-col h-full">
+                {/* Mobile Close Button */}
+                <div className="md:hidden flex justify-between items-center p-3 border-b border-slate-200 dark:border-slate-700">
+                  <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                    Template Settings
+                  </h3>
+                  <button
+                    onClick={toggleSidebar}
+                    className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  >
+                    <svg
+                      className="w-5 h-5 text-slate-600 dark:text-slate-300"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
+
                 <div className="p-3 sm:p-4 flex-1 overflow-y-auto">
                   <div className="space-y-3 sm:space-y-4">
                     {/* Error Display */}
@@ -395,9 +465,9 @@ const TemplateDesignLayout = ({
                     {/* Design Assets */}
                     <div className="space-y-3">
                       <div className="flex items-center space-x-2">
-                        <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                        <div className="w-6 h-6 sm:w-7 sm:h-7 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
                           <svg
-                            className="w-3 h-3 text-white"
+                            className="w-3 h-3 sm:w-4 sm:h-4 text-white"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -410,7 +480,7 @@ const TemplateDesignLayout = ({
                             />
                           </svg>
                         </div>
-                        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                        <h3 className="text-sm sm:text-base font-semibold text-slate-800 dark:text-slate-200">
                           Design Assets
                         </h3>
                       </div>
@@ -421,7 +491,7 @@ const TemplateDesignLayout = ({
                             .getElementById('replace-image-upload')
                             ?.click()
                         }
-                        className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg py-2 text-sm font-medium shadow-lg hover:shadow-xl transition-all duration-200"
+                        className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg py-2.5 sm:py-2 text-sm font-medium shadow-lg hover:shadow-xl transition-all duration-200 min-h-[44px] sm:min-h-0"
                       >
                         <svg
                           className="w-4 h-4 mr-2"
@@ -443,9 +513,9 @@ const TemplateDesignLayout = ({
                     {/* Template Details */}
                     <div className="space-y-3">
                       <div className="flex items-center space-x-2">
-                        <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
+                        <div className="w-6 h-6 sm:w-7 sm:h-7 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
                           <svg
-                            className="w-3 h-3 text-white"
+                            className="w-3 h-3 sm:w-4 sm:h-4 text-white"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -458,14 +528,14 @@ const TemplateDesignLayout = ({
                             />
                           </svg>
                         </div>
-                        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                        <h3 className="text-sm sm:text-base font-semibold text-slate-800 dark:text-slate-200">
                           Template Details
                         </h3>
                       </div>
 
                       <div className="space-y-3">
                         <div>
-                          <Label className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-1 block">
+                          <Label className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 block">
                             Template Name
                           </Label>
                           <Input
@@ -473,12 +543,12 @@ const TemplateDesignLayout = ({
                             value={formData.name}
                             onChange={handleTemplateNameChange}
                             placeholder="Enter template name"
-                            className="rounded-lg border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                            className="rounded-lg border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 h-11 sm:h-10"
                           />
                         </div>
 
                         <div>
-                          <Label className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-1 block">
+                          <Label className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 block">
                             Category
                           </Label>
                           <Select
@@ -492,7 +562,7 @@ const TemplateDesignLayout = ({
                             }}
                             disabled={categoriesLoading}
                           >
-                            <SelectTrigger className="rounded-lg border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+                            <SelectTrigger className="rounded-lg border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 h-11 sm:h-10">
                               <SelectValue
                                 placeholder={
                                   categoriesLoading
@@ -524,7 +594,7 @@ const TemplateDesignLayout = ({
                         </div>
 
                         <div>
-                          <Label className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-2 block">
+                          <Label className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
                             Type
                           </Label>
                           <RadioGroup
@@ -532,19 +602,19 @@ const TemplateDesignLayout = ({
                             onValueChange={handleTypeChange}
                             className="space-y-2"
                           >
-                            <div className="flex items-center space-x-2 p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                            <div className="flex items-center space-x-2 p-3 sm:p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors min-h-[44px] sm:min-h-0">
                               <RadioGroupItem
                                 value="free"
                                 id="free"
-                                className="text-green-500"
+                                className="text-green-500 w-5 h-5 sm:w-4 sm:h-4"
                               />
                               <Label
                                 htmlFor="free"
-                                className="flex items-center space-x-2 cursor-pointer text-sm"
+                                className="flex items-center space-x-2 cursor-pointer text-sm flex-1"
                               >
-                                <div className="w-4 h-4 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                                <div className="w-5 h-5 sm:w-4 sm:h-4 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
                                   <svg
-                                    className="w-2 h-2 text-green-600 dark:text-green-400"
+                                    className="w-3 h-3 sm:w-2 sm:h-2 text-green-600 dark:text-green-400"
                                     fill="currentColor"
                                     viewBox="0 0 20 20"
                                   >
@@ -560,19 +630,19 @@ const TemplateDesignLayout = ({
                                 </span>
                               </Label>
                             </div>
-                            <div className="flex items-center space-x-2 p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                            <div className="flex items-center space-x-2 p-3 sm:p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors min-h-[44px] sm:min-h-0">
                               <RadioGroupItem
                                 value="premium"
                                 id="premium"
-                                className="text-amber-500"
+                                className="text-amber-500 w-5 h-5 sm:w-4 sm:h-4"
                               />
                               <Label
                                 htmlFor="premium"
-                                className="flex items-center space-x-2 cursor-pointer text-sm"
+                                className="flex items-center space-x-2 cursor-pointer text-sm flex-1"
                               >
-                                <div className="w-4 h-4 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center">
+                                <div className="w-5 h-5 sm:w-4 sm:h-4 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center">
                                   <svg
-                                    className="w-2 h-2 text-amber-600 dark:text-amber-400"
+                                    className="w-3 h-3 sm:w-2 sm:h-2 text-amber-600 dark:text-amber-400"
                                     fill="currentColor"
                                     viewBox="0 0 20 20"
                                   >
@@ -589,7 +659,7 @@ const TemplateDesignLayout = ({
 
                         {formData.isPremium && (
                           <div>
-                            <Label className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-1 block">
+                            <Label className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 block">
                               Price (USD)
                             </Label>
                             <div className="relative">
@@ -607,7 +677,7 @@ const TemplateDesignLayout = ({
                                 placeholder="0.00"
                                 min="0"
                                 step="0.01"
-                                className="pl-8 rounded-lg border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                                className="pl-8 rounded-lg border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 h-11 sm:h-10"
                               />
                             </div>
                           </div>
@@ -618,12 +688,14 @@ const TemplateDesignLayout = ({
                 </div>
               </div>
             ) : (
-              /* Collapsed Sidebar Content */
-              <div className="h-full flex flex-col items-center justify-start space-y-4 p-2 pt-16">
+              /* Collapsed Sidebar Content - Desktop Only */
+              <div className="hidden md:flex h-full flex-col items-center justify-start space-y-4 p-2 pt-16">
                 {/* Design Assets Icon */}
-                <div
-                  className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-transform duration-200"
+                <button
+                  className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-transform duration-200 border-0"
                   title="Design Assets"
+                  onClick={toggleSidebar}
+                  aria-label="Open Design Assets"
                 >
                   <svg
                     className="w-4 h-4 text-white"
@@ -638,12 +710,14 @@ const TemplateDesignLayout = ({
                       d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                     />
                   </svg>
-                </div>
+                </button>
 
                 {/* Template Details Icon */}
-                <div
-                  className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-transform duration-200"
+                <button
+                  className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-transform duration-200 border-0"
                   title="Template Details"
+                  onClick={toggleSidebar}
+                  aria-label="Open Template Details"
                 >
                   <svg
                     className="w-4 h-4 text-white"
@@ -658,12 +732,14 @@ const TemplateDesignLayout = ({
                       d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                     />
                   </svg>
-                </div>
+                </button>
 
                 {/* Type/Text Icon */}
-                <div
-                  className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-transform duration-200"
+                <button
+                  className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-transform duration-200 border-0"
                   title="Type/Text"
+                  onClick={toggleSidebar}
+                  aria-label="Open Type/Text Settings"
                 >
                   <svg
                     className="w-4 h-4 text-white"
@@ -678,21 +754,25 @@ const TemplateDesignLayout = ({
                       d="M4 6h16M4 12h16M4 18h7"
                     />
                   </svg>
-                </div>
+                </button>
               </div>
             )}
           </div>
         </div>
 
-        {/* Main Content Area */}
+        {/* Main Content Area - Mobile Responsive */}
         <div
-          className={`flex-1 transition-all duration-300 ${sidebarExpanded ? 'ml-80' : 'ml-20'}`}
+          className={`
+            flex-1 transition-all duration-300 
+            ml-0 
+            ${sidebarExpanded ? 'md:ml-80' : 'md:ml-20'}
+          `}
         >
-          <div className="w-full h-[calc(100vh-3.5rem)] overflow-hidden relative">
+          <div className="w-full h-[calc(100vh-3rem)] sm:h-[calc(100vh-3.5rem)] overflow-hidden relative">
             {!imageUrl && !formData?.s3ImageUrl ? (
-              /* Empty State - No Image */
+              /* Empty State - No Image - Mobile Optimized */
               <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 p-4 sm:p-6">
-                <div className="text-center space-y-3 sm:space-y-4">
+                <div className="text-center space-y-3 sm:space-y-4 max-w-md">
                   {/* Upload Icon */}
                   <div className="mx-auto w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
                     <svg
@@ -712,10 +792,10 @@ const TemplateDesignLayout = ({
 
                   {/* Text Content */}
                   <div className="space-y-1 sm:space-y-2">
-                    <h3 className="text-base sm:text-lg font-semibold text-slate-800 dark:text-slate-200">
+                    <h3 className="text-base sm:text-lg md:text-xl font-semibold text-slate-800 dark:text-slate-200">
                       Start Your Design
                     </h3>
-                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-sm mx-auto px-2">
+                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mx-auto px-2">
                       Upload an image or start with a blank canvas to create
                       your template
                     </p>
@@ -727,10 +807,10 @@ const TemplateDesignLayout = ({
                       onClick={() =>
                         document.getElementById('image-upload')?.click()
                       }
-                      className="px-3 py-2 sm:px-4 sm:py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-xs sm:text-sm"
+                      className="flex items-center justify-center px-4 py-2.5 sm:px-5 sm:py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-xs sm:text-sm font-medium"
                     >
                       <svg
-                        className="w-4 h-4 inline mr-2"
+                        className="w-4 h-4 mr-2"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -744,33 +824,10 @@ const TemplateDesignLayout = ({
                       </svg>
                       Upload Image
                     </button>
-
-                    {/* <button
-                      onClick={() => {
-                        // Start with blank canvas
-                        setImageUrl('');
-                      }}
-                      className="px-6 py-3 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                    >
-                      <svg
-                        className="w-4 h-4 inline mr-2"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                        />
-                      </svg>
-                      Start Blank
-                    </button> */}
                   </div>
 
                   {/* Tips */}
-                  <div className="text-xs text-slate-500 dark:text-slate-400 space-y-1 px-2">
+                  <div className="text-xs text-slate-500 dark:text-slate-400 space-y-1 px-2 hidden sm:block">
                     <p>
                       💡 <strong>Tip:</strong> Supported formats: JPG, PNG, GIF
                     </p>
@@ -782,13 +839,13 @@ const TemplateDesignLayout = ({
                 </div>
               </div>
             ) : (
-              /* Pixie Editor with Image */
+              /* Pixie Editor with Image - Mobile Responsive */
               <PixieEditor
                 ref={pixieEditorRef}
                 initialImageUrl={imageUrl || formData?.s3ImageUrl}
                 initialContent={formData?.jsonContent}
                 width="100%"
-                height="calc(100vh - 3.5rem)"
+                height="100%"
                 onImageSelect={handleImageSelect}
               />
             )}
