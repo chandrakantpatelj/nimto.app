@@ -4,6 +4,7 @@ import React, { Fragment, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Container } from '@/components/common/container';
+import { RouteGuard } from '@/components/common/route-guard';
 import {
   Toolbar,
   ToolbarActions,
@@ -13,14 +14,14 @@ import {
   ToolbarDescription,
   ToolbarPageTitle,
 } from '@/app/components/partials/common/toolbar';
-import { RouteGuard } from '@/components/common/route-guard';
 import { PageNavbar } from '../../account/page-navbar';
-import { CategoryManagement } from './content';
 import { CategoryForm } from './components/CategoryForm';
+import { CategoryManagement } from './content';
 
 function CategoryManagementPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const handleCreateCategory = () => {
     setEditingCategory(null);
@@ -37,18 +38,22 @@ function CategoryManagementPage() {
     setEditingCategory(null);
   };
 
+  const handleFormSuccess = () => {
+    setRefreshKey((prev) => prev + 1);
+    handleFormClose();
+  };
+
   return (
-    <RouteGuard 
-      requiredRoles={['super-admin']}
-      redirectTo="/unauthorized"
-    >
+    <RouteGuard requiredRoles={['super-admin']} redirectTo="/unauthorized">
       <Fragment>
         <PageNavbar />
         <Container>
           <Toolbar>
             <ToolbarHeading>
               <ToolbarPageTitle />
-              <ToolbarDescription>Template Category Management</ToolbarDescription>
+              <ToolbarDescription>
+                Template Category Management
+              </ToolbarDescription>
             </ToolbarHeading>
             <ToolbarActions>
               <Button variant="primary" onClick={handleCreateCategory}>
@@ -58,17 +63,18 @@ function CategoryManagementPage() {
           </Toolbar>
         </Container>
         <Container>
-          <CategoryManagement 
+          <CategoryManagement
             onEditCategory={handleEditCategory}
+            refreshKey={refreshKey}
           />
         </Container>
 
         {/* Category Form Modal */}
         {showForm && (
-          <CategoryForm 
+          <CategoryForm
             category={editingCategory}
             onClose={handleFormClose}
-            onSuccess={handleFormClose}
+            onSuccess={handleFormSuccess}
           />
         )}
       </Fragment>

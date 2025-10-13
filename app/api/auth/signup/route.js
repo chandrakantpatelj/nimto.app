@@ -42,6 +42,25 @@ async function sendVerificationEmail(user, callbackUrl = '/templates') {
   }
 }
 
+export async function OPTIONS() {
+  // Get the origin URL from environment variables
+  const allowedOrigin =
+    process.env.NEXTAUTH_URL ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    'http://localhost:3000';
+
+  return new Response(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': allowedOrigin,
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers':
+        'Content-Type, Authorization, x-recaptcha-token',
+      'Access-Control-Allow-Credentials': 'true',
+    },
+  });
+}
+
 export async function POST(req) {
   try {
     const recaptchaToken = req.headers.get('x-recaptcha-token');

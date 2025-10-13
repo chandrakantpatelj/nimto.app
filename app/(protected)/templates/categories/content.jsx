@@ -2,7 +2,7 @@
 
 import { CategoryList } from './components/CategoryList';
 
-export function CategoryManagement({ onEditCategory }) {
+export function CategoryManagement({ onEditCategory, refreshKey }) {
   return (
     <div className="space-y-6">
       <div className="text-center">
@@ -10,11 +10,12 @@ export function CategoryManagement({ onEditCategory }) {
           Template Categories
         </h2>
         <p className="text-gray-600 dark:text-gray-400">
-          Manage template categories to organize your templates for better discoverability.
+          Manage template categories to organize your templates for better
+          discoverability.
         </p>
       </div>
-      
-      <CategoryList onEditCategory={onEditCategory} />
+
+      <CategoryList onEditCategory={onEditCategory} refreshKey={refreshKey} />
     </div>
   );
 }
