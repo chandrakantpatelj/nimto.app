@@ -5,7 +5,8 @@ const PUBLIC_ROUTES = [
     '/privacy-policy',
     '/terms-conditions',
     '/contact-us',
-    '/about-us'
+    '/about-us',
+    '/change-password'
     // Add more public routes here as needed
 ];
 
