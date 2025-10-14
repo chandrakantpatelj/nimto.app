@@ -46,58 +46,26 @@ function TemplateManagementPage() {
             {isAuthenticated && <PageNavbar />}
 
             {/* Hero Section */}
-            <Container>
-                <Toolbar>
-                    <ToolbarHeading>
-                        <ToolbarPageTitle />
-                        <ToolbarDescription>Browse and manage templates</ToolbarDescription>
-                    </ToolbarHeading>
-                    <ToolbarActions>
-                        {isAuthenticated && isSuperAdmin && (
-                            <Button variant="outline" onClick={handleCategoryManagement}>
-                                <Settings /> Manage Categories
-                            </Button>
-                        )}
-                        {/*{isAuthenticated && (*/}
-                        {/*  <Button variant="secondary" onClick={() => setShowAIDialog(true)}>*/}
-                        {/*    <Sparkles /> Create With AI*/}
-                        {/*  </Button>*/}
-                        {/*)}*/}
-                        {isAuthenticated && isAdmin && (
-                            <Button variant="primary" asChild>
-                                <Link href="/templates/design">
-                                    <CirclePlus /> Create New Template
-                                </Link>
-                            </Button>
-                        )}
-                    </ToolbarActions>
-                </Toolbar>
-            </Container>
-            <div className="relative bg-gradient-to-br from-purple-600 via-pink-500 to-red-500 text-white overflow-hidden">
-                <div className="absolute inset-0 bg-black/10"></div>
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-pink-500/20"></div>
-                {/* <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 lg:py-24 xl:py-32">
-            <div className="text-center">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6 leading-tight">
-                Your Template Gallery
-              </h1>
-              <p className="text-base sm:text-lg md:text-xl lg:text-2xl mb-6 sm:mb-8 md:mb-10 text-white/95 max-w-xs sm:max-w-2xl md:max-w-3xl mx-auto font-light px-4 sm:px-0">
-                Create stunning invitations that make every celebration unforgettable
-              </p>
-              <div className="flex justify-center px-4 sm:px-0">
-                <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-50 px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 w-full sm:w-auto">
-                  <CirclePlus className="mr-2 h-5 w-5 sm:h-6 sm:w-6" />
-                  Browse Templates
-                </Button>
-              </div>
-            </div>
-          </div> */}
-            </div>
-
-
-
+            {isAuthenticated && (isSuperAdmin || isAdmin) && (
+                <Container>
+                    <Toolbar>
+                    
+                            <ToolbarActions>
+                                <Button variant="outline" onClick={handleCategoryManagement}>
+                                    <Settings /> Manage Categories
+                                </Button>
+                                <Button variant="primary" asChild>
+                                    <Link href="/templates/design">
+                                        <CirclePlus /> Create New Template
+                                    </Link>
+                                </Button>
+                            </ToolbarActions>
+                    
+                    </Toolbar>
+                </Container>
+            )}
             {/* Browse Categories Section - Moved to Top */}
-            <Container>
+            <Container className={ "w-full mx-auto p-4 lg:p-6" }>
                 <EnhancedTemplateManagement />
             </Container>
 
