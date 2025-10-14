@@ -6,7 +6,8 @@ const PUBLIC_ROUTES = [
     '/terms-conditions',
     '/contact-us',
     '/about-us',
-    '/change-password'
+    '/change-password',
+    '/templates'
     // Add more public routes here as needed
 ];
 
