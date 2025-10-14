@@ -9,6 +9,7 @@ The enhanced template system provides a modern, Evite-inspired interface for bro
 ## Features
 
 ### 🎨 Enhanced Template Gallery (`/templates`)
+
 - **Hero Section**: Eye-catching gradient banner with call-to-action
 - **Action Cards**: Four main action cards for different template creation methods
 - **Category Browsing**: Visual category selection with icons and colors
@@ -18,12 +19,14 @@ The enhanced template system provides a modern, Evite-inspired interface for bro
 - **Event Creation**: Direct integration with event creation flow
 
 ### 🏷️ Template Categories (`/templates/categories` - Super Admin Only)
+
 - **Simple Management**: Create, edit, delete template categories
 - **Rich Metadata**: Icons, colors, descriptions, and sort ordering
 - **Validation**: Prevents deletion of categories in use
 - **Access Control**: Only super admins can access this section
 
 ### 🎯 Enhanced Template Features
+
 - **Badges**: Premium, Trending, Featured, New
 - **Orientation**: Portrait, Landscape, Square
 - **Pricing**: Free or Premium with price display
@@ -35,6 +38,7 @@ The enhanced template system provides a modern, Evite-inspired interface for bro
 ## Role-Based Access
 
 ### 👥 Host Users
+
 - **Browse Templates**: Access to enhanced template gallery
 - **Search & Filter**: Full search and filtering capabilities
 - **Create Events**: Use templates to create events
@@ -42,6 +46,7 @@ The enhanced template system provides a modern, Evite-inspired interface for bro
 - **No Category Access**: Cannot manage template categories
 
 ### 👑 Super Admin Users
+
 - **All Host Features**: Everything hosts can do
 - **Category Management**: Full CRUD operations on template categories
 - **System Templates**: Can manage system-wide templates
@@ -50,12 +55,13 @@ The enhanced template system provides a modern, Evite-inspired interface for bro
 ## Database Schema
 
 ### Enhanced Template Model
+
 ```sql
 -- New fields added to existing Template table
 orientation      String   @default("portrait")  -- portrait/landscape/square
 badge            String?                         -- Premium/Trending/Featured/New
 isTrending       Boolean  @default(false)
-isFeatured       Boolean  @default(false)
+isFeatured       Boolean  @default(true)
 isNew            Boolean  @default(false)
 popularity       Float    @default(0)           -- 0.0 to 1.0
 keywords         String[]                       -- Searchable keywords
@@ -64,6 +70,7 @@ thumbnailUrl     String?                        -- Dedicated thumbnail URL
 ```
 
 ### TemplateCategory Model
+
 ```sql
 id          String   @id @default(cuid())
 name        String                              -- Display name
@@ -80,8 +87,9 @@ updatedAt   DateTime @updatedAt
 ## API Endpoints
 
 ### Enhanced Template API
+
 - `GET /api/template` - Enhanced with filtering and search
-  - Query parameters: 
+  - Query parameters:
     - `category`: Filter by category slug
     - `orientation`: Filter by orientation (portrait/landscape/square)
     - `trending`: Show only trending templates
@@ -93,6 +101,7 @@ updatedAt   DateTime @updatedAt
     - `offset`: Pagination offset
 
 ### Template Categories API (Super Admin Only)
+
 - `GET /api/template-categories` - List all categories
 - `GET /api/template-categories/[id]` - Get specific category
 - `POST /api/template-categories` - Create new category
@@ -102,6 +111,7 @@ updatedAt   DateTime @updatedAt
 ## UI Components
 
 ### Template Cards
+
 - **Rich Display**: Shows all template metadata
 - **Badges**: Visual indicators for special templates
 - **Color Palette**: Display template colors
@@ -110,6 +120,7 @@ updatedAt   DateTime @updatedAt
 - **Hover Effects**: Smooth animations and scaling
 
 ### Search and Filter
+
 - **Search Bar**: Real-time search with debouncing
 - **Category Buttons**: Visual category selection
 - **Filter Controls**: Dropdowns and checkboxes for filters
@@ -117,6 +128,7 @@ updatedAt   DateTime @updatedAt
 - **Clear Filters**: Easy way to reset all filters
 
 ### Category Management (Super Admin)
+
 - **Simple List**: Clean list view of all categories
 - **Inline Actions**: Edit and delete buttons
 - **Form Modal**: Modal form for create/edit operations
@@ -126,6 +138,7 @@ updatedAt   DateTime @updatedAt
 ## Setup Instructions
 
 1. **Run Database Migration and Seed**:
+
    ```bash
    node scripts/setup-enhanced-templates.js
    ```
@@ -148,6 +161,7 @@ updatedAt   DateTime @updatedAt
 ## Design Principles
 
 ### User Experience
+
 - **Role-Appropriate**: Different interfaces for different user roles
 - **Visual Hierarchy**: Clear information architecture
 - **Responsive Design**: Works on all device sizes
@@ -155,6 +169,7 @@ updatedAt   DateTime @updatedAt
 - **Accessibility**: Proper ARIA labels and keyboard navigation
 
 ### Developer Experience
+
 - **Modular Components**: Reusable UI components
 - **Clean Architecture**: Separation of concerns
 - **API Consistency**: RESTful design patterns
@@ -193,18 +208,21 @@ updatedAt   DateTime @updatedAt
 ## Support and Troubleshooting
 
 ### Common Issues
+
 1. **Categories not showing**: Check if user has super admin role
 2. **Search not working**: Verify API endpoints are accessible
 3. **Templates not loading**: Check database connection and migrations
 4. **Permission denied**: Verify user roles and authentication
 
 ### Debugging
+
 - Check browser console for JavaScript errors
 - Verify API responses in Network tab
 - Check server logs for backend errors
 - Validate database schema with `npx prisma db pull`
 
 ### Getting Help
+
 1. Review this documentation
 2. Check the component source code
 3. Verify API endpoint responses
