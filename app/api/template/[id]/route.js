@@ -82,6 +82,7 @@ export async function PUT(request, { params }) {
       isPremium,
       price,
       isSystemTemplate,
+      isFeatured,
       imagePath,
     } = body;
 
@@ -113,6 +114,8 @@ export async function PUT(request, { params }) {
           isSystemTemplate !== undefined
             ? isSystemTemplate
             : existingTemplate.isSystemTemplate,
+        isFeatured:
+          isFeatured !== undefined ? isFeatured : existingTemplate.isFeatured,
         imagePath:
           imagePath !== undefined ? imagePath : existingTemplate.imagePath,
       },

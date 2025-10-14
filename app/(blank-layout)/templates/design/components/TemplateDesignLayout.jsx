@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import AdvancedProcessingLoader from '@/components/common/advanced-processing-loader';
 import PixieEditor from '@/components/image-editor/PixieEditor';
 import { CategoryForm } from '@/app/(protected)/templates/categories/components/CategoryForm';
@@ -67,6 +68,7 @@ const TemplateDesignLayout = ({
       category: '',
       isPremium: false,
       price: 0,
+      isFeatured: true,
       jsonContent: null,
     },
   );
@@ -224,6 +226,7 @@ const TemplateDesignLayout = ({
         category: formData.category.trim(),
         isPremium: formData.isPremium,
         price: formData.isPremium ? parseFloat(formData.price) || 0 : 0,
+        isFeatured: formData.isFeatured,
         jsonContent: pixieState?.canvas?.objects?.length
           ? JSON.stringify(pixieState)
           : null,
@@ -595,66 +598,104 @@ const TemplateDesignLayout = ({
 
                         <div>
                           <Label className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
-                            Type
+                            Type & Visibility
                           </Label>
-                          <RadioGroup
-                            value={formData.isPremium ? 'premium' : 'free'}
-                            onValueChange={handleTypeChange}
-                            className="space-y-2"
-                          >
-                            <div className="flex items-center space-x-2 p-3 sm:p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors min-h-[44px] sm:min-h-0">
-                              <RadioGroupItem
-                                value="free"
-                                id="free"
-                                className="text-green-500 w-5 h-5 sm:w-4 sm:h-4"
-                              />
-                              <Label
-                                htmlFor="free"
-                                className="flex items-center space-x-2 cursor-pointer text-sm flex-1"
-                              >
-                                <div className="w-5 h-5 sm:w-4 sm:h-4 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
-                                  <svg
-                                    className="w-3 h-3 sm:w-2 sm:h-2 text-green-600 dark:text-green-400"
-                                    fill="currentColor"
-                                    viewBox="0 0 20 20"
-                                  >
-                                    <path
-                                      fillRule="evenodd"
-                                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                      clipRule="evenodd"
-                                    />
-                                  </svg>
+                          <div className="space-y-3">
+                            <RadioGroup
+                              value={formData.isPremium ? 'premium' : 'free'}
+                              onValueChange={handleTypeChange}
+                              className="space-y-2"
+                            >
+                              <div className="flex items-center space-x-2 p-3 sm:p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors min-h-[44px] sm:min-h-0">
+                                <RadioGroupItem
+                                  value="free"
+                                  id="free"
+                                  className="text-green-500 w-5 h-5 sm:w-4 sm:h-4"
+                                />
+                                <Label
+                                  htmlFor="free"
+                                  className="flex items-center space-x-2 cursor-pointer text-sm flex-1"
+                                >
+                                  <div className="w-5 h-5 sm:w-4 sm:h-4 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                                    <svg
+                                      className="w-3 h-3 sm:w-2 sm:h-2 text-green-600 dark:text-green-400"
+                                      fill="currentColor"
+                                      viewBox="0 0 20 20"
+                                    >
+                                      <path
+                                        fillRule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clipRule="evenodd"
+                                      />
+                                    </svg>
+                                  </div>
+                                  <span className="text-slate-700 dark:text-slate-300">
+                                    Free
+                                  </span>
+                                </Label>
+                              </div>
+                              <div className="flex items-center space-x-2 p-3 sm:p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors min-h-[44px] sm:min-h-0">
+                                <RadioGroupItem
+                                  value="premium"
+                                  id="premium"
+                                  className="text-amber-500 w-5 h-5 sm:w-4 sm:h-4"
+                                />
+                                <Label
+                                  htmlFor="premium"
+                                  className="flex items-center space-x-2 cursor-pointer text-sm flex-1"
+                                >
+                                  <div className="w-5 h-5 sm:w-4 sm:h-4 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center">
+                                    <svg
+                                      className="w-3 h-3 sm:w-2 sm:h-2 text-amber-600 dark:text-amber-400"
+                                      fill="currentColor"
+                                      viewBox="0 0 20 20"
+                                    >
+                                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                    </svg>
+                                  </div>
+                                  <span className="text-slate-700 dark:text-slate-300">
+                                    Premium
+                                  </span>
+                                </Label>
+                              </div>
+                            </RadioGroup>
+
+                            {/* Featured Template Toggle - Enhanced Design */}
+                            <div className="relative">
+                              <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 rounded-xl blur-sm"></div>
+                              <div className="relative bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/30 dark:to-orange-950/30 border border-yellow-200 dark:border-yellow-800 rounded-xl p-4">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center space-x-3">
+                                    <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center shadow-lg">
+                                      <svg
+                                        className="w-4 h-4 text-white"
+                                        fill="currentColor"
+                                        viewBox="0 0 20 20"
+                                      >
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                      </svg>
+                                    </div>
+                                    <div>
+                                      <Label className="text-sm font-semibold text-yellow-800 dark:text-yellow-200 cursor-pointer">
+                                        Featured Template
+                                      </Label>
+                                      <p className="text-xs text-yellow-600 dark:text-yellow-300 mt-0.5">
+                                        Make this template visible in public
+                                        gallery
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <Switch
+                                    checked={formData.isFeatured}
+                                    onCheckedChange={(checked) =>
+                                      handleInputChange('isFeatured', checked)
+                                    }
+                                    className="data-[state=checked]:bg-yellow-500 data-[state=unchecked]:bg-gray-300"
+                                  />
                                 </div>
-                                <span className="text-slate-700 dark:text-slate-300">
-                                  Free
-                                </span>
-                              </Label>
+                              </div>
                             </div>
-                            <div className="flex items-center space-x-2 p-3 sm:p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors min-h-[44px] sm:min-h-0">
-                              <RadioGroupItem
-                                value="premium"
-                                id="premium"
-                                className="text-amber-500 w-5 h-5 sm:w-4 sm:h-4"
-                              />
-                              <Label
-                                htmlFor="premium"
-                                className="flex items-center space-x-2 cursor-pointer text-sm flex-1"
-                              >
-                                <div className="w-5 h-5 sm:w-4 sm:h-4 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center">
-                                  <svg
-                                    className="w-3 h-3 sm:w-2 sm:h-2 text-amber-600 dark:text-amber-400"
-                                    fill="currentColor"
-                                    viewBox="0 0 20 20"
-                                  >
-                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                  </svg>
-                                </div>
-                                <span className="text-slate-700 dark:text-slate-300">
-                                  Premium
-                                </span>
-                              </Label>
-                            </div>
-                          </RadioGroup>
+                          </div>
                         </div>
 
                         {formData.isPremium && (
@@ -753,6 +794,30 @@ const TemplateDesignLayout = ({
                       strokeWidth={2}
                       d="M4 6h16M4 12h16M4 18h7"
                     />
+                  </svg>
+                </button>
+
+                {/* Featured Template Icon */}
+                <button
+                  className={`w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-transform duration-200 border-0 ${
+                    formData.isFeatured
+                      ? 'bg-gradient-to-br from-yellow-400 to-orange-500 shadow-lg'
+                      : 'bg-gradient-to-br from-gray-400 to-gray-500'
+                  }`}
+                  title={
+                    formData.isFeatured
+                      ? 'Featured Template (ON)'
+                      : 'Featured Template (OFF)'
+                  }
+                  onClick={toggleSidebar}
+                  aria-label="Open Template Settings"
+                >
+                  <svg
+                    className="w-4 h-4 text-white"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                   </svg>
                 </button>
               </div>

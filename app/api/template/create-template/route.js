@@ -30,6 +30,7 @@ export async function POST(request) {
       isPremium = false,
       price = 0,
       isSystemTemplate = false,
+      isFeatured = true,
       imagePath,
     } = body;
 
@@ -49,6 +50,7 @@ export async function POST(request) {
         isPremium,
         price,
         isSystemTemplate,
+        isFeatured,
         imagePath,
         createdByUserId: session.user.id,
       },

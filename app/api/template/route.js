@@ -4,7 +4,7 @@ import { generateDirectS3Url } from '@/lib/s3-utils';
 
 const prisma = new PrismaClient();
 
-// GET /api/template - Get all templates (public access)
+// GET /api/template - Get featured templates only (public access)
 export async function GET(request) {
   try {
     // Allow public access to read templates
@@ -15,15 +15,16 @@ export async function GET(request) {
     const search = searchParams.get('search');
     const orientation = searchParams.get('orientation');
     const trending = searchParams.get('trending');
-    const featured = searchParams.get('featured');
+    // Removed featured parameter - always show only featured templates
     const newTemplates = searchParams.get('new');
     const limit = parseInt(searchParams.get('limit')) || 50;
     const offset = parseInt(searchParams.get('offset')) || 0;
-    
+
     console.log('🔍 API: Received pagination params:', { limit, offset });
 
     const where = {
       isTrashed: false,
+      isFeatured: true, // Only show featured templates - straightforward approach
     };
 
     if (category) {
@@ -42,9 +43,8 @@ export async function GET(request) {
       where.isTrending = true;
     }
 
-    if (featured === 'true') {
-      where.isFeatured = true;
-    }
+    // Always show only featured templates - simple and straightforward
+    // No need for complex filtering logic
 
     if (newTemplates === 'true') {
       where.isNew = true;
@@ -52,17 +52,26 @@ export async function GET(request) {
 
     if (search) {
       // Split search query into individual words for better matching
-      const searchWords = search.split(' ').map(word => word.trim()).filter(word => word.length > 0);
-      
+      const searchWords = search
+        .split(' ')
+        .map((word) => word.trim())
+        .filter((word) => word.length > 0);
+
       where.OR = [
         // Exact phrase search
         { name: { contains: search, mode: 'insensitive' } },
         { category: { contains: search, mode: 'insensitive' } },
         { badge: { contains: search, mode: 'insensitive' } },
         // Individual word search for better results
-        ...searchWords.map(word => ({ name: { contains: word, mode: 'insensitive' } })),
-        ...searchWords.map(word => ({ category: { contains: word, mode: 'insensitive' } })),
-        ...searchWords.map(word => ({ badge: { contains: word, mode: 'insensitive' } })),
+        ...searchWords.map((word) => ({
+          name: { contains: word, mode: 'insensitive' },
+        })),
+        ...searchWords.map((word) => ({
+          category: { contains: word, mode: 'insensitive' },
+        })),
+        ...searchWords.map((word) => ({
+          badge: { contains: word, mode: 'insensitive' },
+        })),
         // Keywords array search - check if any keyword contains the search term
         { keywords: { hasSome: searchWords } },
         // Also check if any keyword contains the full search phrase
@@ -76,7 +85,6 @@ export async function GET(request) {
     const templates = await prisma.template.findMany({
       where,
       orderBy: [
-        { isFeatured: 'desc' },
         { isTrending: 'desc' },
         { isNew: 'desc' },
         { popularity: 'desc' },
