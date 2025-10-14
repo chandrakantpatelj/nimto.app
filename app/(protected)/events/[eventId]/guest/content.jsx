@@ -1,7 +1,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Calendar, Clock, MapPin, Settings, ChevronDown, ChevronRight } from 'lucide-react';
+import {
+    Calendar,
+    Clock,
+    MapPin,
+    Settings,
+    ChevronDown,
+    ChevronRight,
+    Users as UsersIcon,
+    CheckCircle as CheckCircleIcon,
+    Baby as BabyIcon,
+    User as UserIcon,
+    Clock as ClockIcon,
+    XCircle as XCircleIcon,
+    HelpCircle as HelpCircleIcon
+} from 'lucide-react';
 import { formatDate } from '@/lib/date-utils';
 import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -120,35 +134,38 @@ export function ManageGuestContent({ event }) {
     return (
         <div className="space-y-6">
             {/* Event Overview Card */}
-            <Card className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50 border-blue-200 dark:border-blue-800">
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                    <div className="space-y-3">
+            <Card className="p-0 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50 border-blue-200 dark:border-blue-800">
+                {/* Card Header for Event Title, Date, Time, Location */}
+                <div className="px-4 py-3 sm:px-6 sm:py-4 border-b border-blue-200 dark:border-blue-800">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                        {/* Title */}
                         <div className="flex items-center gap-2">
                             <div className="w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full"></div>
-                            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white break-words">
                                 {event.title}
                             </h2>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-                            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                        {/* Details: Date, Time, Location */}
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm">
+                            <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
                                 <Calendar className="w-4 h-4" />
                                 <span>
                                     {formatDate(event.startDateTime, {
-                                        weekday: 'long',
+                                        weekday: 'short',
                                         year: 'numeric',
-                                        month: 'long',
+                                        month: 'short',
                                         day: 'numeric',
                                     })}
                                 </span>
                             </div>
-                            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                            <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
                                 <Clock className="w-4 h-4" />
                                 <span>{formatHourMinute(event.startDateTime)}</span>
                             </div>
                             {(event.locationAddress || event.locationUnit) && (
-                                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                                <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
                                     <MapPin className="w-4 h-4" />
-                                    <span>
+                                    <span className="truncate max-w-[120px] sm:max-w-[200px]">
                                         {event.locationAddress}
                                         {event.locationUnit ? `, ${event.locationUnit}` : ''}
                                     </span>
@@ -156,49 +173,59 @@ export function ManageGuestContent({ event }) {
                             )}
                         </div>
                     </div>
-                    <div className="flex flex-wrap items-center gap-4">
-                        <div className="text-center">
-                            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                </div>
+                {/* Stats Section - Horizontally scrollable on mobile */}
+                <div className="overflow-x-auto p-3">
+                    <div className="flex min-w-[500px] sm:min-w-0 sm:grid sm:grid-cols-3 lg:grid-cols-7 gap-2 sm:gap-4">
+                        <Card className="flex flex-col items-center justify-center px-2 py-2 rounded-lg bg-white/60 dark:bg-blue-950/30 shadow-sm min-w-[100px]">
+                            <UsersIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 mb-1" />
+                            <div className="text-lg sm:text-2xl font-bold text-blue-600 dark:text-blue-400">
                                 {event.guests?.length || 0}
                             </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-300">Total Guests</div>
-                        </div>
-                        <div className="text-center">
-                            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                            <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">Total Guests</div>
+                        </Card>
+                        <Card className="flex flex-col items-center justify-center px-2 py-2 rounded-lg bg-white/60 dark:bg-blue-950/30 shadow-sm min-w-[100px]">
+                            <CheckCircleIcon className="w-5 h-5 text-green-600 dark:text-green-400 mb-1" />
+                            <div className="text-lg sm:text-2xl font-bold text-green-600 dark:text-green-400">
                                 {event.guests?.filter((g) => g.status === 'CONFIRMED').length || 0}
                             </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-300">Confirmed</div>
-                        </div>
-                        <div className="text-center">
-                            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                            <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">Confirmed</div>
+                        </Card>
+                        <Card className="flex flex-col items-center justify-center px-2 py-2 rounded-lg bg-white/60 dark:bg-blue-950/30 shadow-sm min-w-[100px]">
+                            <BabyIcon className="w-5 h-5 text-green-600 dark:text-green-400 mb-1" />
+                            <div className="text-lg sm:text-2xl font-bold text-green-600 dark:text-green-400">
                                 {event.guests?.filter((g) => g.status === 'CONFIRMED' || g.status === 'MAYBE').reduce((sum, g) => sum + (g.children || 0), 0) || 0}
                             </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-300">Kids</div>
-                        </div>
-                        <div className="text-center">
-                            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                            <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">Kids</div>
+                        </Card>
+                        <Card className="flex flex-col items-center justify-center px-2 py-2 rounded-lg bg-white/60 dark:bg-blue-950/30 shadow-sm min-w-[100px]">
+                            <UserIcon className="w-5 h-5 text-green-600 dark:text-green-400 mb-1" />
+                            <div className="text-lg sm:text-2xl font-bold text-green-600 dark:text-green-400">
                                 {event.guests?.filter((g) => g.status === 'CONFIRMED' || g.status === 'MAYBE').reduce((sum, g) => sum + (g.adults || 0), 0) || 0}
                             </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-300">Adults</div>
-                        </div>
-                        <div className="text-center">
-                            <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+                            <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">Adults</div>
+                        </Card>
+                        <Card className="flex flex-col items-center justify-center px-2 py-2 rounded-lg bg-white/60 dark:bg-blue-950/30 shadow-sm min-w-[100px]">
+                            <ClockIcon className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mb-1" />
+                            <div className="text-lg sm:text-2xl font-bold text-yellow-600 dark:text-yellow-400">
                                 {event.guests?.filter((g) => g.status === 'PENDING' || !g.status).length || 0}
                             </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-300">Pending</div>
-                        </div>
-                        <div className="text-center">
-                            <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+                            <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">Pending</div>
+                        </Card>
+                        <Card className="flex flex-col items-center justify-center px-2 py-2 rounded-lg bg-white/60 dark:bg-blue-950/30 shadow-sm min-w-[100px]">
+                            <XCircleIcon className="w-5 h-5 text-red-600 dark:text-red-400 mb-1" />
+                            <div className="text-lg sm:text-2xl font-bold text-red-600 dark:text-red-400">
                                 {event.guests?.filter((g) => g.status === 'DECLINED').length || 0}
                             </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-300">Declined</div>
-                        </div>
-                        <div className="text-center">
-                            <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                            <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">Declined</div>
+                        </Card>
+                        <Card className="flex flex-col items-center justify-center px-2 py-2 rounded-lg bg-white/60 dark:bg-blue-950/30 shadow-sm min-w-[100px]">
+                            <HelpCircleIcon className="w-5 h-5 text-orange-600 dark:text-orange-400 mb-1" />
+                            <div className="text-lg sm:text-2xl font-bold text-orange-600 dark:text-orange-400">
                                 {event.guests?.filter((g) => g.status === 'MAYBE').length || 0}
                             </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-300">Maybe</div>
-                        </div>
+                            <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">Maybe</div>
+                        </Card>
                     </div>
                 </div>
             </Card>

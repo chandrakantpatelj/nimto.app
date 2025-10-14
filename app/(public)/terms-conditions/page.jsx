@@ -459,7 +459,7 @@ export default function TermsConditionsPage() {
                       <Mail className="w-5 h-5 text-blue-600" />
                       <div>
                         <p className="font-medium">Email</p>
-                        <p className="text-sm text-muted-foreground">legal@nimto.app</p>
+                        <p className="text-sm text-muted-foreground">legal@nimto.io</p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-3">
@@ -474,8 +474,8 @@ export default function TermsConditionsPage() {
                       <div>
                         <p className="font-medium">Address</p>
                         <p className="text-sm text-muted-foreground">
-                          123 Innovation Drive<br />
-                          Tech City, TC 12345
+                            Huntersville, NC 28078<br />
+                            USA
                         </p>
                       </div>
                     </div>

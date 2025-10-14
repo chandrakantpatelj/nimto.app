@@ -1,6 +1,16 @@
 import { NextResponse } from 'next/server';
 import { withAuth } from 'next-auth/middleware';
 
+const PUBLIC_ROUTES = [
+    '/privacy-policy',
+    '/terms-conditions',
+    '/contact-us',
+    '/about-us',
+    '/change-password',
+    '/templates'
+    // Add more public routes here as needed
+];
+
 function getRoleSlug(roleSlug) {
   if (!roleSlug) return null;
   return roleSlug.toLowerCase();
@@ -14,6 +24,11 @@ export default withAuth(
   function middleware(req) {
     const token = req.nextauth.token;
     const { pathname } = req.nextUrl;
+
+    // Allow all public routes without authentication
+    if (PUBLIC_ROUTES.includes(pathname)) {
+        return NextResponse.next();
+    }
 
     // Allow public access to root route (homepage)
     if (pathname === '/') return NextResponse.next();
@@ -160,6 +175,7 @@ export default withAuth(
         if (req.nextUrl.pathname.startsWith('/invitation/')) return true;
         // Allow /events route to be processed by middleware (for redirect logic)
         if (req.nextUrl.pathname === '/events') return true;
+        if (PUBLIC_ROUTES.includes(req.nextUrl.pathname)) return true;
         // Require token for all other routes including /templates
         return !!token;
       },
