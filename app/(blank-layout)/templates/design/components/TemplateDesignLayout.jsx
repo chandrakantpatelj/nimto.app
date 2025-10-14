@@ -8,6 +8,7 @@ import { useToast } from '@/providers/toast-provider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import MultiSelectTags from '@/components/ui/multi-select-tags';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Select,
@@ -69,6 +70,7 @@ const TemplateDesignLayout = ({
       isPremium: false,
       price: 0,
       isFeatured: true,
+      tags: [],
       jsonContent: null,
     },
   );
@@ -227,6 +229,7 @@ const TemplateDesignLayout = ({
         isPremium: formData.isPremium,
         price: formData.isPremium ? parseFloat(formData.price) || 0 : 0,
         isFeatured: formData.isFeatured,
+        tags: formData.tags || [],
         jsonContent: pixieState?.canvas?.objects?.length
           ? JSON.stringify(pixieState)
           : null,
@@ -596,6 +599,50 @@ const TemplateDesignLayout = ({
                           </Select>
                         </div>
 
+                        {/* Tags Field */}
+                        <div>
+                          <MultiSelectTags
+                            label="Tags"
+                            placeholder="Add tags to categorize your template..."
+                            value={formData.tags || []}
+                            onChange={(tags) => handleInputChange('tags', tags)}
+                            suggestions={[
+                              'Wedding',
+                              'Birthday',
+                              'Corporate',
+                              'Anniversary',
+                              'Graduation',
+                              'Holiday',
+                              'Party',
+                              'Conference',
+                              'Meeting',
+                              'Event',
+                              'Invitation',
+                              'Flyer',
+                              'Poster',
+                              'Banner',
+                              'Social Media',
+                              'Marketing',
+                              'Business',
+                              'Personal',
+                              'Formal',
+                              'Casual',
+                              'Elegant',
+                              'Modern',
+                              'Vintage',
+                              'Minimalist',
+                              'Colorful',
+                              'Professional',
+                              'Creative',
+                              'Artistic',
+                              'Design',
+                              'Template',
+                            ]}
+                            maxTags={15}
+                            className="w-full"
+                          />
+                        </div>
+
                         <div>
                           <Label className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
                             Type & Visibility
@@ -697,7 +744,6 @@ const TemplateDesignLayout = ({
                             </div>
                           </div>
                         </div>
-
                         {formData.isPremium && (
                           <div>
                             <Label className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 block">

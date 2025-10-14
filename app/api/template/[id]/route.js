@@ -35,11 +35,9 @@ export async function GET(request, { params }) {
     // Generate standardized proxy URL for template image
     let s3ImageUrl = null;
     if (template.imagePath) {
-      console.log('Template imagePath:', template.imagePath);
       const directS3Url = generateDirectS3Url(template.imagePath);
       // Use image proxy to avoid CORS and permission issues
       s3ImageUrl = `/api/image-proxy?url=${directS3Url}`;
-      console.log('Generated s3ImageUrl:', s3ImageUrl);
     }
 
     // Return template with jsonContent
@@ -83,6 +81,7 @@ export async function PUT(request, { params }) {
       price,
       isSystemTemplate,
       isFeatured,
+      tags,
       imagePath,
     } = body;
 
@@ -116,6 +115,7 @@ export async function PUT(request, { params }) {
             : existingTemplate.isSystemTemplate,
         isFeatured:
           isFeatured !== undefined ? isFeatured : existingTemplate.isFeatured,
+        tags: tags !== undefined ? tags : existingTemplate.tags,
         imagePath:
           imagePath !== undefined ? imagePath : existingTemplate.imagePath,
       },

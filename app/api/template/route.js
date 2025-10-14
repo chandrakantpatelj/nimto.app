@@ -15,93 +15,100 @@ export async function GET(request) {
     const search = searchParams.get('search');
     const orientation = searchParams.get('orientation');
     const trending = searchParams.get('trending');
-    // Removed featured parameter - always show only featured templates
     const newTemplates = searchParams.get('new');
     const limit = parseInt(searchParams.get('limit')) || 50;
     const offset = parseInt(searchParams.get('offset')) || 0;
 
-    console.log('🔍 API: Received pagination params:', { limit, offset });
-
     const where = {
       isTrashed: false,
-      isFeatured: true, // Only show featured templates - straightforward approach
+      isFeatured: true,
     };
 
-    if (category) {
-      where.category = category;
-    }
+    // Apply filters
+    if (category) where.category = category;
+    if (isPremium !== null) where.isPremium = isPremium === 'true';
+    if (orientation) where.orientation = orientation;
+    if (trending === 'true') where.isTrending = true;
+    if (newTemplates === 'true') where.isNew = true;
 
-    if (isPremium !== null) {
-      where.isPremium = isPremium === 'true';
-    }
-
-    if (orientation) {
-      where.orientation = orientation;
-    }
-
-    if (trending === 'true') {
-      where.isTrending = true;
-    }
-
-    // Always show only featured templates - simple and straightforward
-    // No need for complex filtering logic
-
-    if (newTemplates === 'true') {
-      where.isNew = true;
-    }
+    let templates = [];
+    let totalCount = 0;
 
     if (search) {
-      // Split search query into individual words for better matching
-      const searchWords = search
-        .split(' ')
-        .map((word) => word.trim())
-        .filter((word) => word.length > 0);
+      // Use raw SQL for efficient partial tag matching
+      const searchLower = search.toLowerCase();
 
-      where.OR = [
-        // Exact phrase search
-        { name: { contains: search, mode: 'insensitive' } },
-        { category: { contains: search, mode: 'insensitive' } },
-        { badge: { contains: search, mode: 'insensitive' } },
-        // Individual word search for better results
-        ...searchWords.map((word) => ({
-          name: { contains: word, mode: 'insensitive' },
-        })),
-        ...searchWords.map((word) => ({
-          category: { contains: word, mode: 'insensitive' },
-        })),
-        ...searchWords.map((word) => ({
-          badge: { contains: word, mode: 'insensitive' },
-        })),
-        // Keywords array search - check if any keyword contains the search term
-        { keywords: { hasSome: searchWords } },
-        // Also check if any keyword contains the full search phrase
-        { keywords: { has: search } },
-      ];
+      // Build SQL query for partial matching in tags using PostgreSQL array functions
+      const sqlQuery = `
+        SELECT * FROM "Template" 
+        WHERE "isTrashed" = false 
+        AND "isFeatured" = true
+        AND (
+          LOWER("name") LIKE $1 
+          OR LOWER("category") LIKE $1 
+          OR LOWER("badge") LIKE $1 
+          OR $2 = ANY("keywords")
+          OR $2 = ANY("tags")
+          OR EXISTS (
+            SELECT 1 FROM unnest("tags") AS tag 
+            WHERE LOWER(tag) LIKE $1
+          )
+        )
+        ORDER BY "isTrending" DESC, "isNew" DESC, "popularity" DESC, "createdAt" DESC
+        LIMIT $3 OFFSET $4
+      `;
+
+      const countQuery = `
+        SELECT COUNT(*) FROM "Template" 
+        WHERE "isTrashed" = false 
+        AND "isFeatured" = true
+        AND (
+          LOWER("name") LIKE $1 
+          OR LOWER("category") LIKE $1 
+          OR LOWER("badge") LIKE $1 
+          OR $2 = ANY("keywords")
+          OR $2 = ANY("tags")
+          OR EXISTS (
+            SELECT 1 FROM unnest("tags") AS tag 
+            WHERE LOWER(tag) LIKE $1
+          )
+        )
+      `;
+
+      const searchPattern = `%${searchLower}%`;
+
+      // Execute queries in parallel
+      const [templatesResult, countResult] = await Promise.all([
+        prisma.$queryRawUnsafe(sqlQuery, searchPattern, search, limit, offset),
+        prisma.$queryRawUnsafe(countQuery, searchPattern, search),
+      ]);
+
+      templates = templatesResult;
+      totalCount = parseInt(countResult[0].count);
+    } else {
+      // Regular query when no search
+      [totalCount, templates] = await Promise.all([
+        prisma.template.count({ where }),
+        prisma.template.findMany({
+          where,
+          orderBy: [
+            { isTrending: 'desc' },
+            { isNew: 'desc' },
+            { popularity: 'desc' },
+            { createdAt: 'desc' },
+          ],
+          take: limit,
+          skip: offset,
+        }),
+      ]);
     }
 
-    // Get total count for pagination
-    const totalCount = await prisma.template.count({ where });
-
-    const templates = await prisma.template.findMany({
-      where,
-      orderBy: [
-        { isTrending: 'desc' },
-        { isNew: 'desc' },
-        { popularity: 'desc' },
-        { createdAt: 'desc' },
-      ],
-      take: limit,
-      skip: offset,
-    });
-
-    // Generate S3 URLs for templates with imagePath and templateThumbnailPath
+    // Generate S3 URLs for templates
     const templatesWithUrls = templates.map((template) => {
       const result = { ...template };
 
       if (template.imagePath) {
-        // Use image proxy to avoid CORS and permission issues
-        const s3ImageUrl = `/api/image-proxy?url=${generateDirectS3Url(template.imagePath)}`;
-        result.s3ImageUrl = s3ImageUrl;
+        result.s3ImageUrl = `/api/image-proxy?url=${generateDirectS3Url(template.imagePath)}`;
       }
 
       if (template.templateThumbnailPath) {
@@ -112,9 +119,6 @@ export async function GET(request) {
         result.templateThumbnailPath = template.templateThumbnailPath;
         result.templateThumbnailUrl = thumbnailUrl;
       }
-
-      // Keep jsonContent as is - no parsing needed
-      // The client can parse jsonContent when needed
 
       return result;
     });

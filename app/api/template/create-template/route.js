@@ -31,6 +31,7 @@ export async function POST(request) {
       price = 0,
       isSystemTemplate = false,
       isFeatured = true,
+      tags = [],
       imagePath,
     } = body;
 
@@ -51,6 +52,7 @@ export async function POST(request) {
         price,
         isSystemTemplate,
         isFeatured,
+        tags,
         imagePath,
         createdByUserId: session.user.id,
       },
