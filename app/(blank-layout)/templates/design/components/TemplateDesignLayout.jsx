@@ -844,8 +844,8 @@ const TemplateDesignLayout = ({
                 ref={pixieEditorRef}
                 initialImageUrl={imageUrl || formData?.s3ImageUrl}
                 initialContent={formData?.jsonContent}
-                width="100%"
-                height="100%"
+                width="93vw"
+                height="92vh"
                 onImageSelect={handleImageSelect}
               />
             )}
