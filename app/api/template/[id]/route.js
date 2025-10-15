@@ -11,18 +11,29 @@ function hasAdminRole(roleSlug) {
 
 const prisma = new PrismaClient();
 
-// GET /api/template/[id] - Get a specific template (public access)
+// GET /api/template/[id] - Get a specific template (role-based access)
 export async function GET(request, { params }) {
   try {
-    // Allow public access to read individual templates
-    // No authentication required for viewing templates
+    // Get user session to determine role-based access
+    const session = await getServerSession(authOptions);
+    const userRole = session?.user?.roleSlug?.toLowerCase();
+
+    // Determine if user should see all templates or only featured
+    const isSuperAdmin = userRole === 'super-admin';
+    const isApplicationAdmin = userRole === 'application-admin';
+    const shouldShowAllTemplates = isSuperAdmin || isApplicationAdmin;
+
     const { id } = await params;
 
+    const whereClause = {
+      id,
+      isTrashed: false,
+      // Only show featured templates for non-admin users
+      ...(shouldShowAllTemplates ? {} : { isFeatured: true }),
+    };
+
     const template = await prisma.template.findFirst({
-      where: {
-        id,
-        isTrashed: false,
-      },
+      where: whereClause,
     });
 
     if (!template) {
@@ -35,11 +46,9 @@ export async function GET(request, { params }) {
     // Generate standardized proxy URL for template image
     let s3ImageUrl = null;
     if (template.imagePath) {
-      console.log('Template imagePath:', template.imagePath);
       const directS3Url = generateDirectS3Url(template.imagePath);
       // Use image proxy to avoid CORS and permission issues
       s3ImageUrl = `/api/image-proxy?url=${directS3Url}`;
-      console.log('Generated s3ImageUrl:', s3ImageUrl);
     }
 
     // Return template with jsonContent
@@ -82,6 +91,8 @@ export async function PUT(request, { params }) {
       isPremium,
       price,
       isSystemTemplate,
+      isFeatured,
+      tags,
       imagePath,
     } = body;
 
@@ -113,6 +124,9 @@ export async function PUT(request, { params }) {
           isSystemTemplate !== undefined
             ? isSystemTemplate
             : existingTemplate.isSystemTemplate,
+        isFeatured:
+          isFeatured !== undefined ? isFeatured : existingTemplate.isFeatured,
+        tags: tags !== undefined ? tags : existingTemplate.tags,
         imagePath:
           imagePath !== undefined ? imagePath : existingTemplate.imagePath,
       },

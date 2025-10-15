@@ -361,6 +361,72 @@ const PixieEditor = forwardRef(
               allowExternalImages: true,
               ignoreExternalImageErrors: true,
             },
+            text: {
+              replaceDefault: false,
+              defaultCategory: 'handwriting',
+              items: [
+                {
+                  family: 'Adobe Devanagari Bold',
+                  src: 'fonts/AdobeDevanagari-Bold.otf',
+                },
+                {
+                  family: 'Adobe Devanagari Regular',
+                  src: 'fonts/AdobeDevanagari-Regular.otf',
+                },
+                {
+                  family: 'GreatVibes Regular',
+                  src: 'fonts/GreatVibes-Regular.ttf',
+                },
+                {
+                  family: 'ALGERIA',
+                  src: 'fonts/ALGERIA.ttf',
+                },
+                {
+                  family: 'SortsMillGoudy',
+                  src: 'fonts/SortsMillGoudy-Regular.ttf',
+                },
+                {
+                  family: 'Times New Roman',
+                  src: 'fonts/times.ttf',
+                },
+                {
+                  family: 'Virtual',
+                  src: 'fonts/Virtual.otf',
+                },
+                {
+                  family: 'Virtual Regular',
+                  src: 'fonts/Virtual-Regular.ttf',
+                },
+                {
+                  family: 'Appetite New',
+                  src: 'fonts/appetitenew.ttf',
+                },
+                {
+                  family: 'Berlin Sans FB Demi',
+                  src: 'fonts/BRLNSDB.TTF',
+                },
+                {
+                  family: 'Myriad Arabic',
+                  src: 'fonts/Myriad Arabic Regular.ttf',
+                },
+                {
+                  family: 'Apricot',
+                  src: 'fonts/Apricot-BF650c4a6357ce1.otf',
+                },
+                {
+                  family: 'BerkshireSwash',
+                  src: 'fonts/BerkshireSwash-Regular.ttf',
+                },
+                {
+                  family: 'Poppins Regular',
+                  src: 'fonts/Poppins-Regular.ttf',
+                },
+                {
+                  family: 'Regular Brush',
+                  src: 'fonts/Regular Brush Personal Use Only.ttf',
+                },
+              ],
+            },
 
             ...config?.tools,
           },

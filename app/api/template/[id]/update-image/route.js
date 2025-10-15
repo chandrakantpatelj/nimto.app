@@ -34,7 +34,6 @@ async function checkImageExists(s3Client, bucket, key) {
 async function deleteImageFromS3(s3Client, bucket, key) {
   try {
     await s3Client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));
-    console.log(`Deleted image from S3: ${key}`);
     return true;
   } catch (error) {
     console.error(`Failed to delete image from S3: ${key}`, error);
@@ -127,7 +126,6 @@ export async function POST(request, { params }) {
     });
 
     await s3Client.send(uploadCommand);
-    console.log(`Uploaded new image to S3: ${newImagePath}`);
 
     // If template has an existing image, delete it from S3
     let oldImageDeleted = false;

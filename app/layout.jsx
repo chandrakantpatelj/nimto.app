@@ -21,6 +21,12 @@ export const metadata = {
     template: '%s | Nimto',
     default: 'Nimto', // a default is required when creating a template
   },
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
+    userScalable: true,
+  },
 };
 
 export default async function RootLayout({ children }) {
