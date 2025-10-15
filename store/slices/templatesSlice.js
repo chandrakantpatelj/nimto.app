@@ -44,29 +44,31 @@ export const fetchFeaturedTemplates = createAsyncThunk(
     try {
       const state = getState();
       const { featuredTemplatesLastFetched } = state.templates;
-      
+
       // Check if we have cached data that's less than 5 minutes old
       const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
       const now = Date.now();
-      
-      if (featuredTemplatesLastFetched && 
-          (now - featuredTemplatesLastFetched) < CACHE_DURATION) {
+
+      if (
+        featuredTemplatesLastFetched &&
+        now - featuredTemplatesLastFetched < CACHE_DURATION
+      ) {
         // Return cached data from state
         return state.templates.featuredTemplates;
       }
 
       const response = await fetch('/api/template?limit=6');
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch featured templates');
       }
 
       const result = await response.json();
-      
+
       if (result.success) {
         return {
           templates: result.data || [],
-          timestamp: now
+          timestamp: now,
         };
       } else {
         throw new Error(result.error || 'Failed to fetch featured templates');
@@ -74,7 +76,7 @@ export const fetchFeaturedTemplates = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 export const fetchTemplates = createAsyncThunk(
@@ -83,9 +85,7 @@ export const fetchTemplates = createAsyncThunk(
     const params = queryParams || '';
     try {
       // Build URL with query parameters
-      const url = params
-        ? `/api/template?${params}`
-        : '/api/template';
+      const url = params ? `/api/template?${params}` : '/api/template';
 
       const response = await fetch(url);
 
@@ -322,12 +322,12 @@ const templatesSlice = createSlice({
 
         // Store API response in Redux templates store
         state.templates = action.payload?.templates || [];
-        
+
         // Store pagination data
         if (action.payload?.pagination) {
           state.pagination = action.payload.pagination;
         }
-        
+
         state.error = null;
       })
       .addCase(fetchTemplates.rejected, (state, action) => {

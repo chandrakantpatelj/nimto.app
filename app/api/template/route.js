@@ -1,14 +1,23 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { getServerSession } from 'next-auth/next';
 import { generateDirectS3Url } from '@/lib/s3-utils';
+import authOptions from '@/app/api/auth/[...nextauth]/auth-options';
 
 const prisma = new PrismaClient();
 
-// GET /api/template - Get featured templates only (public access)
+// GET /api/template - Get templates based on user role
 export async function GET(request) {
   try {
-    // Allow public access to read templates
-    // No authentication required for browsing templates
+    // Get user session to determine role-based access
+    const session = await getServerSession(authOptions);
+    const userRole = session?.user?.roleSlug?.toLowerCase();
+
+    // Determine if user should see all templates or only featured
+    const isSuperAdmin = userRole === 'super-admin';
+    const isApplicationAdmin = userRole === 'application-admin';
+    const shouldShowAllTemplates = isSuperAdmin || isApplicationAdmin;
+
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
     const isPremium = searchParams.get('isPremium');
@@ -21,7 +30,8 @@ export async function GET(request) {
 
     const where = {
       isTrashed: false,
-      isFeatured: true,
+      // Only show featured templates for non-admin users
+      ...(shouldShowAllTemplates ? {} : { isFeatured: true }),
     };
 
     // Apply filters
@@ -39,10 +49,14 @@ export async function GET(request) {
       const searchLower = search.toLowerCase();
 
       // Build SQL query for partial matching in tags using PostgreSQL array functions
+      const featuredCondition = shouldShowAllTemplates
+        ? ''
+        : 'AND "isFeatured" = true';
+
       const sqlQuery = `
         SELECT * FROM "Template" 
         WHERE "isTrashed" = false 
-        AND "isFeatured" = true
+        ${featuredCondition}
         AND (
           LOWER("name") LIKE $1 
           OR LOWER("category") LIKE $1 
@@ -61,7 +75,7 @@ export async function GET(request) {
       const countQuery = `
         SELECT COUNT(*) FROM "Template" 
         WHERE "isTrashed" = false 
-        AND "isFeatured" = true
+        ${featuredCondition}
         AND (
           LOWER("name") LIKE $1 
           OR LOWER("category") LIKE $1 

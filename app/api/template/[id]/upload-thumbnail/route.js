@@ -82,7 +82,7 @@ export async function POST(request, { params }) {
     // Determine thumbnail path - use existing if available, otherwise create new
     let thumbnailPath;
     if (template.templateThumbnailPath) {
-      // For edit operations: overwrite existing thumbnail
+      // For edit operations: overwrite existing thumbnail (same path)
       thumbnailPath = template.templateThumbnailPath;
     } else {
       // For new uploads: generate unique filename
@@ -107,7 +107,7 @@ export async function POST(request, { params }) {
       Key: thumbnailPath,
       Body: imageBuffer,
       ContentType: `image/${imageFormat}`,
-      CacheControl: 'public, max-age=31536000',
+      CacheControl: 'public, max-age=3600', // Reduced cache time to 1 hour
     });
 
     try {

@@ -11,18 +11,29 @@ function hasAdminRole(roleSlug) {
 
 const prisma = new PrismaClient();
 
-// GET /api/template/[id] - Get a specific template (public access)
+// GET /api/template/[id] - Get a specific template (role-based access)
 export async function GET(request, { params }) {
   try {
-    // Allow public access to read individual templates
-    // No authentication required for viewing templates
+    // Get user session to determine role-based access
+    const session = await getServerSession(authOptions);
+    const userRole = session?.user?.roleSlug?.toLowerCase();
+
+    // Determine if user should see all templates or only featured
+    const isSuperAdmin = userRole === 'super-admin';
+    const isApplicationAdmin = userRole === 'application-admin';
+    const shouldShowAllTemplates = isSuperAdmin || isApplicationAdmin;
+
     const { id } = await params;
 
+    const whereClause = {
+      id,
+      isTrashed: false,
+      // Only show featured templates for non-admin users
+      ...(shouldShowAllTemplates ? {} : { isFeatured: true }),
+    };
+
     const template = await prisma.template.findFirst({
-      where: {
-        id,
-        isTrashed: false,
-      },
+      where: whereClause,
     });
 
     if (!template) {
