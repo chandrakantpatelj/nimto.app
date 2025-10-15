@@ -487,14 +487,20 @@ const TemplateDesignLayout = ({
                           </svg>
                         </div>
                         <h3 className="text-sm sm:text-base font-semibold text-slate-800 dark:text-slate-200">
-                          Design Assets
+                          {imageUrl || formData?.s3ImageUrl
+                            ? 'Design Assets'
+                            : 'Upload Image'}
                         </h3>
                       </div>
 
                       <Button
                         onClick={() =>
                           document
-                            .getElementById('replace-image-upload')
+                            .getElementById(
+                              imageUrl || formData?.s3ImageUrl
+                                ? 'replace-image-upload'
+                                : 'image-upload',
+                            )
                             ?.click()
                         }
                         className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg py-2.5 sm:py-2 text-sm font-medium shadow-lg hover:shadow-xl transition-all duration-200 min-h-[44px] sm:min-h-0"
@@ -512,7 +518,9 @@ const TemplateDesignLayout = ({
                             d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                           />
                         </svg>
-                        Replace Image
+                        {imageUrl || formData?.s3ImageUrl
+                          ? 'Replace Image'
+                          : 'Upload Image'}
                       </Button>
                     </div>
 
@@ -780,9 +788,17 @@ const TemplateDesignLayout = ({
                 {/* Design Assets Icon */}
                 <button
                   className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-transform duration-200 border-0"
-                  title="Design Assets"
+                  title={
+                    imageUrl || formData?.s3ImageUrl
+                      ? 'Replace Image'
+                      : 'Upload Image'
+                  }
                   onClick={toggleSidebar}
-                  aria-label="Open Design Assets"
+                  aria-label={
+                    imageUrl || formData?.s3ImageUrl
+                      ? 'Replace Image'
+                      : 'Upload Image'
+                  }
                 >
                   <svg
                     className="w-4 h-4 text-white"
