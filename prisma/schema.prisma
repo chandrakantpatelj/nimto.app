@@ -177,6 +177,7 @@ model Template {
   isNew                 Boolean  @default(false)
   isTrending            Boolean  @default(false)
   keywords              String[]
+  tags                  String[]
   orientation           String   @default("portrait")
   popularity            Float    @default(0)
   templateThumbnailPath String?
