@@ -168,7 +168,7 @@ export function EnhancedTemplateManagement() {
         <div className="space-y-8">
             {/* Category Browse Section */}
             <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100 dark:border-slate-700 mx-4 sm:mx-0">
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-8 sm:mb-12 text-center font-serif">
+                <h2 className="text-4xl md:text-5xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-8 sm:mb-12 text-center">
                     Browse Invitation Categories
                 </h2>
                 {categoriesLoading ? (
@@ -365,7 +365,217 @@ export function EnhancedTemplateManagement() {
             </div>
 
             {/* Search and Filter Section */}
-            {/* ...rest of your code unchanged... */}
+            <div className="bg-white dark:bg-slate-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 shadow-sm border border-gray-100 dark:border-slate-700 mx-4 sm:mx-0">
+                {/* Search Bar */}
+                <div className="max-w-3xl mx-auto mb-6 sm:mb-8">
+                    <div className="relative">
+                        <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 h-5 w-5 sm:h-6 sm:w-6" />
+                        <Input
+                            type="text"
+                            placeholder="Search by name, category, or theme..."
+                            value={searchQuery}
+                            onChange={handleSearch}
+                            className="pl-10 sm:pl-12 pr-4 py-3 sm:py-4 text-base sm:text-lg border-2 border-gray-200 dark:border-slate-600 rounded-lg sm:rounded-xl focus:border-purple-500 focus:ring-purple-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100"
+                        />
+                    </div>
+                </div>
+
+                {/* Filters */}
+                <div className="border-t border-gray-100 dark:border-slate-700 pt-4 sm:pt-6">
+                    <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-4 sm:gap-6">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                            <Filter className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-400" />
+                            <span className="font-semibold text-gray-800 dark:text-gray-200 text-base sm:text-lg">
+                                Filters:
+                            </span>
+                        </div>
+
+                        {/* Filter Controls */}
+                        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
+                            {/* Orientation Filter */}
+                            <Select
+                                value={filters.orientation || 'all'}
+                                onValueChange={handleOrientationChange}
+                            >
+                                <SelectTrigger className="w-full sm:w-[140px] md:w-[160px] border-2 border-gray-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100">
+                                    <SelectValue placeholder="Orientation" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Orientations</SelectItem>
+                                    <SelectItem value="portrait">Portrait</SelectItem>
+                                    <SelectItem value="landscape">Landscape</SelectItem>
+                                    <SelectItem value="square">Square</SelectItem>
+                                </SelectContent>
+                            </Select>
+
+                            {/* Premium Filter */}
+                            <Select
+                                value={filters.premium || 'all'}
+                                onValueChange={handlePremiumChange}
+                            >
+                                <SelectTrigger className="w-full sm:w-[120px] md:w-[140px] border-2 border-gray-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100">
+                                    <SelectValue placeholder="Type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Types</SelectItem>
+                                    <SelectItem value="free">Free</SelectItem>
+                                    <SelectItem value="premium">Premium</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {/* Badge Filters */}
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 md:gap-6 w-full sm:w-auto">
+                            <div className="flex items-center space-x-2 sm:space-x-3">
+                                <Checkbox
+                                    id="trending"
+                                    checked={filters.trending}
+                                    onCheckedChange={() => handleBadgeToggle('trending')}
+                                    className="w-4 h-4 sm:w-5 sm:h-5"
+                                />
+                                <label
+                                    htmlFor="trending"
+                                    className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 cursor-pointer"
+                                >
+                                    Trending
+                                </label>
+                            </div>
+
+                            <div className="flex items-center space-x-2 sm:space-x-3">
+                                <Checkbox
+                                    id="featured"
+                                    checked={filters.featured}
+                                    onCheckedChange={() => handleBadgeToggle('featured')}
+                                    className="w-4 h-4 sm:w-5 sm:h-5"
+                                />
+                                <label
+                                    htmlFor="featured"
+                                    className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 cursor-pointer"
+                                >
+                                    Featured
+                                </label>
+                            </div>
+
+                            <div className="flex items-center space-x-2 sm:space-x-3">
+                                <Checkbox
+                                    id="new"
+                                    checked={filters.new}
+                                    onCheckedChange={() => handleBadgeToggle('new')}
+                                    className="w-4 h-4 sm:w-5 sm:h-5"
+                                />
+                                <label
+                                    htmlFor="new"
+                                    className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 cursor-pointer"
+                                >
+                                    New
+                                </label>
+                            </div>
+                        </div>
+
+                        {/* Clear Filters */}
+                        {hasActiveFilters && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={clearFilters}
+                                className="w-full sm:w-auto sm:ml-auto border-2 border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-300 dark:hover:border-red-700"
+                            >
+                                <X className="h-4 w-4 mr-2" />
+                                Clear Filters
+                            </Button>
+                        )}
+                    </div>
+
+                    {/* Active Filters Display */}
+                    {hasActiveFilters && (
+                        <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-100 dark:border-slate-700">
+                            <div className="flex items-center gap-2 mb-3">
+                                <span className="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400">
+                                    Active Filters:
+                                </span>
+                            </div>
+                            <div className="flex flex-wrap gap-2 sm:gap-3">
+                                {selectedCategory && (
+                                    <Badge
+                                        variant="secondary"
+                                        className="px-2 sm:px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 text-xs sm:text-sm"
+                                    >
+                                        Category:{' '}
+                                        {categories.find((c) => c.slug === selectedCategory)
+                                            ?.name || selectedCategory}
+                                        <X
+                                            className="h-3 w-3 ml-1 sm:ml-2 cursor-pointer hover:text-purple-900 dark:hover:text-purple-200"
+                                            onClick={() => handleCategorySelect(null)}
+                                        />
+                                    </Badge>
+                                )}
+                                {filters.orientation && (
+                                    <Badge
+                                        variant="secondary"
+                                        className="px-2 sm:px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 text-xs sm:text-sm"
+                                    >
+                                        {filters.orientation}
+                                        <X
+                                            className="h-3 w-3 ml-1 sm:ml-2 cursor-pointer hover:text-blue-900 dark:hover:text-blue-200"
+                                            onClick={() => handleOrientationChange('all')}
+                                        />
+                                    </Badge>
+                                )}
+                                {filters.premium && (
+                                    <Badge
+                                        variant="secondary"
+                                        className="px-2 sm:px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800 text-xs sm:text-sm"
+                                    >
+                                        {filters.premium}
+                                        <X
+                                            className="h-3 w-3 ml-1 sm:ml-2 cursor-pointer hover:text-green-900 dark:hover:text-green-200"
+                                            onClick={() => handlePremiumChange('all')}
+                                        />
+                                    </Badge>
+                                )}
+                                {filters.trending && (
+                                    <Badge
+                                        variant="secondary"
+                                        className="px-2 sm:px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800 text-xs sm:text-sm"
+                                    >
+                                        Trending
+                                        <X
+                                            className="h-3 w-3 ml-1 sm:ml-2 cursor-pointer hover:text-orange-900 dark:hover:text-orange-200"
+                                            onClick={() => handleBadgeToggle('trending')}
+                                        />
+                                    </Badge>
+                                )}
+                                {filters.featured && (
+                                    <Badge
+                                        variant="secondary"
+                                        className="px-2 sm:px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-800 text-xs sm:text-sm"
+                                    >
+                                        Featured
+                                        <X
+                                            className="h-3 w-3 ml-1 sm:ml-2 cursor-pointer hover:text-yellow-900 dark:hover:text-yellow-200"
+                                            onClick={() => handleBadgeToggle('featured')}
+                                        />
+                                    </Badge>
+                                )}
+                                {filters.new && (
+                                    <Badge
+                                        variant="secondary"
+                                        className="px-2 sm:px-3 py-1 bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 border border-pink-200 dark:border-pink-800 text-xs sm:text-sm"
+                                    >
+                                        New
+                                        <X
+                                            className="h-3 w-3 ml-1 sm:ml-2 cursor-pointer hover:text-pink-900 dark:hover:text-pink-200"
+                                            onClick={() => handleBadgeToggle('new')}
+                                        />
+                                    </Badge>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+
             {/* Templates Grid */}
             <EnhancedTemplates
                 searchQuery={searchQuery}

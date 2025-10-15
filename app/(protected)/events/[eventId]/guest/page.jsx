@@ -3,7 +3,7 @@
 import { Fragment, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Edit } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Container } from '@/components/common/container';
@@ -37,8 +37,8 @@ function EventManagementPage() {
         throw new Error(`Failed to fetch event: ${response.status}`);
       }
 
-        const data = await response.json();
-        console.log('Fetched event data:', data);
+      const data = await response.json();
+      console.log('Fetched event data:', data);
       setEvent(data.data);
     } catch (error) {
       console.error('Error fetching event:', error);
@@ -57,11 +57,37 @@ function EventManagementPage() {
               <ToolbarPageTitle text="Loading..." />
             </ToolbarHeading>
             <ToolbarActions>
-              <Button variant="secondary" appearance="ghost" asChild>
-                <Link href="/events">
-                  <ArrowLeft /> Back
-                </Link>
-              </Button>
+              {/* Mobile Layout: Button with label below */}
+              <div className="flex sm:hidden flex-col gap-2 w-full">
+                <Button
+                  variant="secondary"
+                  appearance="ghost"
+                  asChild
+                  className="w-full"
+                >
+                  <Link href="/events">
+                    <ArrowLeft className="w-4 h-4" />
+                  </Link>
+                </Button>
+                <div className="text-xs text-gray-600 dark:text-gray-400 text-center">
+                  Back
+                </div>
+              </div>
+
+              {/* Desktop Layout: Button with inline label */}
+              <div className="hidden sm:flex">
+                <Button
+                  variant="secondary"
+                  appearance="ghost"
+                  asChild
+                  className="w-auto"
+                >
+                  <Link href="/events">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back
+                  </Link>
+                </Button>
+              </div>
             </ToolbarActions>
           </Toolbar>
         </Container>
@@ -85,11 +111,37 @@ function EventManagementPage() {
               <ToolbarPageTitle text="Event Not Found" />
             </ToolbarHeading>
             <ToolbarActions>
-              <Button variant="secondary" appearance="ghost" asChild>
-                <Link href="/events">
-                  <ArrowLeft /> Back
-                </Link>
-              </Button>
+              {/* Mobile Layout: Button with label below */}
+              <div className="flex sm:hidden flex-col gap-2 w-full">
+                <Button
+                  variant="secondary"
+                  appearance="ghost"
+                  asChild
+                  className="w-full"
+                >
+                  <Link href="/events">
+                    <ArrowLeft className="w-4 h-4" />
+                  </Link>
+                </Button>
+                <div className="text-xs text-gray-600 dark:text-gray-400 text-center">
+                  Back
+                </div>
+              </div>
+
+              {/* Desktop Layout: Button with inline label */}
+              <div className="hidden sm:flex">
+                <Button
+                  variant="secondary"
+                  appearance="ghost"
+                  asChild
+                  className="w-auto"
+                >
+                  <Link href="/events">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back
+                  </Link>
+                </Button>
+              </div>
             </ToolbarActions>
           </Toolbar>
         </Container>
@@ -119,7 +171,7 @@ function EventManagementPage() {
                 access to it.
               </p>
             </div>
-            <Button variant="primary" asChild>
+            <Button variant="primary" asChild className="w-full sm:w-auto">
               <Link href="/events">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Events
@@ -140,11 +192,51 @@ function EventManagementPage() {
             <ToolbarPageTitle text={`Manage Invitations: ${event.title}`} />
           </ToolbarHeading>
           <ToolbarActions>
-            <Button variant="secondary" appearance="ghost" asChild>
-              <Link href="/events">
-                <ArrowLeft /> Back
-              </Link>
-            </Button>
+            {/* Mobile Layout: Buttons side by side with labels below */}
+            <div className="flex sm:hidden flex-col gap-2 w-full">
+              <div className="flex justify-between gap-2">
+                <Button
+                  variant="secondary"
+                  appearance="ghost"
+                  asChild
+                  className="flex-1"
+                >
+                  <Link href="/events">
+                    <ArrowLeft className="w-4 h-4" />
+                  </Link>
+                </Button>
+                <Button variant="primary" asChild className="flex-1">
+                  <Link href={`/events/${eventId}`}>
+                    <Edit className="w-4 h-4" />
+                  </Link>
+                </Button>
+              </div>
+              <div className="flex justify-between gap-2 text-xs text-gray-600 dark:text-gray-400">
+                <span className="flex-1 text-center">Back</span>
+                <span className="flex-1 text-center">Edit Event</span>
+              </div>
+            </div>
+
+            {/* Desktop Layout: Buttons with inline labels */}
+            <div className="hidden sm:flex flex-row gap-3 w-auto">
+              <Button variant="primary" asChild className="w-auto">
+                <Link href={`/events/${eventId}`}>
+                  <Edit className="w-4 h-4 mr-2" />
+                  Edit Event
+                </Link>
+              </Button>
+              <Button
+                variant="secondary"
+                appearance="ghost"
+                asChild
+                className="w-auto"
+              >
+                <Link href="/events">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back
+                </Link>
+              </Button>
+            </div>
           </ToolbarActions>
         </Toolbar>
       </Container>
