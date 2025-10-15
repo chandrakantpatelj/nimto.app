@@ -220,12 +220,6 @@ export function Header() {
           icon: BarChart3,
           key: 'reporting',
         },
-        {
-          title: 'Messaging',
-          path: '/messaging',
-          icon: MessageSquare,
-          key: 'messaging',
-        },
       ];
     }
 
@@ -236,12 +230,6 @@ export function Header() {
           path: '/my-profile',
           icon: UserCircle,
           key: 'my-profile',
-        },
-        {
-          title: 'Messaging',
-          path: '/messaging',
-          icon: MessageSquare,
-          key: 'messaging',
         },
       ];
     }
