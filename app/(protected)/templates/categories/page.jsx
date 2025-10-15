@@ -1,7 +1,8 @@
 'use client';
 
 import React, { Fragment, useState } from 'react';
-import { Plus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { ArrowLeft, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Container } from '@/components/common/container';
 import { RouteGuard } from '@/components/common/route-guard';
@@ -19,9 +20,14 @@ import { CategoryForm } from './components/CategoryForm';
 import { CategoryManagement } from './content';
 
 function CategoryManagementPage() {
+  const router = useRouter();
   const [showForm, setShowForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  const handleBackToTemplates = () => {
+    router.push('/templates');
+  };
 
   const handleCreateCategory = () => {
     setEditingCategory(null);
@@ -50,10 +56,11 @@ function CategoryManagementPage() {
         <Container>
           <Toolbar>
             <ToolbarHeading>
-              <ToolbarPageTitle />
-              <ToolbarDescription>
-                Template Category Management
-              </ToolbarDescription>
+              <ToolbarActions>
+                <Button variant="outline" onClick={handleBackToTemplates}>
+                  <ArrowLeft /> Back to Templates
+                </Button>
+              </ToolbarActions>
             </ToolbarHeading>
             <ToolbarActions>
               <Button variant="primary" onClick={handleCreateCategory}>

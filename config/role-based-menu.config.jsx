@@ -68,11 +68,6 @@ const ADMIN_MENU_ITEMS = [
     icon: BarChart3,
     path: '/reportings',
   },
-  {
-    title: 'Messaging',
-    icon: MessageSquare,
-    path: '/messaging',
-  },
 ];
 
 // Menu items for Host users
@@ -91,11 +86,6 @@ const HOST_MENU_ITEMS = [
     title: 'Invited Events',
     icon: Mail,
     path: '/invited-events',
-  },
-  {
-    title: 'Messaging',
-    icon: MessageSquare,
-    path: '/messaging',
   },
 ];
 
