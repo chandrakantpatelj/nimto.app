@@ -189,19 +189,13 @@ export default function HomePage() {
                   >
                     Clear Search
                   </Button>
-                  {/* <Button
-                    variant="ghost"
-                    asChild
-                  >
-                    <a href="#search-section">Back to Search</a>
-                  </Button> */}
                 </div>
 
                 {isSearching ? (
                   <div className="flex justify-center items-center py-12">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
                     <span className="ml-4 text-gray-600 dark:text-gray-300">
-                      Searching templates...
+                      Searching desings...
                     </span>
                   </div>
                 ) : searchResults.length > 0 ? (
@@ -243,28 +237,6 @@ export default function HomePage() {
                               {template.name}
                             </h3>
                           </div>
-
-                          {/* Template Meta Info */}
-                          {/* <div className="space-y-0.5 sm:space-y-1 text-xs sm:text-sm opacity-90">
-                            <div className="flex items-center">
-                              <Calendar className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1 sm:mr-1.5" />
-                              <span className="truncate">{template.category || 'Event Template'}</span>
-                            </div>
-
-                            <div className="flex items-center">
-                              <svg className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1 sm:mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
-                              </svg>
-                              <span className="truncate">Ready to use</span>
-                            </div>
-
-                            <div className="flex items-center">
-                              <svg className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1 sm:mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                              </svg>
-                              <span className="truncate">by {template.isSystemTemplate ? 'Nimto' : 'Community'}</span>
-                            </div>
-                          </div> */}
 
                           {/* Hover Action Buttons */}
                           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
@@ -316,17 +288,6 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* Featured Templates Section - Hidden when category or search is active */}
-      {(!isAuthenticated || !roles.isAttendee) &&
-        !searchQuery &&
-        !selectedCategory && (
-          <section className="w-full py-10 bg-white dark:bg-gray-900">
-            <div className="mx-auto px-6">
-              <HomeTemplatesPreview />
-            </div>
-          </section>
-        )}
-
       {/* Invitation Categories Section */}
       {(!isAuthenticated || !roles.isAttendee) && (
         <section className="w-full py-10 bg-gray-50 dark:bg-gray-800">
@@ -353,6 +314,17 @@ export default function HomePage() {
           </div>
         </section>
       )}
+
+      {/* Featured Templates Section - Hidden when category or search is active */}
+      {(!isAuthenticated || !roles.isAttendee) &&
+        !searchQuery &&
+        !selectedCategory && (
+          <section className="w-full py-10 bg-white dark:bg-gray-900">
+            <div className="mx-auto px-6">
+              <HomeTemplatesPreview />
+            </div>
+          </section>
+        )}
 
       {/* Category Filter Results Section */}
       {(!isAuthenticated || !roles.isAttendee) &&
