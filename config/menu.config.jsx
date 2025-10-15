@@ -24,6 +24,7 @@ import {
   Grid,
   Heart,
   HelpCircle,
+  Home,
   Kanban,
   Key,
   Layout,
@@ -49,7 +50,6 @@ import {
   Users,
   Briefcase as WorkIcon,
   Zap,
-  Home
 } from 'lucide-react';
 
 export const MENU_SIDEBAR = [
@@ -92,11 +92,6 @@ export const MENU_SIDEBAR = [
     title: 'Reporting',
     icon: FileText,
     path: '/reportings',
-  },
-  {
-    title: 'Messaging',
-    icon: MessageSquare,
-    path: '/messaging',
   },
   {
     title: 'My Profile',

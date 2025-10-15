@@ -108,11 +108,6 @@ export function SidebarMenuDefault() {
           path: '/reportings',
         },
         {
-          title: 'Messaging',
-          icon: MENU_SIDEBAR.find((item) => item.title === 'Messaging')?.icon,
-          path: '/messaging',
-        },
-        {
           title: 'My Profile',
           icon: MENU_SIDEBAR.find((item) => item.title === 'My Profile')?.icon,
           path: '/my-profile',
