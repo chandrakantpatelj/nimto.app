@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Check, Search } from 'lucide-react';
 import {
+  cleanPhoneNumber,
   formatAsYouType,
   POPULAR_COUNTRIES,
   validatePhoneNumber,
@@ -22,11 +23,11 @@ export default function PhoneInput({
   onValidationChange,
   placeholder = 'Enter phone number',
   defaultCountry = 'IN',
-  showValidation = false,
   label = 'Phone Number',
   disabled = false,
   required = false,
   className = '',
+  showValidation = false, // Explicitly destructure to prevent passing to DOM
   ...props
 }) {
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -90,7 +91,7 @@ export default function PhoneInput({
         }
       }
     },
-    [showValidation, onValidationChange],
+    [onValidationChange],
   );
 
   useEffect(() => {
@@ -101,7 +102,9 @@ export default function PhoneInput({
   useEffect(() => {
     if (isInitialized) {
       if (phoneNumber.trim()) {
-        const fullNumber = `+${POPULAR_COUNTRIES.find((c) => c.code === countryCode)?.dialCode.replace('+', '')}${phoneNumber}`;
+        // Clean the phone number - remove all spaces and formatting
+        const cleanedPhoneNumber = cleanPhoneNumber(phoneNumber);
+        const fullNumber = `+${POPULAR_COUNTRIES.find((c) => c.code === countryCode)?.dialCode.replace('+', '')}${cleanedPhoneNumber}`;
         if (onChange && fullNumber !== value) {
           onChange(fullNumber);
         }
@@ -165,10 +168,11 @@ export default function PhoneInput({
   return (
     <div className={`flex flex-col ${className}`}>
       {/* Label */}
-
-      <label className="block text-sm font-medium text-foreground mb-2">
-        {label}
-      </label>
+      {label && (
+        <label className="block text-sm font-medium text-foreground mb-2">
+          {label}
+        </label>
+      )}
 
       <div className="flex-1 flex flex-col justify-between">
         {/* Unified Phone Input Field */}
@@ -180,23 +184,23 @@ export default function PhoneInput({
             onChange={handlePhoneChange}
             disabled={disabled}
             required={required}
-            className={`h-10 w-full pl-20 ${isReformatting ? 'bg-blue-50 border-blue-200' : ''}`}
+            className={`h-12 w-full pl-24 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-base ${isReformatting ? 'bg-blue-50 border-blue-200 dark:bg-blue-950/20 dark:border-blue-400' : ''}`}
             {...props}
           />
 
           {/* Country Code Selector - Overlay on the left */}
-          <div className="absolute left-0 top-0 h-10 flex items-center border-r border-gray-300 dark:border-gray-600">
+          <div className="absolute left-0 top-0 h-12 flex items-center border-r border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 rounded-l-md">
             <Select
               value={countryCode}
               onValueChange={handleCountryChange}
               disabled={disabled}
             >
-              <SelectTrigger className="w-20 h-10 border-0 bg-transparent shadow-none focus:ring-0 focus:ring-offset-0">
+              <SelectTrigger className="w-24 h-12 border-0 bg-transparent shadow-none focus:ring-0 focus:ring-offset-0 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                 <SelectValue>
                   {selectedCountry && (
-                    <span className="flex items-center justify-center gap-1 w-full">
-                      <span className="text-sm">{selectedCountry.flag}</span>
-                      <span className="font-medium text-xs">
+                    <span className="flex items-center justify-center gap-1 w-full px-2">
+                      <span className="text-base">{selectedCountry.flag}</span>
+                      <span className="font-medium text-sm text-gray-700 dark:text-gray-300">
                         {selectedCountry.dialCode}
                       </span>
                     </span>
@@ -302,43 +306,6 @@ export default function PhoneInput({
             </div>
           </div>
         )}
-
-        {/* Validation Messages Container - Always reserves space */}
-        <div className="mt-1 h-5">
-          {showValidation && phoneNumber.trim() && !isReformatting && (
-            <>
-              {/* Error Message */}
-              {!isValid && validationMessage && (
-                <div className="flex items-center gap-2 text-xs text-red-600">
-                  <div className="w-3 h-3 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <svg
-                      className="w-2 h-2 text-red-600"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                  <span>{validationMessage}</span>
-                </div>
-              )}
-
-              {/* Success Message */}
-              {isValid && validationMessage === '' && (
-                <div className="flex items-center gap-2 text-xs text-green-600">
-                  <div className="w-3 h-3 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Check className="w-2 h-2 text-green-600" />
-                  </div>
-                  <span>Valid phone number</span>
-                </div>
-              )}
-            </>
-          )}
-        </div>
       </div>
     </div>
   );

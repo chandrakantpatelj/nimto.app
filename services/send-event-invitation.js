@@ -4,6 +4,7 @@ import {
   formatTimeInTimezone,
   getTimezoneAbbreviation,
 } from '@/lib/date-utils.js';
+import { cleanPhoneNumber } from '@/lib/phone-utils.js';
 import { sendEmail } from './send-email.js';
 import { sendMessage } from './send-sms.js';
 
@@ -86,30 +87,33 @@ export async function sendEventInvitation({
   // Send SMS/WhatsApp if phone is available and sms channel is requested
   if (phone && channels.includes('sms')) {
     try {
+      // Clean phone number - remove all spaces and non-digit characters except +
+      const cleanPhone = cleanPhoneNumber(phone);
+
       // Use formatted date/time with timezone for SMS
       const smsMessage = `Hi ${name}! You're invited to "${title}" on ${formattedDateTime}${location ? ` at ${location}` : ''}. View details and RSVP: ${invitationUrl}`;
 
       const smsResult = await sendMessage({
-        to: phone,
+        to: cleanPhone,
         message: smsMessage,
       });
 
       if (smsResult.success) {
         results.sms.sent = true;
         console.log(
-          `Event invitation SMS sent to ${name} (${phone}) via ${smsResult.channel}`,
+          `Event invitation SMS sent to ${name} (${cleanPhone}) via ${smsResult.channel}`,
         );
       } else {
         results.sms.error = smsResult.error;
         console.error(
-          `Failed to send SMS invitation to ${name} (${phone}):`,
+          `Failed to send SMS invitation to ${name} (${cleanPhone}):`,
           smsResult.error,
         );
       }
     } catch (error) {
       results.sms.error = error.message;
       console.error(
-        `Failed to send SMS invitation to ${name} (${phone}):`,
+        `Failed to send SMS invitation to ${name} (${cleanPhone}):`,
         error,
       );
     }

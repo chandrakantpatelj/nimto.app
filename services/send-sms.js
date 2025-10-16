@@ -141,8 +141,16 @@ export async function sendWhatsApp({ to, message }) {
 
 /**
  * Try sending WhatsApp first, then fallback to SMS
+ * TEMPORARY: Currently sending SMS directly, WhatsApp code preserved for future use
  */
 export async function sendMessage({ to, message }) {
+  // TEMPORARY: Send SMS directly instead of trying WhatsApp first
+  // TODO: Re-enable WhatsApp when ready
+
+  return await sendSMS({ to, message });
+
+  // WhatsApp code preserved for future use (commented out temporarily)
+  /*
   if (isWhatsAppConfigured()) {
     const whatsappResult = await sendWhatsApp({ to, message });
 
@@ -173,6 +181,7 @@ export async function sendMessage({ to, message }) {
   }
 
   return await sendSMS({ to, message });
+  */
 }
 
 /**
