@@ -19,6 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import EmailCollectionDialog from './email-collection-dialog';
 
 export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
     const [formData, setFormData] = useState({
@@ -36,6 +37,7 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
     const [submitError, setSubmitError] = useState(null);
     const [submitSuccess, setSubmitSuccess] = useState(false);
     const [isUpdatingResponse, setIsUpdatingResponse] = useState(false);
+    const [showEmailDialog, setShowEmailDialog] = useState(false);
 
     const handleInputChange = (field, value) => {
         setFormData((prev) => ({
@@ -59,10 +61,7 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
             setSubmitError('Name is required');
             return false;
         }
-        if (!formData.email.trim()) {
-            setSubmitError('Email is required');
-            return false;
-        }
+        // Email validation is now optional - will be prompted if not provided
         if (!formData.status || formData.status === 'PENDING') {
             setSubmitError('Please select your response (Accept/Decline/Maybe)');
             return false;
@@ -95,18 +94,26 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
         return true;
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const handleEmailProvided = (email) => {
+        setFormData(prev => ({
+            ...prev,
+            email: email,
+        }));
+        setShowEmailDialog(false);
+        // Proceed with submission after email is provided
+        submitRSVP(email);
+    };
 
-        if (!validateForm()) return;
-
+    const submitRSVP = async (emailOverride = null) => {
         setIsSubmitting(true);
         setSubmitError(null);
 
         try {
+            const emailToUse = emailOverride || formData.email.trim();
+            
             const requestBody = {
                 name: formData.name.trim(),
-                email: formData.email.trim(),
+                email: emailToUse,
                 phone: formData.phone.trim() || null,
                 status: formData.status,
                 response: formData.response,
@@ -117,6 +124,10 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
 
             const params = new URLSearchParams();
             params.append('eventId', event.id);
+            // Pass guestId if available (for phone-only guests)
+            if (userGuest?.id) {
+                params.append('guestId', userGuest.id);
+            }
             if (session?.user?.email) {
                 params.append('email', session.user.email);
             }
@@ -146,6 +157,7 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
 
             setFormData(prev => ({
                 ...prev,
+                email: result.data.email, // Update with saved email
                 status: result.data.status,
                 response: result.data.response,
                 adults: result.data.adults,
@@ -167,6 +179,25 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!validateForm()) return;
+
+        // Check if guest doesn't have email (only phone number)
+        const hasEmail = formData.email && formData.email.trim();
+        const hasPhone = userGuest?.phone || formData.phone;
+        
+        if (!hasEmail && hasPhone) {
+            // Show email collection dialog
+            setShowEmailDialog(true);
+            return;
+        }
+
+        // Proceed with normal submission if email exists
+        submitRSVP();
     };
 
     const getStatusColor = (status) => {
@@ -360,26 +391,31 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
                     {formData.status === 'CONFIRMED' && (
                         <>
                             <div className="space-y-4">
-                                {/* Email - Read Only */}
+                                {/* Email - Read Only or Will be collected */}
                                 <div>
                                     <Label className="text-sm font-medium dark:text-gray-200">
                                         Email Address *
-                                        <span className="text-xs text-muted-foreground dark:text-gray-400 ml-2">
-                                            (Invited to: {userGuest?.email || session?.user?.email})
-                                        </span>
+                                        {(userGuest?.email || session?.user?.email) && (
+                                            <span className="text-xs text-muted-foreground dark:text-gray-400 ml-2">
+                                                (Invited to: {userGuest?.email || session?.user?.email})
+                                            </span>
+                                        )}
                                     </Label>
                                     <div className="relative mt-1">
                                         <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground dark:text-gray-400" />
                                         <Input
                                             type="email"
-                                            value={userGuest?.email || session?.user?.email || ''}
+                                            value={formData.email || ''}
                                             disabled={true}
                                             className="pl-10 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 dark:border-gray-600"
-                                            placeholder="Email address"
+                                            placeholder={!formData.email ? "Will be requested during RSVP" : "Email address"}
                                         />
                                     </div>
                                     <p className="text-xs text-muted-foreground dark:text-gray-400 mt-1">
-                                        Email cannot be changed. Contact the host if this is incorrect.
+                                        {formData.email 
+                                            ? "Email cannot be changed. Contact the host if this is incorrect."
+                                            : "You'll be asked to provide your email when submitting RSVP."
+                                        }
                                     </p>
                                 </div>
                                 {/* Name - Editable */}
@@ -649,6 +685,13 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate, session }) {
                     </div>
                 </form>
             </CardContent>
+            
+            {/* Email Collection Dialog */}
+            <EmailCollectionDialog
+                isOpen={showEmailDialog}
+                onClose={() => setShowEmailDialog(false)}
+                onSubmit={handleEmailProvided}
+            />
         </Card>
     );
 }

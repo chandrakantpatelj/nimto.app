@@ -108,6 +108,7 @@ export async function PUT(request) {
         const email = searchParams.get('email');
         const userId = searchParams.get('userId');
         const eventId = searchParams.get('eventId');
+        const guestId = searchParams.get('guestId');
 
         const session = await getServerSession(authOptions);
 
@@ -120,19 +121,12 @@ export async function PUT(request) {
             userIdentifier = session.user.id;
         }
 
-        // If no email or userId provided and no session, return unauthorized
-        if (!userEmail && !userIdentifier) {
-            return NextResponse.json(
-                { success: false, error: 'Email or userId required' },
-                { status: 400 },
-            );
-        }
-
         const body = await request.json();
         const {
             status: newStatus,
             response,
             name,
+            email: bodyEmail,
             phone,
             plusOnes,
             adults,
@@ -157,26 +151,51 @@ export async function PUT(request) {
         }
 
         // Find the guest record with event details
-        const guest = await prisma.guest.findFirst({
-            where: {
-                email: userEmail,
-                eventId: eventId,
-            },
-            include: {
-                event: {
-                    select: {
-                        id: true,
-                        title: true,
-                        allowPlusOnes: true,
-                        maxPlusOnes: true,
-                        allowMaybeRSVP: true,
-                        allowFamilyHeadcount: true,
-                        limitEventCapacity: true,
-                        maxEventCapacity: true,
+        // Support lookup by guestId (for phone-only guests) or email
+        let guest;
+        if (guestId) {
+            guest = await prisma.guest.findFirst({
+                where: {
+                    id: guestId,
+                    eventId: eventId,
+                },
+                include: {
+                    event: {
+                        select: {
+                            id: true,
+                            title: true,
+                            allowPlusOnes: true,
+                            maxPlusOnes: true,
+                            allowMaybeRSVP: true,
+                            allowFamilyHeadcount: true,
+                            limitEventCapacity: true,
+                            maxEventCapacity: true,
+                        },
                     },
                 },
-            },
-        });
+            });
+        } else if (userEmail) {
+            guest = await prisma.guest.findFirst({
+                where: {
+                    email: userEmail,
+                    eventId: eventId,
+                },
+                include: {
+                    event: {
+                        select: {
+                            id: true,
+                            title: true,
+                            allowPlusOnes: true,
+                            maxPlusOnes: true,
+                            allowMaybeRSVP: true,
+                            allowFamilyHeadcount: true,
+                            limitEventCapacity: true,
+                            maxEventCapacity: true,
+                        },
+                    },
+                },
+            });
+        }
 
         if (!guest) {
             return NextResponse.json(
@@ -286,19 +305,27 @@ export async function PUT(request) {
             guestResponse = null;
         }
 
+        // Prepare update data
+        const updateData = {
+            name: name || guest.name,
+            phone: phone || guest.phone,
+            status: newStatus,
+            response: guestResponse,
+            respondedAt: new Date(),
+            plusOnes: plusOnes !== undefined ? plusOnes : guest.plusOnes,
+            adults: adults !== undefined ? adults : guest.adults,
+            children: children !== undefined ? children : guest.children,
+        };
+
+        // Update email if provided in body and guest doesn't have one
+        if (bodyEmail && bodyEmail.trim() && !guest.email) {
+            updateData.email = bodyEmail.trim();
+        }
+
         // Update the guest record
         const updatedGuest = await prisma.guest.update({
             where: { id: guest.id },
-            data: {
-                name: name || guest.name,
-                phone: phone || guest.phone,
-                status: newStatus,
-                response: guestResponse,
-                respondedAt: new Date(),
-                plusOnes: plusOnes !== undefined ? plusOnes : guest.plusOnes,
-                adults: adults !== undefined ? adults : guest.adults,
-                children: children !== undefined ? children : guest.children,
-            },
+            data: updateData,
             include: {
                 event: {
                     select: {

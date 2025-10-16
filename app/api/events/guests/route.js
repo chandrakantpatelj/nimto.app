@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { checkGuestManagementAccess } from '@/lib/auth-utils';
+import { cleanPhoneNumber } from '@/lib/phone-utils';
 import prisma from '@/lib/prisma';
 import { sendEventInvitation } from '@/services/send-event-invitation';
 
@@ -99,6 +100,9 @@ export async function POST(request) {
 
     const { eventId, name, email, phone, status, response, sendEmail } = body;
 
+    // Clean phone number - remove all spaces and non-digit characters except +
+    const cleanPhone = phone ? cleanPhoneNumber(phone) : null;
+
     // Validate required fields
     if (!name || !name.trim()) {
       return NextResponse.json(
@@ -108,7 +112,7 @@ export async function POST(request) {
     }
 
     // Validate that either email or phone is provided
-    if ((!email || !email.trim()) && (!phone || !phone.trim())) {
+    if ((!email || !email.trim()) && (!cleanPhone || !cleanPhone.trim())) {
       return NextResponse.json(
         { success: false, error: 'Either email or phone number is required' },
         { status: 400 },
@@ -147,7 +151,7 @@ export async function POST(request) {
         eventId,
         name,
         email,
-        phone,
+        phone: cleanPhone,
         status: status || 'PENDING',
         response: guestResponse,
         invitedAt: new Date(),
@@ -228,6 +232,9 @@ export async function PUT(request) {
     const body = await request.json();
     const { guestId, name, email, phone, status, response } = body;
 
+    // Clean phone number - remove all spaces and non-digit characters except +
+    const cleanPhone = phone ? cleanPhoneNumber(phone) : null;
+
     if (!guestId) {
       return NextResponse.json(
         { success: false, error: 'Guest ID is required' },
@@ -245,7 +252,7 @@ export async function PUT(request) {
 
     // Validate that either email or phone is provided if both are being updated
     if (email !== undefined && phone !== undefined) {
-      if ((!email || !email.trim()) && (!phone || !phone.trim())) {
+      if ((!email || !email.trim()) && (!cleanPhone || !cleanPhone.trim())) {
         return NextResponse.json(
           { success: false, error: 'Either email or phone number is required' },
           { status: 400 },
@@ -279,7 +286,7 @@ export async function PUT(request) {
       data: {
         ...(name && { name }),
         ...(email && { email }),
-        ...(phone && { phone }),
+        ...(phone !== undefined && { phone: cleanPhone }),
         ...(status && { status }),
         ...(response !== undefined && {
           response: response === '' ? null : response,
