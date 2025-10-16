@@ -6,8 +6,8 @@ import { RiCheckboxCircleFill, RiErrorWarningFill } from '@remixicon/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { LoaderCircleIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
-import { useToast } from '@/providers/toast-provider';
 import { apiFetch } from '@/lib/api';
+import { useToast } from '@/providers/toast-provider';
 import {
   Alert,
   AlertDescription,
@@ -45,6 +45,7 @@ import { UserProfileSchema } from '../forms/user-profile-schema';
 
 const UserProfileEditDialog = ({ open, closeDialog, user }) => {
   const queryClient = useQueryClient();
+  const { toastSuccess, toastError } = useToast();
 
   // Fetch available roles
   const { data: roleList } = useRoleSelectQuery();
@@ -89,40 +90,19 @@ const UserProfileEditDialog = ({ open, closeDialog, user }) => {
     onSuccess: () => {
       const message = 'User updated successfully';
 
-      toast.custom(
-        () => (
-          <Alert variant="mono" icon="success">
-            <AlertIcon>
-              <RiCheckboxCircleFill />
-            </AlertIcon>
-            <AlertTitle>{message}</AlertTitle>
-          </Alert>
-        ),
-
-        {
-          position: 'bottom-right',
-        },
-      );
+      toastSuccess(message);
 
       queryClient.invalidateQueries({ queryKey: ['user-users'] });
       queryClient.invalidateQueries({ queryKey: ['user-user'] });
       closeDialog();
+
+      // Refresh the page to show updated data
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     },
     onError: (error) => {
-      toast.custom(
-        () => (
-          <Alert variant="mono" icon="destructive">
-            <AlertIcon>
-              <RiErrorWarningFill />
-            </AlertIcon>
-            <AlertTitle>{error.message}</AlertTitle>
-          </Alert>
-        ),
-
-        {
-          position: 'bottom-right',
-        },
-      );
+      toastError(error.message);
     },
   });
 

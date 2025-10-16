@@ -40,12 +40,24 @@ export async function POST(req) {
       return NextResponse.json({ message: 'User not found.' }, { status: 404 });
     }
 
+    if (user.isTrashed) {
+      return NextResponse.json(
+        {
+          message: 'This account has been deactivated. Please contact support.',
+        },
+        { status: 403 },
+      );
+    }
+
     // Hash the new password
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     // Update the user's password
     await prisma.user.update({
-      where: { id: verificationToken.identifier },
+      where: {
+        id: verificationToken.identifier,
+        isTrashed: false, // Only update if not trashed
+      },
       data: { password: hashedPassword },
     });
 

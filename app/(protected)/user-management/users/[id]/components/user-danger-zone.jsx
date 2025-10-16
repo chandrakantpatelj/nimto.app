@@ -64,7 +64,11 @@ const UserDangerZone = ({ user, isLoading }) => {
             This account is currently trashed. Restoring the account will
             reactivate the user and all related data.
           </p>
-          <Button variant="outline" onClick={() => setRestoreDialogOpen(true)}>
+          <Button
+            variant="default"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white"
+            onClick={() => setRestoreDialogOpen(true)}
+          >
             Restore user
           </Button>
         </CardContent>

@@ -86,7 +86,8 @@ const authOptions = {
           throw new Error(
             JSON.stringify({
               code: 403,
-              message: 'Account not activated. Please verify your email.',
+              message:
+                'Account not activated. Please verify your email Or again register your account.',
             }),
           );
         }

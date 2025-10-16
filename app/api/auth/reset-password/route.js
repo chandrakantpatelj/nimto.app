@@ -50,6 +50,18 @@ export async function POST(req) {
       );
     }
 
+    // Check if user is trashed (soft deleted)
+    if (user.isTrashed) {
+      // Don't reveal that the account is deactivated
+      return NextResponse.json(
+        {
+          message:
+            'If an account with that email exists, a password reset link has been sent.',
+        },
+        { status: 200 },
+      );
+    }
+
     // Generate a secure reset token
     const token = crypto.randomBytes(32).toString('hex');
 

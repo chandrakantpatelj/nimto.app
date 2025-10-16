@@ -1,14 +1,12 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { RiCheckboxCircleFill, RiErrorWarningFill } from '@remixicon/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { LoaderCircleIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
-import { useToast } from '@/providers/toast-provider';
 import { z } from 'zod';
 import { apiFetch } from '@/lib/api';
-import { Alert, AlertIcon, AlertTitle } from '@/components/ui/alert';
+import { useToast } from '@/providers/toast-provider';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -41,6 +39,7 @@ const EmailConfirmationSchema = (userEmail) =>
 
 const UserRestoreDialog = ({ open, closeDialog, user }) => {
   const queryClient = useQueryClient();
+  const { toastSuccess, toastError } = useToast();
 
   // Set up the form using react-hook-form and zod validation
   const form = useForm({
@@ -71,42 +70,21 @@ const UserRestoreDialog = ({ open, closeDialog, user }) => {
     },
     onSuccess: () => {
       const message = 'User restored successfully.';
-      toast.custom(
-        () => (
-          <Alert variant="mono" icon="success">
-            <AlertIcon>
-              <RiCheckboxCircleFill />
-            </AlertIcon>
-            <AlertTitle>{message}</AlertTitle>
-          </Alert>
-        ),
+      toastSuccess(message);
 
-        {
-          position: 'bottom-right',
-        },
-      );
-
-      // Update user data
+      // Update user data and refresh the page
       queryClient.invalidateQueries({ queryKey: ['user-user'] });
+      queryClient.invalidateQueries({ queryKey: ['user-users'] });
 
       closeDialog();
+
+      // Refresh the page to show updated status
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     },
     onError: (error) => {
-      const message = error.message;
-      toast.custom(
-        () => (
-          <Alert variant="mono" icon="destructive">
-            <AlertIcon>
-              <RiErrorWarningFill />
-            </AlertIcon>
-            <AlertTitle>{message}</AlertTitle>
-          </Alert>
-        ),
-
-        {
-          position: 'bottom-right',
-        },
-      );
+      toastError(error.message);
     },
   });
 
@@ -156,9 +134,7 @@ const UserRestoreDialog = ({ open, closeDialog, user }) => {
                   variant="destructive"
                   type="submit"
                   disabled={
-                    !form.formState.isDirty ||
-                    !form.formState.isValid ||
-                    mutation.status === 'pending'
+                    !form.formState.isValid || mutation.status === 'pending'
                   }
                 >
                   {mutation.status === 'pending' && (

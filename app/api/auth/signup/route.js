@@ -8,6 +8,11 @@ import { UserStatus } from '@/app/models/user';
 
 async function sendVerificationEmail(user, callbackUrl = '/templates') {
   try {
+    // Clean up any existing tokens for this user first
+    await prisma.verificationToken.deleteMany({
+      where: { identifier: user.id },
+    });
+
     const token = await prisma.verificationToken.create({
       data: {
         identifier: user.id,
@@ -107,6 +112,17 @@ export async function POST(req) {
     });
 
     if (existingUser) {
+      // Check if user is trashed (soft deleted)
+      if (existingUser.isTrashed) {
+        return NextResponse.json(
+          {
+            message:
+              'This account has been deactivated. Please contact support to reactivate your account.',
+          },
+          { status: 403 },
+        );
+      }
+
       if (existingUser.status === UserStatus.INACTIVE) {
         try {
           await prisma.verificationToken.deleteMany({

@@ -24,10 +24,39 @@ export async function POST(req) {
   }
 
   try {
+    // First check if the user exists and is not trashed
+    const user = await prisma.user.findUnique({
+      where: { id: verificationToken.identifier },
+    });
+
+    if (!user) {
+      // Clean up orphaned token
+      await prisma.verificationToken.deleteMany({
+        where: { token },
+      });
+
+      return NextResponse.json(
+        { message: 'User not found. Please sign up again.' },
+        { status: 404 },
+      );
+    }
+
+    if (user.isTrashed) {
+      return NextResponse.json(
+        {
+          message: 'This account has been deactivated. Please contact support.',
+        },
+        { status: 403 },
+      );
+    }
+
     // Use a transaction to update user and delete token together
     await prisma.$transaction(async (tx) => {
       await tx.user.update({
-        where: { id: verificationToken.identifier },
+        where: {
+          id: verificationToken.identifier,
+          isTrashed: false, // Only update if not trashed
+        },
         data: {
           status: 'ACTIVE',
           emailVerifiedAt: new Date(),
