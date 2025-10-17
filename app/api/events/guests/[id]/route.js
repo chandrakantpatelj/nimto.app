@@ -76,7 +76,7 @@ export async function PUT(request, { params }) {
     const { id } = await params;
     const body = await request.json();
 
-    const { name, email, phone, status, response } = body;
+    const { name, email, phone, status, response, notes } = body;
 
     // Convert response to proper enum value
     let guestResponse = null;
@@ -106,6 +106,7 @@ export async function PUT(request, { params }) {
         status,
         response: guestResponse,
         respondedAt: guestResponse ? new Date() : undefined,
+        ...(notes !== undefined && { notes }),
       },
       include: {
         event: {

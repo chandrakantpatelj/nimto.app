@@ -21,6 +21,7 @@ export function EditGuestModal({ guest, isOpen, onClose, onGuestUpdated }) {
     phone: '',
     status: 'PENDING',
     response: '',
+    notes: '',
   });
   const [isLoading, setIsLoading] = useState(false);
   const { toastSuccess, toastError } = useToast();
@@ -33,6 +34,7 @@ export function EditGuestModal({ guest, isOpen, onClose, onGuestUpdated }) {
         phone: guest.phone || '',
         status: guest.status || 'PENDING',
         response: guest.response || '',
+        notes: guest.notes || '',
       });
     }
   }, [guest, isOpen]);
@@ -143,12 +145,12 @@ export function EditGuestModal({ guest, isOpen, onClose, onGuestUpdated }) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="response">Response Notes</Label>
+            <Label htmlFor="notes">Additional Notes</Label>
             <textarea
-              id="response"
-              value={formData.response}
-              onChange={(e) => handleInputChange('response', e.target.value)}
-              placeholder="Enter any response notes (optional)"
+              id="notes"
+              value={formData.notes}
+              onChange={(e) => handleInputChange('notes', e.target.value)}
+              placeholder="Enter any additional notes (optional)"
               rows={3}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
             />

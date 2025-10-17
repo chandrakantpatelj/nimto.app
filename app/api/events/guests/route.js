@@ -98,7 +98,7 @@ export async function POST(request) {
 
     const body = await request.json();
 
-    const { eventId, name, email, phone, status, response, sendEmail } = body;
+    const { eventId, name, email, phone, status, response, sendEmail, notes } = body;
 
     // Clean phone number - remove all spaces and non-digit characters except +
     const cleanPhone = phone ? cleanPhoneNumber(phone) : null;
@@ -155,6 +155,7 @@ export async function POST(request) {
         status: status || 'PENDING',
         response: guestResponse,
         invitedAt: new Date(),
+        notes: notes || null,
       },
       include: {
         event: {
@@ -230,7 +231,7 @@ export async function PUT(request) {
     }
 
     const body = await request.json();
-    const { guestId, name, email, phone, status, response } = body;
+    const { guestId, name, email, phone, status, response, notes } = body;
 
     // Clean phone number - remove all spaces and non-digit characters except +
     const cleanPhone = phone ? cleanPhoneNumber(phone) : null;
@@ -291,6 +292,7 @@ export async function PUT(request) {
         ...(response !== undefined && {
           response: response === '' ? null : response,
         }),
+        ...(notes !== undefined && { notes }),
       },
       include: {
         event: {
