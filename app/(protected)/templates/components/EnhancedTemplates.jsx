@@ -332,7 +332,7 @@ const EnhancedTemplates = ({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 sm:ml-1 lg:ml-12 md:ml-2 xl:ml-14">
       {/* Templates Grid */}
       {allTemplates.length === 0 ? (
         <div className="text-center py-8 sm:py-12 px-4 sm:px-0">
@@ -345,13 +345,13 @@ const EnhancedTemplates = ({
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-2 sm:gap-3 md:gap-4 lg:gap-5 px-2 sm:px-4 md:px-0">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-2 sm:gap-3 md:gap-4 lg:gap-5 px-2 sm:px-4 md:px-0 justify-center">
             {allTemplates.map((template) => (
-              <Card
-                key={template.id}
+                <Card
+                    key={template.id}
                     className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 border-0 shadow-sm sm:shadow-md bg-white dark:bg-slate-800 rounded-md sm:rounded-lg lg:rounded-xl max-w-sm overflow-hidden"
-                onClick={() => handleTemplateSelect(template)}
-              >
+                    onClick={() => handleTemplateSelect(template)}
+                >
                 <CardContent className="p-0">
                   {/* Template Image */}
                   <div className="relative aspect-[3/4] overflow-hidden">

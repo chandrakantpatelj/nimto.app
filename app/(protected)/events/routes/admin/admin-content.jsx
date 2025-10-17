@@ -88,7 +88,7 @@ export function AdminEventContent() {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-GB', {
+    return date.toLocaleDateString('en-US', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
@@ -337,7 +337,11 @@ export function AdminEventContent() {
                       <div className="flex items-center gap-2 text-white/90 text-sm">
                         <CalendarDays className="w-4 h-4" />
                         <span className="font-medium">
-                          {formatDate(event.startDateTime)}
+                            {formatDate(event.startDateTime, {
+                                month: '2-digit',
+                                day: '2-digit',
+                                year: 'numeric',
+                            })}
                         </span>
                         {event.time && (
                           <>
