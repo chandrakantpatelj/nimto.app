@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -32,6 +32,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import TemplateImageDisplay from '@/components/template-image-display';
 import LazyImage from './LazyImage';
+import { Skeleton } from '@/components/ui/skeleton';
+import { CardHeader } from '@/components/ui/card';
 
 const INITIAL_LIMIT = 12;
 const LOAD_MORE_STEP = 12;
@@ -73,6 +75,12 @@ const EnhancedTemplates = ({
 
   // Local state for "Load More"
   const [displayLimit, setDisplayLimit] = useState(INITIAL_LIMIT);
+
+  const sentinelRef = useRef(null);
+
+  // Derived state for initial load
+  const initialLoading = loading && allTemplates.length === 0;
+  const loadingMore = loading && allTemplates.length > 0;
 
   // Update active filters in Redux when props change
   useEffect(() => {
@@ -124,15 +132,15 @@ const EnhancedTemplates = ({
     loadTemplates(INITIAL_LIMIT);
   }, [searchQuery, selectedCategory, filters]);
 
-  // Scroll to bottom after loading more templates
-  useEffect(() => {
-    if (displayLimit > INITIAL_LIMIT) {
-      window.scrollTo({
-        top: document.documentElement.scrollHeight,
-        behavior: 'smooth',
-      });
-    }
-  }, [allTemplates, displayLimit]);
+  //// Scroll to bottom after loading more templates
+  //useEffect(() => {
+  //  if (displayLimit > INITIAL_LIMIT) {
+  //    window.scrollTo({
+  //      top: document.documentElement.scrollHeight,
+  //      behavior: 'smooth',
+  //    });
+  //  }
+  //}, [allTemplates, displayLimit]);
 
   // Load templates on component mount based on stored filters
   useEffect(() => {
@@ -185,6 +193,35 @@ const EnhancedTemplates = ({
     setDisplayLimit(newLimit);
     loadTemplates(newLimit);
   };
+
+  // Infinite scroll effect
+  useEffect(() => {
+    if (loading) return; // Don't observe while loading
+
+    const observer = new window.IntersectionObserver(
+      (entries) => {
+        if (
+          entries[0].isIntersecting &&
+          allTemplates.length < pagination.total
+        ) {
+          handleLoadMore();
+        }
+      },
+      {
+        root: null,
+        rootMargin: '0px',
+        threshold: 1.0,
+      }
+    );
+
+    const sentinel = sentinelRef.current;
+    if (sentinel) observer.observe(sentinel);
+
+    return () => {
+      if (sentinel) observer.unobserve(sentinel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allTemplates, loading, pagination.total]);
 
   const handleTemplateSelect = (template) => {
     setSelectedEvent(null);
@@ -263,12 +300,26 @@ const EnhancedTemplates = ({
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600 dark:text-blue-400" />
-      </div>
-    );
+  if (initialLoading) {
+      return (
+          <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {[1, 2, 3, 4].map((i) => (
+                      <Card key={i} className="min-h-[275px] group cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 border-0 shadow-sm sm:shadow-md bg-white dark:bg-slate-800 rounded-md sm:rounded-lg lg:rounded-xl overflow-hidden">
+                          <CardHeader className="pb-3">
+                              <Skeleton className="h-6 w-3/4" />
+                              <Skeleton className="h-4 w-1/2" />
+                          </CardHeader>
+                          <CardContent className="space-y-3">
+                              <Skeleton className="h-4 w-full" />
+                              <Skeleton className="h-4 w-2/3" />
+                              <Skeleton className="h-4 w-1/2" />
+                          </CardContent>
+                      </Card>
+                  ))}
+              </div>
+          </div>
+      );
   }
 
   if (error) {
@@ -456,7 +507,7 @@ const EnhancedTemplates = ({
 
                     <div className="flex flex-col gap-1 mt-2">
                       <Button
-                        className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1 rounded-md transition-all duration-300 text-xs"
+                        className="cursor-pointer group focus-visible:outline-hidden inline-flex items-center justify-center has-data-[arrow=true]:justify-between whitespace-nowrap font-medium ring-offset-background disabled:pointer-events-none disabled:opacity-60 [&_svg]:shrink-0 h-8.5 rounded-md px-3 gap-1.5 text-[0.8125rem] leading-(--text-sm--line-height) [&_svg:not([class*=size-])]:size-4 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -505,16 +556,26 @@ const EnhancedTemplates = ({
             ))}
           </div>
 
-          {/* Load More Button - centered and wider with icon */}
+          {/* Infinite scroll sentinel loader */}
           {allTemplates.length < pagination.total && (
-            <div className="flex justify-center p-4">
-              <Button
-                onClick={handleLoadMore}
-                className="bg-purple-600 hover:bg-purple-700 text-white w-48 flex items-center justify-center gap-2 text-base font-semibold"
-              >
-                <Loader2 className="h-5 w-5" />
-                Load More
-              </Button>
+            <div ref={sentinelRef} className="flex justify-center p-4">
+              {loadingMore ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
+                    {[1, 2, 3, 4].map((i) => (
+                        <Card key={i} className="min-h-[275px] group cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 border-0 shadow-sm sm:shadow-md bg-white dark:bg-slate-800 rounded-md sm:rounded-lg lg:rounded-xl overflow-hidden">
+                            <CardHeader className="pb-3">
+                                <Skeleton className="h-6 w-3/4" />
+                                <Skeleton className="h-4 w-1/2" />
+                            </CardHeader>
+                            <CardContent className="space-y-3">
+                                <Skeleton className="h-4 w-full" />
+                                <Skeleton className="h-4 w-2/3" />
+                                <Skeleton className="h-4 w-1/2" />
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
+              ) : null}
             </div>
           )}
         </>
