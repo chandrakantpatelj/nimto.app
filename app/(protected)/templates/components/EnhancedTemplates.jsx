@@ -32,9 +32,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import TemplateImageDisplay from '@/components/template-image-display';
 import LazyImage from './LazyImage';
+import { Skeleton } from '@/components/ui/skeleton';
+import { CardHeader } from '@/components/ui/card';
 
-const INITIAL_LIMIT = 6;
-const LOAD_MORE_STEP = 6;
+const INITIAL_LIMIT = 12;
+const LOAD_MORE_STEP = 12;
 
 const EnhancedTemplates = ({
   searchQuery = '',
@@ -299,11 +301,25 @@ const EnhancedTemplates = ({
   };
 
   if (initialLoading) {
-    return (
-      <div className="flex justify-center items-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600 dark:text-blue-400" />
-      </div>
-    );
+      return (
+          <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {[1, 2, 3, 4].map((i) => (
+                      <Card key={i} className="min-h-[275px] group cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 border-0 shadow-sm sm:shadow-md bg-white dark:bg-slate-800 rounded-md sm:rounded-lg lg:rounded-xl overflow-hidden">
+                          <CardHeader className="pb-3">
+                              <Skeleton className="h-6 w-3/4" />
+                              <Skeleton className="h-4 w-1/2" />
+                          </CardHeader>
+                          <CardContent className="space-y-3">
+                              <Skeleton className="h-4 w-full" />
+                              <Skeleton className="h-4 w-2/3" />
+                              <Skeleton className="h-4 w-1/2" />
+                          </CardContent>
+                      </Card>
+                  ))}
+              </div>
+          </div>
+      );
   }
 
   if (error) {
@@ -544,7 +560,21 @@ const EnhancedTemplates = ({
           {allTemplates.length < pagination.total && (
             <div ref={sentinelRef} className="flex justify-center p-4">
               {loadingMore ? (
-                <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
+                    {[1, 2, 3, 4].map((i) => (
+                        <Card key={i} className="min-h-[275px] group cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 border-0 shadow-sm sm:shadow-md bg-white dark:bg-slate-800 rounded-md sm:rounded-lg lg:rounded-xl overflow-hidden">
+                            <CardHeader className="pb-3">
+                                <Skeleton className="h-6 w-3/4" />
+                                <Skeleton className="h-4 w-1/2" />
+                            </CardHeader>
+                            <CardContent className="space-y-3">
+                                <Skeleton className="h-4 w-full" />
+                                <Skeleton className="h-4 w-2/3" />
+                                <Skeleton className="h-4 w-1/2" />
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
               ) : null}
             </div>
           )}
