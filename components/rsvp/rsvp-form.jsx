@@ -39,7 +39,7 @@ export default function RSVPForm({ event, userGuest, onRSVPUpdate }) {
     response: userGuest?.response || '',
     adults: userGuest?.adults || 1,
     children: userGuest?.children || 0,
-    additionalNotes: '',
+    additionalNotes: userGuest?.notes || '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);

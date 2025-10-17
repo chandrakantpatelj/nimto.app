@@ -256,6 +256,7 @@ model Guest {
   adults      Int            @default(1)
   children    Int            @default(0)
   plusOnes    Int            @default(0)
+  notes       String?
   event       Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   @@index([eventId])
