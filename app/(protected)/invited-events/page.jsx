@@ -186,9 +186,6 @@ export default function InvitedEventsPage() {
                     >
                         View invitation
                     </Button>
-                    <Button variant="ghost" className="px-2 w-full sm:w-auto">
-                        ...
-                    </Button>
                 </div>
             </div>
         );
