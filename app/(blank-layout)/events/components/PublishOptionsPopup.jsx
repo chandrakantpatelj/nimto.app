@@ -86,25 +86,6 @@ function PublishOptionsPopup({
             </div>
           </div>
         </div>
-
-        {/* Footer */}
-        <div className="flex gap-3 p-6 border-t border-border">
-          <Button variant="outline" onClick={onClose} className="flex-1">
-            Cancel
-          </Button>
-          <Button
-            variant="default"
-            onClick={onSaveAsDraft}
-            className="flex-1 bg-slate-500 hover:bg-slate-600 text-white border-slate-400"
-          >
-            <Save className="w-4 h-4 mr-2" />
-            Save as Draft
-          </Button>
-          <Button variant="primary" onClick={onPublish} className="flex-1">
-            <Send className="w-4 h-4 mr-2" />
-            Publish
-          </Button>
-        </div>
       </div>
     </div>
   );
