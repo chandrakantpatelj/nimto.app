@@ -279,7 +279,6 @@ export default function EventInvitationPage() {
               event={event}
               userGuest={userGuest}
               onRSVPUpdate={handleRSVPUpdate}
-              session={session}
             />
           </div>
         </div>
