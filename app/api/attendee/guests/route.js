@@ -131,6 +131,7 @@ export async function PUT(request) {
             plusOnes,
             adults,
             children,
+            additionalNotes,
         } = body;
 
         if (!eventId) {
@@ -315,6 +316,7 @@ export async function PUT(request) {
             plusOnes: plusOnes !== undefined ? plusOnes : guest.plusOnes,
             adults: adults !== undefined ? adults : guest.adults,
             children: children !== undefined ? children : guest.children,
+            notes: additionalNotes !== undefined ? additionalNotes : guest.notes,
         };
 
         // Update email if provided in body and guest doesn't have one

@@ -192,7 +192,7 @@ const GuestListTable = ({
             'Total Adults': guest.status === 'PENDING' || !guest.status ? '-' : guest.adults ?? '-',
             'Total Kids': guest.status === 'PENDING' || !guest.status ? '-' : guest.children ?? '-',
             Invitation: guest.status === 'INVITED' ? 'Sent' : 'Not Sent',
-            Notes: guest.response ?? '',
+            Notes: guest.notes ?? '',
         }));
         const worksheet = XLSX.utils.json_to_sheet(exportData);
         const workbook = XLSX.utils.book_new();
@@ -320,14 +320,14 @@ const GuestListTable = ({
                 header: ({ column }) => <DataGridColumnHeader title="Notes" column={column} />,
                 cell: ({ row }) => (
                     <div className="max-w-xs">
-                        {row.original.response ? (
+                        {row.original.notes ? (
                             <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-2">
                                 <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
-                                    {row.original.response}
+                                    {row.original.notes}
                                 </p>
                             </div>
                         ) : (
-                            <span className="text-gray-400 dark:text-gray-500 italic">No response</span>
+                            <span className="text-gray-400 dark:text-gray-500 italic">No notes</span>
                         )}
                     </div>
                 ),
