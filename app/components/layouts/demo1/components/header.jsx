@@ -160,7 +160,7 @@ export function Header() {
     return [
       {
         title: 'Create Invitation',
-        path: '/events',
+        path: 'events/select-template',
         icon: CalendarCheck,
         key: 'events',
       },

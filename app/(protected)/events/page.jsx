@@ -29,18 +29,12 @@ function EventManagementPage() {
       {isAuthenticated && <PageNavbar />}
       <Container>
         <Toolbar>
-          <ToolbarHeading>
-            <ToolbarPageTitle text="Events" />
-            <ToolbarDescription>
-              {isAuthenticated ? `${user?.name} (${user?.roleName})` : 'Browse public events'}
-            </ToolbarDescription>
-          </ToolbarHeading>
           <ToolbarActions>
             {isAuthenticated && (roles.isHost ||
               roles.isApplicationAdmin ||
               roles.isSuperAdmin) && (
               <Button variant="primary" asChild>
-                <Link href="/events/select-template">
+                <Link href="/templates">
                   <CirclePlus /> Create New Event
                 </Link>
               </Button>

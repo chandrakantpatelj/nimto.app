@@ -37,11 +37,13 @@ function ExitEditorPopup({ show, setShow }) {
       default:
         // User came from template selection -> redirect to previous route
         // Use browser history to go back, or fallback to home
-        if (window.history.length > 1) {
-          router.back();
-        } else {
+        // if (window.history.length > 1) {
+        //   // router.back();
+        //   router.push('/');
+
+        // } else {
           router.push('/');
-        }
+        // }
         break;
     }
     
