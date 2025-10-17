@@ -12,6 +12,7 @@ import {
   X,
 } from 'lucide-react';
 import { signIn } from 'next-auth/react';
+import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 import { useForm } from 'react-hook-form';
 import { Alert, AlertIcon, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -35,6 +36,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Icons } from '@/components/common/icons';
 import { getSigninSchema } from '@/app/(auth)/forms/signin-schema';
+import SignupModal from './signup-modal';
 
 export default function LoginModal({
   isOpen,
@@ -47,6 +49,8 @@ export default function LoginModal({
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState(null);
+  const [showSignupModal, setShowSignupModal] = useState(false);
+  const [signupSuccessMessage, setSignupSuccessMessage] = useState(null);
 
   const form = useForm({
     resolver: zodResolver(getSigninSchema()),
@@ -64,12 +68,20 @@ export default function LoginModal({
     }
   }, [prefilledEmail, form]);
 
+  // Clear success message when user starts typing or when there's an error
+  // useEffect(() => {
+  //   if (!signupSuccessMessage) {
+  //     setSignupSuccessMessage(null);
+  //   }
+  // }, [error, form.formState.isDirty, signupSuccessMessage]);
+
   // Reset form when modal closes
   useEffect(() => {
     if (!isOpen) {
       form.reset();
       setError(null);
       setPasswordVisible(false);
+      setSignupSuccessMessage(null);
     }
   }, [isOpen, form]);
 
@@ -127,6 +139,37 @@ export default function LoginModal({
     signIn('google', { callbackUrl: callbackUrl });
   };
 
+  // If signup modal should be shown, render SignupModal instead
+  if (showSignupModal) {
+    return (
+      <GoogleReCaptchaProvider
+        reCaptchaKey={process.env.NEXT_PUBLIC_V3_RECAPTCHA_SITE_KEY}
+        scriptProps={{ async: true, defer: true }}
+      >
+        <SignupModal
+          isOpen={true}
+          onClose={() => {
+            setShowSignupModal(false);
+            // Don't call onClose here - stay in login modal
+          }}
+          prefilledEmail={prefilledEmail}
+          callbackUrl={callbackUrl}
+          onSuccess={(apiMessage) => {
+            console.log('apiMessage', apiMessage);
+            // Close signup modal and show API response message in login modal
+            setShowSignupModal(false);
+            setSignupSuccessMessage(
+              apiMessage ||
+                'Account created successfully! Please check your email to verify your account before signing in.',
+            );
+            // Clear any existing errors
+            setError(null);
+          }}
+        />
+      </GoogleReCaptchaProvider>
+    );
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
@@ -173,6 +216,15 @@ export default function LoginModal({
                   <AlertCircle />
                 </AlertIcon>
                 <AlertTitle>{error}</AlertTitle>
+              </Alert>
+            )}
+
+            {signupSuccessMessage && (
+              <Alert className="border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200">
+                <AlertIcon>
+                  <Check className="h-4 w-4" />
+                </AlertIcon>
+                <AlertTitle>{signupSuccessMessage}</AlertTitle>
               </Alert>
             )}
 
@@ -286,8 +338,7 @@ export default function LoginModal({
               variant="link"
               className="h-auto p-0 text-sm font-semibold"
               onClick={() => {
-                onClose();
-                router.push('/signup');
+                setShowSignupModal(true);
               }}
             >
               Sign Up
