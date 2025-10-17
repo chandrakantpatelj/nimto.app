@@ -172,11 +172,6 @@ const Events = () => {
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log(
-                  'Edit button clicked for event:',
-                  event.title,
-                  event.id,
-                );
                 // Set the event data in Redux before navigating
                 setSelectedEvent(event);
                 router.push(`/events/${event.id}`);
@@ -211,9 +206,9 @@ const Events = () => {
                   <CalendarDays className="w-4 h-4" />
                   <span className="font-medium">
                     {formatDate(event.startDateTime, {
-                      day: '2-digit',
-                      month: '2-digit',
-                      year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        year: 'numeric',
                     })}
                   </span>
                   {event.startDateTime && (
