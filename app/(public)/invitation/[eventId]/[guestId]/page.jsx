@@ -399,14 +399,6 @@ export default function PublicEventInvitationPage() {
     setGuest(updatedGuest);
   };
 
-  // Create a session-like object for the RSVPForm (since it expects session data)
-  const guestSession = {
-    user: {
-      name: guest.name,
-      email: guest.email,
-    },
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 dark:from-gray-900 dark:to-slate-900/50">
       {/* Main Content - Portrait Layout */}
@@ -586,7 +578,6 @@ export default function PublicEventInvitationPage() {
               event={event}
               userGuest={userGuest}
               onRSVPUpdate={handleRSVPUpdate}
-              session={guestSession}
             />
           </div>
         </div>
