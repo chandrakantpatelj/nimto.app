@@ -406,7 +406,7 @@ const EnhancedTemplates = ({
                           <span className="hidden sm:inline">Trending</span>
                         </Badge>
                       )}
-                      {template.isFeatured && (isSuperAdmin || isAdmin) && (
+                      {template.isFeatured && (
                         <Badge
                           variant="outline"
                           className="text-xs font-medium px-1.5 py-0.5 sm:px-2 sm:py-1 bg-white/90 dark:bg-slate-800/90 text-gray-900 dark:text-gray-100 border border-yellow-300 dark:border-yellow-600 shadow-sm"

@@ -11,6 +11,7 @@ import {
   FileText,
   Home,
   LayoutDashboard,
+  Info,
   Mail,
   Menu,
   MessageSquare,
@@ -160,22 +161,22 @@ export function Header() {
     return [
       {
         title: 'Create Invitation',
-        path: 'events/select-template',
+        path: '/templates',
         icon: CalendarCheck,
         key: 'events',
       },
       {
-        title: 'Templates',
-        path: '/templates',
-        icon: FileText,
-        key: 'templates',
+        title: 'About Nimto',
+        path: '/about-us',
+        icon: Info,
+        key: 'about-us',
       },
-      //{
-      //  title: 'Gift Cards',
-      //  path: '/store-client',
-      //  icon: FileText,
-      //  key: 'gift-cards',
-      //},
+      {
+        title: 'Contact Us',
+        path: '/contact-us',
+        icon: Mail,
+        key: 'contact-us',
+      },
       //{
       //  title: 'SignUp Sheets',
       //  path: '/events',

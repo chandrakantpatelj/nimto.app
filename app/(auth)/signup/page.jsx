@@ -284,17 +284,24 @@ function SignupForm({ callbackUrl }) {
                                         checked={field.value}
                                         onCheckedChange={(checked) => field.onChange(!!checked)}
                                     />
-
-                                    <label htmlFor="accept" className="text-sm text-black">
-                                        I agree to the
-                                    </label>
-                                    <Link
-                                        href="/privacy-policy"
-                                        target="_blank"
-                                        className="-ms-0.5 text-sm font-semibold text-orange-500 hover:text-primary"
-                                    >
-                                        Privacy Policy
-                                    </Link>
+                                    <span className="text-sm text-black">
+                                        I agree to the{' '}
+                                        <Link
+                                            href="/terms-conditions"
+                                            target="_blank"
+                                            className="text-sm font-semibold text-orange-500 hover:text-primary underline"
+                                        >
+                                            Terms &amp; Conditions
+                                        </Link>
+                                        {' and '}
+                                        <Link
+                                            href="/privacy-policy"
+                                            target="_blank"
+                                            className="text-sm font-semibold text-orange-500 hover:text-primary underline"
+                                        >
+                                            Privacy Policy
+                                        </Link>
+                                    </span>
                                 </div>
                             </FormControl>
                             <FormMessage />
