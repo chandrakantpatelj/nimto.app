@@ -313,7 +313,7 @@ export default function ContactUsPage() {
                                                 <Mail className="w-5 h-5 text-blue-600 mt-1" />
                                                 <div>
                                                     <p className="font-medium">Email</p>
-                                                    <p className="text-sm text-muted-foreground">contact@nimto.app</p>
+                                                    <p className="text-sm text-muted-foreground">contact@nimto.io</p>
                                                     <p className="text-xs text-muted-foreground">For general inquiries</p>
                                                 </div>
                                             </div>
@@ -321,7 +321,7 @@ export default function ContactUsPage() {
                                                 <Phone className="w-5 h-5 text-blue-600 mt-1" />
                                                 <div>
                                                     <p className="font-medium">Phone</p>
-                                                    <p className="text-sm text-muted-foreground">+1 (555) 123-4567</p>
+                                                    <p className="text-sm text-muted-foreground">+1 (704) 270-8407</p>
                                                     <p className="text-xs text-muted-foreground">Mon-Fri 9AM-6PM EST</p>
                                                 </div>
                                             </div>

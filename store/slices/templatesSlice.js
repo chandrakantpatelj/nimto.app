@@ -57,7 +57,7 @@ export const fetchFeaturedTemplates = createAsyncThunk(
         return state.templates.featuredTemplates;
       }
 
-      const response = await fetch('/api/template?limit=6');
+    const response = await fetch('/api/template?limit=12&isFeatured=true');
 
       if (!response.ok) {
         throw new Error('Failed to fetch featured templates');
