@@ -345,62 +345,44 @@ export function AuthModal({ isOpen, onClose, mode = 'signin' }) {
               />
             )}
 
-            {/* Host checkbox for signup */}
-            {!isSignin && (
-              <FormField
-                control={form.control}
-                name="isHost"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <div className="flex items-start gap-2.5">
-                        <Checkbox
-                          id="isHost"
-                          checked={field.value}
-                          onCheckedChange={(checked) => field.onChange(!!checked)}
-                        />
-                        <div className="flex flex-col gap-1">
-                          <label htmlFor="isHost" className="text-sm">
-                            I'm interested in hosting events.
-                          </label>
-                          <label htmlFor="isHost" className="text-xs text-muted-foreground">
-                            Sign up as a host to create and manage your own events.
-                          </label>
-                        </div>
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-
             {/* Terms acceptance for signup */}
             {!isSignin && (
-              <FormField
-                control={form.control}
-                name="accept"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <div className="flex items-center gap-2.5">
-                        <Checkbox
-                          id="accept"
-                          checked={field.value}
-                          onCheckedChange={(checked) => field.onChange(!!checked)}
-                        />
-                        <label htmlFor="accept" className="text-sm text-black">
-                          I agree to the{' '}
-                          <a href="/privacy-policy" target="_blank" className="text-sm font-semibold text-orange-500 hover:text-primary">
-                            Privacy Policy
-                          </a>
-                        </label>
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                          <FormField
+                              control={form.control}
+                              name="accept"
+                              render={({ field }) => (
+                                  <FormItem>
+                                      <FormControl>
+                                          <div className="flex items-center gap-2.5">
+                                              <Checkbox
+                                                  id="accept"
+                                                  checked={field.value}
+                                                  onCheckedChange={(checked) => field.onChange(!!checked)}
+                                              />
+                                              <label htmlFor="accept" className="text-sm text-black">
+                                                  I agree to the{' '}
+                                                  <a
+                                                      href="/terms-conditions"
+                                                      target="_blank"
+                                                      className="text-sm font-semibold text-orange-500 hover:text-primary underline"
+                                                  >
+                                                      Terms &amp; Conditions
+                                                  </a>
+                                                  {' and '}
+                                                  <a
+                                                      href="/privacy-policy"
+                                                      target="_blank"
+                                                      className="text-sm font-semibold text-orange-500 hover:text-primary underline"
+                                                  >
+                                                      Privacy Policy
+                                                  </a>
+                                              </label>
+                                          </div>
+                                      </FormControl>
+                                      <FormMessage />
+                                  </FormItem>
+                              )}
+                          />
             )}
 
             {/* Remember Me for signin */}

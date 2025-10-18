@@ -193,27 +193,31 @@ const PasswordField = ({
 );
 
 const TermsCheckbox = ({ form }) => (
-  <div className="flex items-start gap-3">
-    <Checkbox
-      id="accept"
-      checked={form.watch('accept')}
-      onCheckedChange={(checked) => form.setValue('accept', !!checked)}
-      className="mt-1"
-    />
-    <label
-      htmlFor="accept"
-      className="text-sm text-gray-700 dark:text-gray-300"
-    >
-      I agree to the{' '}
-      <a
-        href="/privacy-policy"
-        target="_blank"
-        className="text-orange-500 hover:text-orange-600 font-medium"
-      >
-        Privacy Policy
-      </a>
-    </label>
-  </div>
+    <div className="flex items-center gap-2.5">
+        <Checkbox
+            id="accept"
+            checked={form.watch('accept')}
+            onCheckedChange={(checked) => form.setValue('accept', !!checked)}
+        />
+        <span className="text-sm text-gray-700 dark:text-gray-300">
+            I agree to the{' '}
+            <a
+                href="/terms-conditions"
+                target="_blank"
+                className="text-orange-500 hover:text-orange-600 font-medium underline"
+            >
+                Terms &amp; Conditions
+            </a>
+            {' and '}
+            <a
+                href="/privacy-policy"
+                target="_blank"
+                className="text-orange-500 hover:text-orange-600 font-medium underline"
+            >
+                Privacy Policy
+            </a>
+        </span>
+    </div>
 );
 
 // Main Component

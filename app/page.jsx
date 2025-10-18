@@ -133,6 +133,14 @@ export default function HomePage() {
     fetchInvitedEvents();
   }, [isAuthenticated, roles.isAttendee, session?.user?.email]);
 
+    function toTitleCase(str) {
+        return str
+            .replace(/[-_]/g, ' ') // Replace hyphens and underscores with spaces
+            .replace(/\w\S*/g, (txt) =>
+                txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+            );
+    }
+
   // Show loading state while checking authentication
   if (isLoading) {
     return (
@@ -334,10 +342,10 @@ export default function HomePage() {
             <div className="max-w-7xl mx-auto px-6">
               <div className="text-center mb-12 sm:mb-16">
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">
-                  {selectedCategory} Designs
+                    {toTitleCase(selectedCategory)} Designs
                 </h2>
                 <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300">
-                  Templates in the "{selectedCategory}" category
+                    Templates in the "{toTitleCase(selectedCategory)}" category
                 </p>
               </div>
 
